@@ -1,44 +1,78 @@
-import React, { useState, useMemo } from 'react';
-import { Calculator, FileText, Send, CheckCircle, X } from 'lucide-react';
-import jsPDF from 'jspdf';
+import React, { useState } from "react";
+import { FileText, Send, CheckCircle, X, Plus, Trash2 } from "lucide-react";
+import jsPDF from "jspdf";
 
 const ImportExportQuotationForm = () => {
   // Basic Information State
   const [basicInfo, setBasicInfo] = useState({
-    shipperAddress: '',
-    consigneeAddress: '',
-    equipment: '',
-    weight: '',
-    terms: '',
-    pol: '',
-    pod: '',
-    finalDestination: '',
-    shippingLine: '',
-    etd: '',
-    totalTransitTime: '',
-    remarks: '',
+    customerAddress: "",
+    consigneeAddress: "",
+    equipment: "",
+    weight: "",
+    terms: "",
+    pol: "",
+    pod: "",
+    finalDestination: "",
+    shippingLine: "",
+    etd: "",
+    totalTransitTime: "",
+    remarks: "",
   });
 
   // Popup state
   const [showPopup, setShowPopup] = useState(false);
 
-  // Heads Charges State
-  const [headsCharges, setHeadsCharges] = useState({
-    muc: '',
-    mblFee: '',
-    outGaugeCharges: '',
-    shippingLineTHC: '',
+  // Summary Sections State
+  const [originSummary, setOriginSummary] = useState({
+    currency: "USD",
+    amount: "",
+    unit: "/BL",
   });
 
-  // International Freight State
-  const [internationalFreight, setInternationalFreight] = useState({
-    oceanFreight: '',
-    doFee: '',
-    destinationShippingLineDues: '',
-    doorDeliveryCharges: '',
-    acd: '',
-    customClearance: '',
+  const [freightSummary, setFreightSummary] = useState({
+    currency: "USD",
+    amount: "",
+    unit: "/BL",
   });
+
+  const [destinationSummary, setDestinationSummary] = useState({
+    currency: "USD",
+    amount: "",
+    unit: "/BL",
+  });
+
+  // Origin Charges State
+  const [originCharges, setOriginCharges] = useState([
+    {
+      id: Date.now(),
+      charges: "",
+      currency: "USD",
+      amount: "",
+      unit: "/BL",
+    },
+  ]);
+
+  // Freight Charges State
+  const [freightCharges, setFreightCharges] = useState([
+    {
+      id: Date.now() + 1,
+      charges: "",
+      currency: "USD",
+      amount: "",
+      unit: "/BL",
+    },
+  ]);
+
+  // Destination Charges State
+  const [destinationCharges, setDestinationCharges] = useState([
+    {
+      id: Date.now() + 2,
+      charges: "",
+      currency: "USD",
+      amount: "",
+      unit: "/BL",
+    },
+  ]);
 
   // Handle Basic Info Changes
   const handleBasicInfoChange = (e) => {
@@ -49,225 +83,304 @@ const ImportExportQuotationForm = () => {
     }));
   };
 
-  // Handle Heads Charges Changes
-  const handleHeadsChargesChange = (e) => {
-    const { name, value } = e.target;
-    setHeadsCharges((prev) => ({
+  // Handle Summary Changes
+  const handleOriginSummaryChange = (field, value) => {
+    setOriginSummary((prev) => ({
       ...prev,
-      [name]: value,
+      [field]: value,
     }));
   };
 
-  // Handle International Freight Changes
-  const handleInternationalFreightChange = (e) => {
-    const { name, value } = e.target;
-    setInternationalFreight((prev) => ({
+  const handleFreightSummaryChange = (field, value) => {
+    setFreightSummary((prev) => ({
       ...prev,
-      [name]: value,
+      [field]: value,
     }));
   };
 
-  // Calculate Heads Total
-  const headsTotal = useMemo(() => {
-    const values = Object.values(headsCharges);
-    return values.reduce((sum, val) => {
-      const num = parseFloat(val) || 0;
-      return sum + num;
-    }, 0);
-  }, [headsCharges]);
+  const handleDestinationSummaryChange = (field, value) => {
+    setDestinationSummary((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
-  // Calculate International Freight Total
-  const internationalFreightTotal = useMemo(() => {
-    const values = Object.values(internationalFreight);
-    return values.reduce((sum, val) => {
-      const num = parseFloat(val) || 0;
-      return sum + num;
-    }, 0);
-  }, [internationalFreight]);
+  // Origin Charges Handlers
+  const addOriginCharge = () => {
+    setOriginCharges([
+      ...originCharges,
+      {
+        id: Date.now(),
+        charges: "",
+        currency: "USD",
+        amount: "",
+        unit: "/BL",
+      },
+    ]);
+  };
 
-  // Calculate Grand Total
-  const grandTotal = useMemo(() => {
-    return headsTotal + internationalFreightTotal;
-  }, [headsTotal, internationalFreightTotal]);
+  const removeOriginCharge = (id) => {
+    setOriginCharges(originCharges.filter((charge) => charge.id !== id));
+  };
+
+  const handleOriginChargeChange = (id, field, value) => {
+    setOriginCharges(
+      originCharges.map((charge) =>
+        charge.id === id ? { ...charge, [field]: value } : charge
+      )
+    );
+  };
+
+  // Freight Charges Handlers
+  const addFreightCharge = () => {
+    setFreightCharges([
+      ...freightCharges,
+      {
+        id: Date.now(),
+        charges: "",
+        currency: "USD",
+        amount: "",
+        unit: "/BL",
+      },
+    ]);
+  };
+
+  const removeFreightCharge = (id) => {
+    setFreightCharges(freightCharges.filter((charge) => charge.id !== id));
+  };
+
+  const handleFreightChargeChange = (id, field, value) => {
+    setFreightCharges(
+      freightCharges.map((charge) =>
+        charge.id === id ? { ...charge, [field]: value } : charge
+      )
+    );
+  };
+
+  // Destination Charges Handlers
+  const addDestinationCharge = () => {
+    setDestinationCharges([
+      ...destinationCharges,
+      {
+        id: Date.now(),
+        charges: "",
+        currency: "USD",
+        amount: "",
+        unit: "/BL",
+      },
+    ]);
+  };
+
+  const removeDestinationCharge = (id) => {
+    setDestinationCharges(
+      destinationCharges.filter((charge) => charge.id !== id)
+    );
+  };
+
+  const handleDestinationChargeChange = (id, field, value) => {
+    setDestinationCharges(
+      destinationCharges.map((charge) =>
+        charge.id === id ? { ...charge, [field]: value } : charge
+      )
+    );
+  };
 
   // Generate PDF and Submit
   const handleSubmit = () => {
     const doc = new jsPDF();
-    
+
     // Header
     doc.setFillColor(37, 99, 235);
-    doc.rect(0, 0, 210, 35, 'F');
+    doc.rect(0, 0, 210, 35, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
-    doc.text('DOOR-TO-DOOR QUOTATION', 105, 15, { align: 'center' });
+    doc.setFont("helvetica", "bold");
+    doc.text("DOOR-TO-DOOR QUOTATION", 105, 15, { align: "center" });
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('OmTrans Freight Services', 105, 25, { align: 'center' });
-    
+    doc.setFont("helvetica", "normal");
+    doc.text("OmTrans Freight Services", 105, 25, { align: "center" });
+
     // Reset text color
     doc.setTextColor(0, 0, 0);
     let yPos = 45;
-    
+
     // Basic Information
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Scope of Activities', 15, yPos);
+    doc.setFont("helvetica", "bold");
+    doc.text("Scope of Activities", 15, yPos);
     yPos += 8;
-    
+
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Shipper Address (Consignor):', 15, yPos);
-    doc.setFont('helvetica', 'normal');
-    const shipperLines = doc.splitTextToSize(basicInfo.shipperAddress || 'N/A', 85);
-    doc.text(shipperLines, 15, yPos + 5);
-    
-    doc.setFont('helvetica', 'bold');
-    doc.text('Delivery Address (Consignee):', 110, yPos);
-    doc.setFont('helvetica', 'normal');
-    const consigneeLines = doc.splitTextToSize(basicInfo.consigneeAddress || 'N/A', 85);
+    doc.setFont("helvetica", "bold");
+    doc.text("Customer Address (Consignor):", 15, yPos);
+    doc.setFont("helvetica", "normal");
+    const customerLines = doc.splitTextToSize(
+      basicInfo.customerAddress || "N/A",
+      85
+    );
+    doc.text(customerLines, 15, yPos + 5);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Delivery Address (Consignee):", 110, yPos);
+    doc.setFont("helvetica", "normal");
+    const consigneeLines = doc.splitTextToSize(
+      basicInfo.consigneeAddress || "N/A",
+      85
+    );
     doc.text(consigneeLines, 110, yPos + 5);
     yPos += 20;
-    
+
     // Shipment Details
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Shipment Details', 15, yPos);
+    doc.setFont("helvetica", "bold");
+    doc.text("Shipment Details", 15, yPos);
     yPos += 8;
-    
+
     doc.setFontSize(10);
     const details = [
-      ['Equipment:', basicInfo.equipment || 'N/A', 'Weight:', basicInfo.weight || 'N/A'],
-      ['Terms:', basicInfo.terms || 'N/A', 'POL:', basicInfo.pol || 'N/A'],
-      ['POD:', basicInfo.pod || 'N/A', 'Final Destination:', basicInfo.finalDestination || 'N/A'],
-      ['Shipping Line:', basicInfo.shippingLine || 'N/A', 'ETD:', basicInfo.etd || 'N/A'],
-      ['Total Transit Time:', basicInfo.totalTransitTime || 'N/A', '', ''],
+      [
+        "Equipment:",
+        basicInfo.equipment || "N/A",
+        "Weight:",
+        basicInfo.weight || "N/A",
+      ],
+      ["Terms:", basicInfo.terms || "N/A", "POL:", basicInfo.pol || "N/A"],
+      [
+        "POD:",
+        basicInfo.pod || "N/A",
+        "Final Destination:",
+        basicInfo.finalDestination || "N/A",
+      ],
+      [
+        "Shipping Line:",
+        basicInfo.shippingLine || "N/A",
+        "ETD:",
+        basicInfo.etd || "N/A",
+      ],
+      ["Total Transit Time:", basicInfo.totalTransitTime || "N/A", "", ""],
     ];
-    
-    details.forEach(row => {
-      doc.setFont('helvetica', 'bold');
+
+    details.forEach((row) => {
+      doc.setFont("helvetica", "bold");
       doc.text(row[0], 15, yPos);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.text(row[1], 50, yPos);
       if (row[2]) {
-        doc.setFont('helvetica', 'bold');
+        doc.setFont("helvetica", "bold");
         doc.text(row[2], 110, yPos);
-        doc.setFont('helvetica', 'normal');
+        doc.setFont("helvetica", "normal");
         doc.text(row[3], 145, yPos);
       }
       yPos += 6;
     });
-    
+
     yPos += 5;
-    
-    // Heads Charges
+
+    // Charges Section
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Heads', 15, yPos);
-    yPos += 8;
-    
-    doc.setFontSize(10);
-    const headsItems = [
-      ['MUC', headsCharges.muc],
-      ['MBL Fee', headsCharges.mblFee],
-      ['Out Gauge Charges', headsCharges.outGaugeCharges],
-      ['Shipping Line THC', headsCharges.shippingLineTHC],
-    ];
-    
-    headsItems.forEach(([label, value]) => {
-      doc.setFont('helvetica', 'normal');
-      doc.text(label, 15, yPos);
-      doc.text('₹ ' + (parseFloat(value) || 0).toFixed(2), 180, yPos, { align: 'right' });
-      yPos += 6;
-    });
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setDrawColor(37, 99, 235);
-    doc.line(15, yPos, 195, yPos);
-    yPos += 5;
-    doc.text('Total:', 15, yPos);
-    doc.text('₹ ' + headsTotal.toFixed(2), 180, yPos, { align: 'right' });
+    doc.setFont("helvetica", "bold");
+    doc.text("Charges", 15, yPos);
     yPos += 10;
-    
-    // International Freight
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('International Freight', 15, yPos);
-    yPos += 8;
-    
-    doc.setFontSize(10);
-    const freightItems = [
-      ['Ocean Freight', internationalFreight.oceanFreight],
-      ['D.O Fee', internationalFreight.doFee],
-      ['Destination Shipping Line Dues', internationalFreight.destinationShippingLineDues],
-      ['Door Delivery Charges', internationalFreight.doorDeliveryCharges],
-      ['ACD', internationalFreight.acd],
-      ['Custom Clearance', internationalFreight.customClearance],
-    ];
-    
-    freightItems.forEach(([label, value]) => {
-      doc.setFont('helvetica', 'normal');
-      doc.text(label, 15, yPos);
-      doc.text('₹ ' + (parseFloat(value) || 0).toFixed(2), 180, yPos, { align: 'right' });
+
+    // Origin Charges
+    if (originCharges.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Origin Charges:", 15, yPos);
       yPos += 6;
-    });
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setDrawColor(16, 185, 129);
-    doc.line(15, yPos, 195, yPos);
-    yPos += 5;
-    doc.text('Total:', 15, yPos);
-    doc.text('₹ ' + internationalFreightTotal.toFixed(2), 180, yPos, { align: 'right' });
-    yPos += 10;
-    
-    // Grand Total
-    doc.setFillColor(79, 70, 229);
-    doc.rect(15, yPos - 5, 180, 12, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    doc.text('GRAND TOTAL:', 20, yPos + 3);
-    doc.text('₹ ' + grandTotal.toFixed(2), 180, yPos + 3, { align: 'right' });
-    yPos += 15;
-    
+      doc.setFontSize(9);
+      originCharges.forEach((charge) => {
+        if (charge.charges || charge.amount) {
+          doc.setFont("helvetica", "normal");
+          const text = `${charge.charges || "N/A"} - ${charge.currency} ${
+            charge.amount || "0"
+          } ${charge.unit}`;
+          doc.text(text, 20, yPos);
+          yPos += 5;
+        }
+      });
+      yPos += 3;
+    }
+
+    // Freight Charges
+    if (freightCharges.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Freight Charges:", 15, yPos);
+      yPos += 6;
+      doc.setFontSize(9);
+      freightCharges.forEach((charge) => {
+        if (charge.charges || charge.amount) {
+          doc.setFont("helvetica", "normal");
+          const text = `${charge.charges || "N/A"} - ${charge.currency} ${
+            charge.amount || "0"
+          } ${charge.unit}`;
+          doc.text(text, 20, yPos);
+          yPos += 5;
+        }
+      });
+      yPos += 3;
+    }
+
+    // Destination Charges
+    if (destinationCharges.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Destination Charges:", 15, yPos);
+      yPos += 6;
+      doc.setFontSize(9);
+      destinationCharges.forEach((charge) => {
+        if (charge.charges || charge.amount) {
+          doc.setFont("helvetica", "normal");
+          const text = `${charge.charges || "N/A"} - ${charge.currency} ${
+            charge.amount || "0"
+          } ${charge.unit}`;
+          doc.text(text, 20, yPos);
+          yPos += 5;
+        }
+      });
+      yPos += 5;
+    }
+
     // Remarks
     if (basicInfo.remarks) {
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Remarks:', 15, yPos);
+      doc.setFont("helvetica", "bold");
+      doc.text("Remarks:", 15, yPos);
       yPos += 6;
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       const remarksLines = doc.splitTextToSize(basicInfo.remarks, 180);
       doc.text(remarksLines, 15, yPos);
       yPos += remarksLines.length * 5 + 5;
     }
-    
+
     // Terms and Conditions
     if (yPos > 240) {
       doc.addPage();
       yPos = 20;
     }
-    
+
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Terms and Conditions', 15, yPos);
+    doc.setFont("helvetica", "bold");
+    doc.text("Terms and Conditions", 15, yPos);
     yPos += 8;
-    
+
     doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
     const terms = [
-      '• Freight rates are subject to equipment and space availability.',
-      '• Transit insurance will be at the customer\'s cost. OmTrans will not be',
-      '  responsible for any claims.',
+      "• Freight rates are subject to equipment and space availability.",
+      "• Transit insurance will be at the customer's cost. OmTrans will not be",
+      "  responsible for any claims.",
     ];
-    
-    terms.forEach(term => {
+
+    terms.forEach((term) => {
       doc.text(term, 15, yPos);
       yPos += 5;
     });
-    
+
     // Footer
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
@@ -278,23 +391,21 @@ const ImportExportQuotationForm = () => {
         `Generated on ${new Date().toLocaleDateString()} | Page ${i} of ${pageCount}`,
         105,
         290,
-        { align: 'center' }
+        { align: "center" }
       );
     }
-    
+
     // Save PDF
     doc.save(`Door_to_Door_Quotation_${Date.now()}.pdf`);
-    
+
     // Show popup
     setShowPopup(true);
-    
+
     // Hide popup after 3 seconds
     setTimeout(() => {
       setShowPopup(false);
     }, 3000);
   };
-
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-3 md:p-6">
@@ -306,7 +417,9 @@ const ImportExportQuotationForm = () => {
               <FileText size={24} />
               <div>
                 <h1 className="text-xl font-bold">Door-to-Door Quotation</h1>
-                <p className="text-xs text-blue-100">Complete shipping quotation form</p>
+                <p className="text-xs text-blue-100">
+                  Complete shipping quotation form
+                </p>
               </div>
             </div>
           </div>
@@ -317,26 +430,30 @@ const ImportExportQuotationForm = () => {
           {/* Basic Information Section */}
           <section>
             <h2 className="text-base font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-blue-500 flex items-center gap-2">
-              <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+              <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                1
+              </span>
               Scope of Activities
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Shipper Address (Consignor) <span className="text-red-500">*</span>
+                  Customer Address (Consignor){" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  name="shipperAddress"
-                  value={basicInfo.shipperAddress}
+                  name="customerAddress"
+                  value={basicInfo.customerAddress}
                   onChange={handleBasicInfoChange}
-                  placeholder="Enter shipper address"
+                  placeholder="Enter customer address"
                   rows="2"
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Delivery Address (Consignee) <span className="text-red-500">*</span>
+                  Delivery Address (Consignee){" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   name="consigneeAddress"
@@ -353,7 +470,9 @@ const ImportExportQuotationForm = () => {
           {/* Shipment Details */}
           <section>
             <h2 className="text-base font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-blue-500 flex items-center gap-2">
-              <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+              <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                2
+              </span>
               Shipment Details
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -383,19 +502,27 @@ const ImportExportQuotationForm = () => {
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
+
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   Terms
                 </label>
-                <input
-                  type="text"
+                <select
                   name="terms"
                   value={basicInfo.terms}
                   onChange={handleBasicInfoChange}
-                  placeholder="e.g., CIF"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                >
+                  <option value="">Select Terms</option>
+                  <option value="DDP">DDP</option>
+                  <option value="CIF">CIF</option>
+                  <option value="DAP">DAP</option>
+                  <option value="Ex-WORK">Ex-WORK</option>
+                  <option value="FOB">FOB</option>
+                  <option value="FCA">FCA</option>
+                </select>
               </div>
+
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   POL (Port of Loading)
@@ -489,210 +616,518 @@ const ImportExportQuotationForm = () => {
             </div>
           </section>
 
-          {/* Charges Section - Two Column Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Heads Charges */}
-            <section className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-              <h2 className="text-base font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-blue-500 flex items-center gap-2">
-                <Calculator size={18} className="text-blue-600" />
-                Heads
-              </h2>
-              <div className="space-y-2">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    MUC
-                  </label>
-                  <input
-                    type="number"
-                    name="muc"
-                    value={headsCharges.muc}
-                    onChange={handleHeadsChargesChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    MBL Fee
-                  </label>
-                  <input
-                    type="number"
-                    name="mblFee"
-                    value={headsCharges.mblFee}
-                    onChange={handleHeadsChargesChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Out Gauge Charges
-                  </label>
-                  <input
-                    type="number"
-                    name="outGaugeCharges"
-                    value={headsCharges.outGaugeCharges}
-                    onChange={handleHeadsChargesChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Shipping Line THC
-                  </label>
-                  <input
-                    type="number"
-                    name="shippingLineTHC"
-                    value={headsCharges.shippingLineTHC}
-                    onChange={handleHeadsChargesChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div className="pt-2 mt-2 border-t-2 border-blue-400">
-                  <div className="flex justify-between items-center bg-blue-600 text-white px-3 py-2 rounded-md">
-                    <span className="text-sm font-semibold">Total:</span>
-                    <span className="text-lg font-bold">
-                      ₹ {headsTotal.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </section>
+          {/* Section 3: Charges */}
+          <section className="bg-gray-50 p-4 rounded-lg">
+            <h2 className="text-base font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-blue-500 flex items-center gap-2">
+              <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                3
+              </span>
+              Charges
+            </h2>
 
-            {/* International Freight */}
-            <section className="bg-gradient-to-br from-green-50 to-emerald-100 p-4 rounded-lg border border-green-200">
-              <h2 className="text-base font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-green-500 flex items-center gap-2">
-                <Calculator size={18} className="text-green-600" />
-                International Freight
-              </h2>
-              <div className="space-y-2">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Ocean Freight
-                  </label>
-                  <input
-                    type="number"
-                    name="oceanFreight"
-                    value={internationalFreight.oceanFreight}
-                    onChange={handleInternationalFreightChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    D.O Fee
-                  </label>
-                  <input
-                    type="number"
-                    name="doFee"
-                    value={internationalFreight.doFee}
-                    onChange={handleInternationalFreightChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Destination Shipping Line Dues
-                  </label>
-                  <input
-                    type="number"
-                    name="destinationShippingLineDues"
-                    value={internationalFreight.destinationShippingLineDues}
-                    onChange={handleInternationalFreightChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Door Delivery Charges
-                  </label>
-                  <input
-                    type="number"
-                    name="doorDeliveryCharges"
-                    value={internationalFreight.doorDeliveryCharges}
-                    onChange={handleInternationalFreightChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    ACD
-                  </label>
-                  <input
-                    type="number"
-                    name="acd"
-                    value={internationalFreight.acd}
-                    onChange={handleInternationalFreightChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Custom Clearance
-                  </label>
-                  <input
-                    type="number"
-                    name="customClearance"
-                    value={internationalFreight.customClearance}
-                    onChange={handleInternationalFreightChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
-                <div className="pt-2 mt-2 border-t-2 border-green-400">
-                  <div className="flex justify-between items-center bg-green-600 text-white px-3 py-2 rounded-md">
-                    <span className="text-sm font-semibold">Total:</span>
-                    <span className="text-lg font-bold">
-                      ₹ {internationalFreightTotal.toFixed(2)}
+            {/* Origin Charges */}
+            <div className="mb-3">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-500 rounded-lg p-2.5 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-bold text-blue-900 flex items-center gap-1.5">
+                    <span className="bg-blue-500 text-white w-5 h-5 rounded flex items-center justify-center text-xs">
+                      O
                     </span>
-                  </div>
+                    Origin Charges
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={addOriginCharge}
+                    className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition shadow-sm hover:shadow"
+                  >
+                    <Plus size={12} /> Add
+                  </button>
                 </div>
-              </div>
-            </section>
-          </div>
 
-          {/* Grand Total Section */}
-          <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-lg shadow-lg">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-sm font-medium text-indigo-100">Grand Total Amount</h3>
-                <p className="text-xs text-indigo-200 mt-1">
-                  Heads + International Freight
-                </p>
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold">
-                  ₹ {grandTotal.toFixed(2)}
+                {/* Summary Row */}
+                <div className="bg-white rounded-md p-2 mb-2 flex items-center gap-2 text-xs">
+                  <span className="font-medium text-gray-700">
+                    Add Origin Charges:
+                  </span>
+                  <select
+                    value={originSummary.currency}
+                    onChange={(e) =>
+                      handleOriginSummaryChange("currency", e.target.value)
+                    }
+                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 bg-white text-xs"
+                  >
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="INR">INR</option>
+                    <option value="AED">AED</option>
+                  </select>
+                  <input
+                    type="number"
+                    value={originSummary.amount}
+                    onChange={(e) =>
+                      handleOriginSummaryChange("amount", e.target.value)
+                    }
+                    placeholder="0.00"
+                    className="w-20 px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 text-xs"
+                  />
+                  <select
+                    value={originSummary.unit}
+                    onChange={(e) =>
+                      handleOriginSummaryChange("unit", e.target.value)
+                    }
+                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 bg-white text-xs"
+                  >
+                    <option value="/BL">/BL</option>
+                    <option value="/PKG">/PKG</option>
+                    <option value="/HBL">/HBL</option>
+                  </select>
                 </div>
-                <div className="text-xs text-indigo-200 mt-1">
-                  Inclusive of all charges
+
+                {/* Compact Table */}
+                <div className="bg-white rounded-md overflow-hidden border border-gray-200">
+                  <table className="w-full text-xs">
+                    <thead className="bg-blue-100">
+                      <tr>
+                        <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
+                          Charge
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-16">
+                          Curr.
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
+                          Amount
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-14">
+                          Unit
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-8"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {originCharges.map((charge) => (
+                        <tr
+                          key={charge.id}
+                          className="border-t border-gray-100 hover:bg-blue-50"
+                        >
+                          <td className="px-2 py-1.5">
+                            <input
+                              type="text"
+                              value={charge.charges}
+                              onChange={(e) =>
+                                handleOriginChargeChange(
+                                  charge.id,
+                                  "charges",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Charge name"
+                              className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-400"
+                            />
+                          </td>
+                          <td className="px-1 py-1.5">
+                            <select
+                              value={charge.currency}
+                              onChange={(e) =>
+                                handleOriginChargeChange(
+                                  charge.id,
+                                  "currency",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-400 bg-white"
+                            >
+                              <option value="USD">USD</option>
+                              <option value="EUR">EUR</option>
+                              <option value="GBP">GBP</option>
+                              <option value="INR">INR</option>
+                              <option value="AED">AED</option>
+                            </select>
+                          </td>
+                          <td className="px-1 py-1.5">
+                            <input
+                              type="number"
+                              value={charge.amount}
+                              onChange={(e) =>
+                                handleOriginChargeChange(
+                                  charge.id,
+                                  "amount",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="0.00"
+                              className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-blue-400"
+                            />
+                          </td>
+                          <td className="px-1 py-1.5">
+                            <select
+                              value={charge.unit}
+                              onChange={(e) =>
+                                handleOriginChargeChange(
+                                  charge.id,
+                                  "unit",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-400 bg-white"
+                            >
+                              <option value="/BL">/BL</option>
+                              <option value="/PKG">/PKG</option>
+                              <option value="/HBL">/HBL</option>
+                            </select>
+                          </td>
+                          <td className="px-1 py-1.5 text-center">
+                            <button
+                              type="button"
+                              onClick={() => removeOriginCharge(charge.id)}
+                              className="text-red-500 hover:text-red-700 p-0.5 rounded transition"
+                              title="Remove"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Freight Charges */}
+            <div className="mb-3">
+              <div className="bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500 rounded-lg p-2.5 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-bold text-green-900 flex items-center gap-1.5">
+                    <span className="bg-green-500 text-white w-5 h-5 rounded flex items-center justify-center text-xs">
+                      F
+                    </span>
+                    Freight Charges
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={addFreightCharge}
+                    className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-medium transition shadow-sm hover:shadow"
+                  >
+                    <Plus size={12} /> Add
+                  </button>
+                </div>
+
+                {/* Summary Row */}
+                <div className="bg-white rounded-md p-2 mb-2 flex items-center gap-2 text-xs">
+                  <span className="font-medium text-gray-700">
+                    Add Freight Charges:
+                  </span>
+                  <select
+                    value={freightSummary.currency}
+                    onChange={(e) =>
+                      handleFreightSummaryChange("currency", e.target.value)
+                    }
+                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-green-400 bg-white text-xs"
+                  >
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="INR">INR</option>
+                    <option value="AED">AED</option>
+                  </select>
+                  <input
+                    type="number"
+                    value={freightSummary.amount}
+                    onChange={(e) =>
+                      handleFreightSummaryChange("amount", e.target.value)
+                    }
+                    placeholder="0.00"
+                    className="w-20 px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-green-400 text-xs"
+                  />
+                  <select
+                    value={freightSummary.unit}
+                    onChange={(e) =>
+                      handleFreightSummaryChange("unit", e.target.value)
+                    }
+                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-green-400 bg-white text-xs"
+                  >
+                    <option value="/BL">/BL</option>
+                    <option value="/PKG">/PKG</option>
+                    <option value="/HBL">/HBL</option>
+                  </select>
+                </div>
+
+                {/* Compact Table */}
+                <div className="bg-white rounded-md overflow-hidden border border-gray-200">
+                  <table className="w-full text-xs">
+                    <thead className="bg-green-100">
+                      <tr>
+                        <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
+                          Charge
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-16">
+                          Curr.
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
+                          Amount
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-14">
+                          Unit
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-8"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {freightCharges.map((charge) => (
+                        <tr
+                          key={charge.id}
+                          className="border-t border-gray-100 hover:bg-green-50"
+                        >
+                          <td className="px-2 py-1.5">
+                            <input
+                              type="text"
+                              value={charge.charges}
+                              onChange={(e) =>
+                                handleFreightChargeChange(
+                                  charge.id,
+                                  "charges",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Charge name"
+                              className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-green-400"
+                            />
+                          </td>
+                          <td className="px-1 py-1.5">
+                            <select
+                              value={charge.currency}
+                              onChange={(e) =>
+                                handleFreightChargeChange(
+                                  charge.id,
+                                  "currency",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-green-400 bg-white"
+                            >
+                              <option value="USD">USD</option>
+                              <option value="EUR">EUR</option>
+                              <option value="GBP">GBP</option>
+                              <option value="INR">INR</option>
+                              <option value="AED">AED</option>
+                            </select>
+                          </td>
+                          <td className="px-1 py-1.5">
+                            <input
+                              type="number"
+                              value={charge.amount}
+                              onChange={(e) =>
+                                handleFreightChargeChange(
+                                  charge.id,
+                                  "amount",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="0.00"
+                              className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-green-400"
+                            />
+                          </td>
+                          <td className="px-1 py-1.5">
+                            <select
+                              value={charge.unit}
+                              onChange={(e) =>
+                                handleFreightChargeChange(
+                                  charge.id,
+                                  "unit",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-green-400 bg-white"
+                            >
+                              <option value="/BL">/BL</option>
+                              <option value="/PKG">/PKG</option>
+                              <option value="/HBL">/HBL</option>
+                            </select>
+                          </td>
+                          <td className="px-1 py-1.5 text-center">
+                            <button
+                              type="button"
+                              onClick={() => removeFreightCharge(charge.id)}
+                              className="text-red-500 hover:text-red-700 p-0.5 rounded transition"
+                              title="Remove"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Destination Charges */}
+            <div>
+              <div className="bg-gradient-to-r from-purple-50 to-purple-100 border-l-4 border-purple-500 rounded-lg p-2.5 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-bold text-purple-900 flex items-center gap-1.5">
+                    <span className="bg-purple-500 text-white w-5 h-5 rounded flex items-center justify-center text-xs">
+                      D
+                    </span>
+                    Destination Charges
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={addDestinationCharge}
+                    className="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-xs font-medium transition shadow-sm hover:shadow"
+                  >
+                    <Plus size={12} /> Add
+                  </button>
+                </div>
+
+                {/* Summary Row */}
+                <div className="bg-white rounded-md p-2 mb-2 flex items-center gap-2 text-xs">
+                  <span className="font-medium text-gray-700">
+                    Add Destination Charges:
+                  </span>
+                  <select
+                    value={destinationSummary.currency}
+                    onChange={(e) =>
+                      handleDestinationSummaryChange("currency", e.target.value)
+                    }
+                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-400 bg-white text-xs"
+                  >
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="INR">INR</option>
+                    <option value="AED">AED</option>
+                  </select>
+                  <input
+                    type="number"
+                    value={destinationSummary.amount}
+                    onChange={(e) =>
+                      handleDestinationSummaryChange("amount", e.target.value)
+                    }
+                    placeholder="0.00"
+                    className="w-20 px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-400 text-xs"
+                  />
+                  <select
+                    value={destinationSummary.unit}
+                    onChange={(e) =>
+                      handleDestinationSummaryChange("unit", e.target.value)
+                    }
+                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-400 bg-white text-xs"
+                  >
+                    <option value="/BL">/BL</option>
+                    <option value="/PKG">/PKG</option>
+                    <option value="/HBL">/HBL</option>
+                  </select>
+                </div>
+
+                {/* Compact Table */}
+                <div className="bg-white rounded-md overflow-hidden border border-gray-200">
+                  <table className="w-full text-xs">
+                    <thead className="bg-purple-100">
+                      <tr>
+                        <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
+                          Charge
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-16">
+                          Curr.
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
+                          Amount
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-14">
+                          Unit
+                        </th>
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-8"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {destinationCharges.map((charge) => (
+                        <tr
+                          key={charge.id}
+                          className="border-t border-gray-100 hover:bg-purple-50"
+                        >
+                          <td className="px-2 py-1.5">
+                            <input
+                              type="text"
+                              value={charge.charges}
+                              onChange={(e) =>
+                                handleDestinationChargeChange(
+                                  charge.id,
+                                  "charges",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Charge name"
+                              className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-purple-400"
+                            />
+                          </td>
+                          <td className="px-1 py-1.5">
+                            <select
+                              value={charge.currency}
+                              onChange={(e) =>
+                                handleDestinationChargeChange(
+                                  charge.id,
+                                  "currency",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-purple-400 bg-white"
+                            >
+                              <option value="USD">USD</option>
+                              <option value="EUR">EUR</option>
+                              <option value="GBP">GBP</option>
+                              <option value="INR">INR</option>
+                              <option value="AED">AED</option>
+                            </select>
+                          </td>
+                          <td className="px-1 py-1.5">
+                            <input
+                              type="number"
+                              value={charge.amount}
+                              onChange={(e) =>
+                                handleDestinationChargeChange(
+                                  charge.id,
+                                  "amount",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="0.00"
+                              className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-purple-400"
+                            />
+                          </td>
+                          <td className="px-1 py-1.5">
+                            <select
+                              value={charge.unit}
+                              onChange={(e) =>
+                                handleDestinationChargeChange(
+                                  charge.id,
+                                  "unit",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-purple-400 bg-white"
+                            >
+                              <option value="/BL">/BL</option>
+                              <option value="/PKG">/PKG</option>
+                              <option value="/HBL">/HBL</option>
+                            </select>
+                          </td>
+                          <td className="px-1 py-1.5 text-center">
+                            <button
+                              type="button"
+                              onClick={() => removeDestinationCharge(charge.id)}
+                              className="text-red-500 hover:text-red-700 p-0.5 rounded transition"
+                              title="Remove"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -707,15 +1142,23 @@ const ImportExportQuotationForm = () => {
             <ul className="space-y-2 text-xs text-gray-700">
               <li className="flex items-start gap-2">
                 <span className="text-yellow-600 font-bold mt-0.5">•</span>
-                <span>Freight rates are subject to equipment and space availability.</span>
+                <span>
+                  Freight rates are subject to equipment and space availability.
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-yellow-600 font-bold mt-0.5">•</span>
-                <span>Transit insurance will be at the customer's cost. OmTrans will not be responsible for any claims.</span>
+                <span>
+                  Transit insurance will be at the customer's cost. OmTrans will
+                  not be responsible for any claims.
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-yellow-600 font-bold mt-0.5">•</span>
-                <span>*2hrs free for offloading after this 75euro/half hour detention will be applied. </span>
+                <span>
+                  *2hrs free for offloading after this 75euro/half hour
+                  detention will be applied.{" "}
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-yellow-600 font-bold mt-0.5">•</span>
