@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calculator, Download, FileText, Send, CheckCircle, X } from 'lucide-react';
+import { Calculator, FileText, Send, CheckCircle, X } from 'lucide-react';
 import jsPDF from 'jspdf';
 
 const ImportExportQuotationForm = () => {
@@ -294,42 +294,14 @@ const ImportExportQuotationForm = () => {
     }, 3000);
   };
 
-  // Export JSON (keep for backup)
-  const handleExport = () => {
-    const quotationData = {
-      basicInfo,
-      headsCharges: {
-        ...headsCharges,
-        total: headsTotal,
-      },
-      internationalFreight: {
-        ...internationalFreight,
-        total: internationalFreightTotal,
-      },
-      grandTotal,
-      exportDate: new Date().toISOString(),
-    };
 
-    console.log('Quotation Data:', quotationData);
-
-    const jsonString = JSON.stringify(quotationData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `quotation_door_to_door_${Date.now()}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-3 md:p-6">
       <div className="max-w-5xl mx-auto">
         {/* Header Card */}
         <div className="bg-white rounded-lg shadow-md mb-4 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3">
             <div className="flex items-center gap-2">
               <FileText size={24} />
               <div>
@@ -337,13 +309,6 @@ const ImportExportQuotationForm = () => {
                 <p className="text-xs text-blue-100">Complete shipping quotation form</p>
               </div>
             </div>
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-1 bg-white text-blue-600 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-blue-50 transition"
-            >
-              <Download size={16} />
-              Export
-            </button>
           </div>
         </div>
 
@@ -759,20 +724,12 @@ const ImportExportQuotationForm = () => {
             </ul>
           </section>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            <button
-              type="button"
-              onClick={handleExport}
-              className="flex-1 flex items-center justify-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2.5 rounded-md text-sm font-medium transition shadow-md hover:shadow-lg"
-            >
-              <Download size={18} />
-              Export JSON
-            </button>
+          {/* Action Button */}
+          <div className="pt-2">
             <button
               type="button"
               onClick={handleSubmit}
-              className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2.5 rounded-md text-sm font-medium transition shadow-md hover:shadow-lg"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-3 rounded-md text-sm font-medium transition shadow-md hover:shadow-lg"
             >
               <Send size={18} />
               Submit & Download PDF
