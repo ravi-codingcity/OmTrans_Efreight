@@ -30,6 +30,12 @@ const ImportExportQuotationForm = () => {
   const [showPolDropdown, setShowPolDropdown] = useState(false);
   const [showPodDropdown, setShowPodDropdown] = useState(false);
   const [showFinalDestDropdown, setShowFinalDestDropdown] = useState(false);
+  const [showOriginChargeSuggestions, setShowOriginChargeSuggestions] = useState({});
+  const [filteredOriginChargeSuggestions, setFilteredOriginChargeSuggestions] = useState({});
+  const [showFreightChargeSuggestions, setShowFreightChargeSuggestions] = useState({});
+  const [filteredFreightChargeSuggestions, setFilteredFreightChargeSuggestions] = useState({});
+  const [showDestinationChargeSuggestions, setShowDestinationChargeSuggestions] = useState({});
+  const [filteredDestinationChargeSuggestions, setFilteredDestinationChargeSuggestions] = useState({});
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [filteredConsignees, setFilteredConsignees] = useState([]);
   const [filteredShippingLines, setFilteredShippingLines] = useState([]);
@@ -37,6 +43,45 @@ const ImportExportQuotationForm = () => {
   const [filteredPolPorts, setFilteredPolPorts] = useState([]);
   const [filteredPodPorts, setFilteredPodPorts] = useState([]);
   const [filteredFinalDestinations, setFilteredFinalDestinations] = useState([]);
+
+  // Origin Charge Suggestions
+  const originChargeSuggestions = [
+    "Transport",
+    "BL Fee",
+    "Customs Clearance",
+    "Loading Charges",
+    "Unloading Charges",
+    "Documentation Charges",
+    "Port Handling Charges",
+    "THC",
+    "CFS ",
+    "Seal Charges",
+    "VGM Charges",
+    "DGFT Charges",
+  
+  ].sort();
+
+  // Freight Charge Suggestions
+  const freightChargeSuggestions = [
+    "Ocean Charges",
+    "ISPS",
+    "Seal",
+    "ACD",
+    "ENS",
+    "BL Charges",
+    "THC",
+    "Lift On/Lift Off",
+  ].sort();
+
+  // Destination Charge Suggestions
+  const destinationChargeSuggestions = [
+    "Shipping Line",
+    "Documentation",
+    "EDI Fees",
+    "Certification",
+     "BL Fee",
+    "Customs Clearance",
+  ].sort();
 
   // Dummy customer data
   const customerData = [
@@ -505,6 +550,34 @@ const ImportExportQuotationForm = () => {
         charge.id === id ? { ...charge, [field]: value } : charge
       )
     );
+
+    // Handle autocomplete for charges field
+    if (field === "charges") {
+      const filtered = originChargeSuggestions.filter((suggestion) =>
+        suggestion.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredOriginChargeSuggestions((prev) => ({
+        ...prev,
+        [id]: filtered,
+      }));
+      setShowOriginChargeSuggestions((prev) => ({
+        ...prev,
+        [id]: filtered.length > 0,
+      }));
+    }
+  };
+
+  // Handle Origin Charge suggestion selection
+  const handleOriginChargeSuggestionSelect = (id, suggestion) => {
+    setOriginCharges(
+      originCharges.map((charge) =>
+        charge.id === id ? { ...charge, charges: suggestion } : charge
+      )
+    );
+    setShowOriginChargeSuggestions((prev) => ({
+      ...prev,
+      [id]: false,
+    }));
   };
 
   // Freight Charges Handlers
@@ -531,6 +604,34 @@ const ImportExportQuotationForm = () => {
         charge.id === id ? { ...charge, [field]: value } : charge
       )
     );
+
+    // Handle autocomplete for charges field
+    if (field === "charges") {
+      const filtered = freightChargeSuggestions.filter((suggestion) =>
+        suggestion.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredFreightChargeSuggestions((prev) => ({
+        ...prev,
+        [id]: filtered,
+      }));
+      setShowFreightChargeSuggestions((prev) => ({
+        ...prev,
+        [id]: filtered.length > 0,
+      }));
+    }
+  };
+
+  // Handle Freight Charge suggestion selection
+  const handleFreightChargeSuggestionSelect = (id, suggestion) => {
+    setFreightCharges(
+      freightCharges.map((charge) =>
+        charge.id === id ? { ...charge, charges: suggestion } : charge
+      )
+    );
+    setShowFreightChargeSuggestions((prev) => ({
+      ...prev,
+      [id]: false,
+    }));
   };
 
   // Destination Charges Handlers
@@ -559,6 +660,34 @@ const ImportExportQuotationForm = () => {
         charge.id === id ? { ...charge, [field]: value } : charge
       )
     );
+
+    // Handle autocomplete for charges field
+    if (field === "charges") {
+      const filtered = destinationChargeSuggestions.filter((suggestion) =>
+        suggestion.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredDestinationChargeSuggestions((prev) => ({
+        ...prev,
+        [id]: filtered,
+      }));
+      setShowDestinationChargeSuggestions((prev) => ({
+        ...prev,
+        [id]: filtered.length > 0,
+      }));
+    }
+  };
+
+  // Handle Destination Charge suggestion selection
+  const handleDestinationChargeSuggestionSelect = (id, suggestion) => {
+    setDestinationCharges(
+      destinationCharges.map((charge) =>
+        charge.id === id ? { ...charge, charges: suggestion } : charge
+      )
+    );
+    setShowDestinationChargeSuggestions((prev) => ({
+      ...prev,
+      [id]: false,
+    }));
   };
 
   // Generate PDF and Submit
@@ -1250,20 +1379,20 @@ const ImportExportQuotationForm = () => {
                 </div>
 
                 {/* Compact Table */}
-                <div className="bg-white rounded-md overflow-hidden border border-gray-200">
+                <div className="bg-white rounded-md border border-gray-200">
                   <table className="w-full text-xs">
                     <thead className="bg-blue-100">
                       <tr>
                         <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
                           Charge
                         </th>
-                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-16">
-                          Curr.
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
+                          Currency
                         </th>
                         <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
                           Amount
                         </th>
-                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-14">
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-24">
                           Unit
                         </th>
                         <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-8"></th>
@@ -1275,7 +1404,7 @@ const ImportExportQuotationForm = () => {
                           key={charge.id}
                           className="border-t border-gray-100 hover:bg-blue-50"
                         >
-                          <td className="px-2 py-1.5">
+                          <td className="px-2 py-1.5 relative">
                             <input
                               type="text"
                               value={charge.charges}
@@ -1286,9 +1415,54 @@ const ImportExportQuotationForm = () => {
                                   e.target.value
                                 )
                               }
-                              placeholder="Charge name"
+                              onFocus={() => {
+                                // Show all suggestions on focus
+                                const filtered = originChargeSuggestions.filter((suggestion) =>
+                                  suggestion.toLowerCase().includes(charge.charges.toLowerCase())
+                                );
+                                setFilteredOriginChargeSuggestions((prev) => ({
+                                  ...prev,
+                                  [charge.id]: filtered,
+                                }));
+                                if (filtered.length > 0) {
+                                  setShowOriginChargeSuggestions((prev) => ({
+                                    ...prev,
+                                    [charge.id]: true,
+                                  }));
+                                }
+                              }}
+                              onBlur={() => {
+                                setTimeout(() => {
+                                  setShowOriginChargeSuggestions((prev) => ({
+                                    ...prev,
+                                    [charge.id]: false,
+                                  }));
+                                }, 200);
+                              }}
+                              placeholder="Type charge name..."
                               className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-400"
                             />
+                            {showOriginChargeSuggestions[charge.id] &&
+                              filteredOriginChargeSuggestions[charge.id]?.length > 0 && (
+                                <div className="absolute z-[100] w-full mt-1 bg-white border-2 border-blue-400 rounded-lg shadow-2xl max-h-60 overflow-y-auto left-0 top-full">
+                                  {filteredOriginChargeSuggestions[charge.id].map(
+                                    (suggestion, index) => (
+                                      <div
+                                        key={index}
+                                        onClick={() =>
+                                          handleOriginChargeSuggestionSelect(
+                                            charge.id,
+                                            suggestion
+                                          )
+                                        }
+                                        className="px-3 py-2.5 hover:bg-blue-100 active:bg-blue-200 cursor-pointer border-b border-gray-200 last:border-b-0 text-xs transition-all"
+                                      >
+                                        <div className="text-gray-900 font-medium">{suggestion}</div>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              )}
                           </td>
                           <td className="px-1 py-1.5">
                             <select
@@ -1339,6 +1513,8 @@ const ImportExportQuotationForm = () => {
                               <option value="/BL">/BL</option>
                               <option value="/PKG">/PKG</option>
                               <option value="/HBL">/HBL</option>
+                              <option value="/Shipment">/Shipment</option>
+                              <option value="/Container">/Container</option>
                             </select>
                           </td>
                           <td className="px-1 py-1.5 text-center">
@@ -1379,20 +1555,20 @@ const ImportExportQuotationForm = () => {
                 </div>
 
                 {/* Compact Table */}
-                <div className="bg-white rounded-md overflow-hidden border border-gray-200">
+                <div className="bg-white rounded-md border border-gray-200">
                   <table className="w-full text-xs">
                     <thead className="bg-green-100">
                       <tr>
                         <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
                           Charge
                         </th>
-                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-16">
-                          Curr.
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
+                          Currency
                         </th>
                         <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
                           Amount
                         </th>
-                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-14">
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-24">
                           Unit
                         </th>
                         <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-8"></th>
@@ -1404,7 +1580,7 @@ const ImportExportQuotationForm = () => {
                           key={charge.id}
                           className="border-t border-gray-100 hover:bg-green-50"
                         >
-                          <td className="px-2 py-1.5">
+                          <td className="px-2 py-1.5 relative">
                             <input
                               type="text"
                               value={charge.charges}
@@ -1415,9 +1591,54 @@ const ImportExportQuotationForm = () => {
                                   e.target.value
                                 )
                               }
-                              placeholder="Charge name"
+                              onFocus={() => {
+                                // Show all suggestions on focus
+                                const filtered = freightChargeSuggestions.filter((suggestion) =>
+                                  suggestion.toLowerCase().includes(charge.charges.toLowerCase())
+                                );
+                                setFilteredFreightChargeSuggestions((prev) => ({
+                                  ...prev,
+                                  [charge.id]: filtered,
+                                }));
+                                if (filtered.length > 0) {
+                                  setShowFreightChargeSuggestions((prev) => ({
+                                    ...prev,
+                                    [charge.id]: true,
+                                  }));
+                                }
+                              }}
+                              onBlur={() => {
+                                setTimeout(() => {
+                                  setShowFreightChargeSuggestions((prev) => ({
+                                    ...prev,
+                                    [charge.id]: false,
+                                  }));
+                                }, 200);
+                              }}
+                              placeholder="Type charge name..."
                               className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-green-400"
                             />
+                            {showFreightChargeSuggestions[charge.id] &&
+                              filteredFreightChargeSuggestions[charge.id]?.length > 0 && (
+                                <div className="absolute z-[100] w-full mt-1 bg-white border-2 border-green-400 rounded-lg shadow-2xl max-h-60 overflow-y-auto left-0 top-full">
+                                  {filteredFreightChargeSuggestions[charge.id].map(
+                                    (suggestion, index) => (
+                                      <div
+                                        key={index}
+                                        onClick={() =>
+                                          handleFreightChargeSuggestionSelect(
+                                            charge.id,
+                                            suggestion
+                                          )
+                                        }
+                                        className="px-3 py-2.5 hover:bg-green-100 active:bg-green-200 cursor-pointer border-b border-gray-200 last:border-b-0 text-xs transition-all"
+                                      >
+                                        <div className="text-gray-900 font-medium">{suggestion}</div>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              )}
                           </td>
                           <td className="px-1 py-1.5">
                             <select
@@ -1468,6 +1689,8 @@ const ImportExportQuotationForm = () => {
                               <option value="/BL">/BL</option>
                               <option value="/PKG">/PKG</option>
                               <option value="/HBL">/HBL</option>
+                                   <option value="/Shipment">/Shipment</option>
+                              <option value="/Container">/Container</option>
                             </select>
                           </td>
                           <td className="px-1 py-1.5 text-center">
@@ -1508,20 +1731,20 @@ const ImportExportQuotationForm = () => {
                 </div>
 
                 {/* Compact Table */}
-                <div className="bg-white rounded-md overflow-hidden border border-gray-200">
+                <div className="bg-white rounded-md border border-gray-200">
                   <table className="w-full text-xs">
                     <thead className="bg-purple-100">
                       <tr>
                         <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
                           Charge
                         </th>
-                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-16">
-                          Curr.
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
+                          Currency
                         </th>
                         <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
                           Amount
                         </th>
-                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-14">
+                        <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-24">
                           Unit
                         </th>
                         <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-8"></th>
@@ -1533,7 +1756,7 @@ const ImportExportQuotationForm = () => {
                           key={charge.id}
                           className="border-t border-gray-100 hover:bg-purple-50"
                         >
-                          <td className="px-2 py-1.5">
+                          <td className="px-2 py-1.5 relative">
                             <input
                               type="text"
                               value={charge.charges}
@@ -1544,9 +1767,54 @@ const ImportExportQuotationForm = () => {
                                   e.target.value
                                 )
                               }
-                              placeholder="Charge name"
+                              onFocus={() => {
+                                // Show all suggestions on focus
+                                const filtered = destinationChargeSuggestions.filter((suggestion) =>
+                                  suggestion.toLowerCase().includes(charge.charges.toLowerCase())
+                                );
+                                setFilteredDestinationChargeSuggestions((prev) => ({
+                                  ...prev,
+                                  [charge.id]: filtered,
+                                }));
+                                if (filtered.length > 0) {
+                                  setShowDestinationChargeSuggestions((prev) => ({
+                                    ...prev,
+                                    [charge.id]: true,
+                                  }));
+                                }
+                              }}
+                              onBlur={() => {
+                                setTimeout(() => {
+                                  setShowDestinationChargeSuggestions((prev) => ({
+                                    ...prev,
+                                    [charge.id]: false,
+                                  }));
+                                }, 200);
+                              }}
+                              placeholder="Type charge name..."
                               className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-purple-400"
                             />
+                            {showDestinationChargeSuggestions[charge.id] &&
+                              filteredDestinationChargeSuggestions[charge.id]?.length > 0 && (
+                                <div className="absolute z-[100] w-full mt-1 bg-white border-2 border-purple-400 rounded-lg shadow-2xl max-h-60 overflow-y-auto left-0 top-full">
+                                  {filteredDestinationChargeSuggestions[charge.id].map(
+                                    (suggestion, index) => (
+                                      <div
+                                        key={index}
+                                        onClick={() =>
+                                          handleDestinationChargeSuggestionSelect(
+                                            charge.id,
+                                            suggestion
+                                          )
+                                        }
+                                        className="px-3 py-2.5 hover:bg-purple-100 active:bg-purple-200 cursor-pointer border-b border-gray-200 last:border-b-0 text-xs transition-all"
+                                      >
+                                        <div className="text-gray-900 font-medium">{suggestion}</div>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              )}
                           </td>
                           <td className="px-1 py-1.5">
                             <select
@@ -1597,6 +1865,8 @@ const ImportExportQuotationForm = () => {
                               <option value="/BL">/BL</option>
                               <option value="/PKG">/PKG</option>
                               <option value="/HBL">/HBL</option>
+                                   <option value="/Shipment">/Shipment</option>
+                              <option value="/Container">/Container</option>
                             </select>
                           </td>
                           <td className="px-1 py-1.5 text-center">
