@@ -22,24 +22,254 @@ const ImportExportQuotationForm = () => {
   // Popup state
   const [showPopup, setShowPopup] = useState(false);
 
-  // Summary Sections State
-  const [originSummary, setOriginSummary] = useState({
-    currency: "USD",
-    amount: "",
-    unit: "/BL",
-  });
+  // Autocomplete state
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [showConsigneeDropdown, setShowConsigneeDropdown] = useState(false);
+  const [showShippingLineDropdown, setShowShippingLineDropdown] = useState(false);
+  const [showPorDropdown, setShowPorDropdown] = useState(false);
+  const [showPolDropdown, setShowPolDropdown] = useState(false);
+  const [showPodDropdown, setShowPodDropdown] = useState(false);
+  const [showFinalDestDropdown, setShowFinalDestDropdown] = useState(false);
+  const [filteredCustomers, setFilteredCustomers] = useState([]);
+  const [filteredConsignees, setFilteredConsignees] = useState([]);
+  const [filteredShippingLines, setFilteredShippingLines] = useState([]);
+  const [filteredPorLocations, setFilteredPorLocations] = useState([]);
+  const [filteredPolPorts, setFilteredPolPorts] = useState([]);
+  const [filteredPodPorts, setFilteredPodPorts] = useState([]);
+  const [filteredFinalDestinations, setFilteredFinalDestinations] = useState([]);
 
-  const [freightSummary, setFreightSummary] = useState({
-    currency: "USD",
-    amount: "",
-    unit: "/BL",
-  });
+  // Dummy customer data
+  const customerData = [
+    {
+      name: "Adani Electronics Ltd",
+      address: "123 Tech Park, Silicon Valley San Francisco, CA 94016, USA",
+    },
+    {
+      name: "Reliance Manufacturing",
+      address: "789 Industrial Area Detroit, MI 48201, USA",
+    },
+    {
+      name: "Tech Solutions Inc",
+      address: "321 Innovation Drive Austin, TX 78701, USA",
+    },
+    {
+      name: "Ocean Logistics Pvt Ltd",
+      address: "Plot 45, MIDC Area Mumbai, Maharashtra 400001, India",
+    },
+  ];
 
-  const [destinationSummary, setDestinationSummary] = useState({
-    currency: "USD",
-    amount: "",
-    unit: "/BL",
-  });
+  // Dummy consignee data
+  const consigneeData = [
+    {
+      name: "Asia Warehouse Solutions",
+      address: "99 Cargo Terminal Road Hong Kong",
+    },
+    {
+      name: "UK Import Services",
+      address: "45 Dover Port London, SE1 9SG, UK",
+    },
+    {
+      name: "Australian Freight Co",
+      address: "78 Port Road Sydney, NSW 2000, Australia",
+    },
+    {
+      name: "Canadian Storage Inc",
+      address: "321 Maple Avenue Toronto, ON M5H 2N2, Canada",
+    },
+    {
+      name: "Japan Trading House",
+      address: "5-10 Minato-ku Tokyo 105-0013, Japan",
+    },
+  ];
+
+  // Shipping lines data (alphabetically sorted)
+  const shippingLines = [
+    "Maersk Line",
+    "CMA CGM",
+    "COSCO Shipping",
+    "Evergreen Marine",
+    "Hapag-Lloyd",
+    "HMM",
+    "MSC",
+    "ONE",
+    "Orient Overseas Container Line (OOCL)",
+    "PIL",
+    "Yang Ming Marine Transport",
+    "Zim",
+    "Wan Hai Lines",
+    "Matson Navigation",
+    "KMTC",
+    "Arkas Line",
+    "TS Lines",
+    "IRISL",
+    "X-Press Feeders",
+  ].sort();
+
+  // ICD locations in India (alphabetically sorted)
+  const icdLocations = [
+    "ICD Agra, Uttar Pradesh",
+    "ICD Ahmedabad, Gujarat",
+    "ICD Ajmer, Rajasthan",
+    "ICD Amingaon, Assam",
+    "ICD Anaparthy, Andhra Pradesh",
+    "ICD Bangalore, Karnataka",
+    "ICD Bhadohi, Uttar Pradesh",
+    "ICD Bhilwara, Rajasthan",
+    "ICD Bhiwadi, Rajasthan",
+    "ICD Coimbatore, Tamil Nadu",
+    "ICD Dadri, Uttar Pradesh",
+    "ICD Durgapur, West Bengal",
+    "ICD Faridabad (Ballabhgarh), Haryana",
+    "ICD Garhi Harsaru, Haryana",
+    "ICD Guntur, Andhra Pradesh",
+    "ICD Hyderabad, Telangana",
+    "ICD Jaipur, Rajasthan",
+    "ICD Jallandhar, Punjab",
+    "ICD Jodhpur, Rajasthan",
+    "ICD Kanpur, Uttar Pradesh",
+    "ICD Kota, Rajasthan",
+    "ICD Loni, Uttar Pradesh",
+    "ICD Ludhiana, Punjab",
+    "ICD Moradabad, Uttar Pradesh",
+    "ICD Nagpur, Maharashtra",
+    "ICD Nasik, Maharashtra",
+    "ICD Patli Gurgaon, Haryana",
+    "ICD Pithampur, Madhya Pradesh",
+    "ICD Piyala Rewari, Haryana",
+    "ICD Pune, Maharashtra",
+    "ICD Raipur, Chhattisgarh",
+    "ICD Rewari, Haryana",
+    "ICD Sachhin, Gujarat",
+    "ICD Singanalur, Tamil Nadu",
+    "ICD Talegaon, Maharashtra",
+    "ICD TKD, Delhi",
+    "ICD Vadodara, Gujarat",
+    "ICD Varanasi, Uttar Pradesh",
+    "ICD Whitefield Bangalore, Karnataka",
+  ].sort();
+
+  // Indian Ports (alphabetically sorted)
+  const indianPorts = [
+    "Chennai Port, Tamil Nadu",
+    "Cochin Port, Kerala",
+    "Ennore Port, Tamil Nadu",
+    "Hazira Port, Gujarat",
+    "JNPT (Jawaharlal Nehru Port), Maharashtra",
+    "Kamarajar Port, Tamil Nadu",
+    "Kandla Port, Gujarat",
+    "Kolkata Port, West Bengal",
+    "Mangalore Port, Karnataka",
+    "Mormugao Port, Goa",
+    "Mumbai Port, Maharashtra",
+    "Mundra Port, Gujarat",
+    "Paradip Port, Odisha",
+    "Pipavav Port, Gujarat",
+    "Sikka Port, Gujarat",
+    "Tuticorin Port, Tamil Nadu",
+    "Visakhapatnam Port, Andhra Pradesh",
+    "Dahej Port, Gujarat",
+    "Haldia Port, West Bengal",
+    "Krishnapatnam Port, Andhra Pradesh",
+    "Dhamra Port, Odisha",
+    "Kakinada Port, Andhra Pradesh",
+    "Magdalla Port, Gujarat",
+    "Porbandar Port, Gujarat",
+    "Okha Port, Gujarat",
+    "Bhavnagar Port, Gujarat",
+    "Veraval Port, Gujarat",
+    "Nagapattinam Port, Tamil Nadu",
+    "Karaikal Port, Puducherry",
+    "Cuddalore Port, Tamil Nadu",
+    "Port Blair, Andaman and Nicobar",
+  ].sort();
+
+  // Foreign Destinations - Major Ports and Cities (alphabetically sorted)
+  const foreignDestinations = [
+    // Middle East
+    "Dubai, UAE",
+    "Jebel Ali, UAE",
+    "Abu Dhabi, UAE",
+    "Sharjah, UAE",
+    "Doha, Qatar",
+    "Muscat, Oman",
+    "Sohar, Oman",
+    "Salalah, Oman",
+    "Kuwait City, Kuwait",
+    "Dammam, Saudi Arabia",
+    "Jeddah, Saudi Arabia",
+    "Riyadh, Saudi Arabia",
+    "Bahrain",
+    // Southeast Asia
+    "Singapore",
+    "Port Klang, Malaysia",
+    "Penang, Malaysia",
+    "Kuala Lumpur, Malaysia",
+    "Bangkok, Thailand",
+    "Laem Chabang, Thailand",
+    "Ho Chi Minh City, Vietnam",
+    "Haiphong, Vietnam",
+    "Manila, Philippines",
+    "Jakarta, Indonesia",
+    "Surabaya, Indonesia",
+    "Yangon, Myanmar",
+    // East Asia
+    "Shanghai, China",
+    "Ningbo, China",
+    "Shenzhen, China",
+    "Guangzhou, China",
+    "Qingdao, China",
+    "Tianjin, China",
+    "Hong Kong",
+    "Tokyo, Japan",
+    "Yokohama, Japan",
+    "Osaka, Japan",
+    "Kobe, Japan",
+    "Busan, South Korea",
+    "Incheon, South Korea",
+    "Seoul, South Korea",
+    // Europe
+    "Rotterdam, Netherlands",
+    "Hamburg, Germany",
+    "Antwerp, Belgium",
+    "Felixstowe, UK",
+    "London, UK",
+    "Southampton, UK",
+    "Le Havre, France",
+    "Barcelona, Spain",
+   
+    "Genoa, Italy",
+   
+    "Istanbul, Turkey",
+    // North America
+    "Los Angeles, USA",
+    "Long Beach, USA",
+    "New York, USA",
+    "Newark, USA",
+    "Savannah, USA",
+    "Houston, USA",
+    "Miami, USA",
+    "Seattle, USA",
+    "Vancouver, Canada",
+    "Montreal, Canada",
+    "Toronto, Canada",
+    // Australia & New Zealand
+    "Sydney, Australia",
+    "Melbourne, Australia",
+    "Brisbane, Australia",
+    "Perth, Australia",
+    "Adelaide, Australia",
+    "Auckland, New Zealand",
+    // Africa
+    "Durban, South Africa",
+    "Cape Town, South Africa",
+    "Lagos, Nigeria",
+    "Mombasa, Kenya",
+    "Dar es Salaam, Tanzania",
+    // South America
+    "Santos, Brazil",
+    "Buenos Aires, Argentina",
+    "Valparaiso, Chile",
+  ].sort();
 
   // Origin Charges State
   const [originCharges, setOriginCharges] = useState([
@@ -81,28 +311,174 @@ const ImportExportQuotationForm = () => {
       ...prev,
       [name]: value,
     }));
+
+    // Handle autocomplete for customer address
+    if (name === "customerNameAndAddress") {
+      if (value.trim().length > 0) {
+        const filtered = customerData.filter(
+          (customer) =>
+            customer.name.toLowerCase().includes(value.toLowerCase()) ||
+            customer.address.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredCustomers(filtered);
+        setShowCustomerDropdown(filtered.length > 0);
+      } else {
+        setShowCustomerDropdown(false);
+      }
+    }
+
+    // Handle autocomplete for consignee address
+    if (name === "consigneeAddress") {
+      if (value.trim().length > 0) {
+        const filtered = consigneeData.filter(
+          (consignee) =>
+            consignee.name.toLowerCase().includes(value.toLowerCase()) ||
+            consignee.address.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredConsignees(filtered);
+        setShowConsigneeDropdown(filtered.length > 0);
+      } else {
+        setShowConsigneeDropdown(false);
+      }
+    }
+
+    // Handle autocomplete for shipping line
+    if (name === "shippingLine") {
+      if (value.trim().length > 0) {
+        const filtered = shippingLines
+          .filter((line) =>
+            line.toLowerCase().includes(value.toLowerCase())
+          )
+          .sort();
+        setFilteredShippingLines(filtered);
+        setShowShippingLineDropdown(filtered.length > 0);
+      } else {
+        setShowShippingLineDropdown(false);
+      }
+    }
+
+    // Handle autocomplete for POR
+    if (name === "por") {
+      if (value.trim().length > 0) {
+        const filtered = icdLocations
+          .filter((location) =>
+            location.toLowerCase().includes(value.toLowerCase())
+          )
+          .sort();
+        setFilteredPorLocations(filtered);
+        setShowPorDropdown(filtered.length > 0);
+      } else {
+        setShowPorDropdown(false);
+      }
+    }
+
+    // Handle autocomplete for POL
+    if (name === "pol") {
+      if (value.trim().length > 0) {
+        const filtered = indianPorts
+          .filter((port) =>
+            port.toLowerCase().includes(value.toLowerCase())
+          )
+          .sort();
+        setFilteredPolPorts(filtered);
+        setShowPolDropdown(filtered.length > 0);
+      } else {
+        setShowPolDropdown(false);
+      }
+    }
+
+    // Handle autocomplete for POD
+    if (name === "pod") {
+      if (value.trim().length > 0) {
+        const filtered = foreignDestinations
+          .filter((dest) =>
+            dest.toLowerCase().includes(value.toLowerCase())
+          )
+          .sort();
+        setFilteredPodPorts(filtered);
+        setShowPodDropdown(filtered.length > 0);
+      } else {
+        setShowPodDropdown(false);
+      }
+    }
+
+    // Handle autocomplete for Final Destination
+    if (name === "finalDestination") {
+      if (value.trim().length > 0) {
+        const filtered = foreignDestinations
+          .filter((dest) =>
+            dest.toLowerCase().includes(value.toLowerCase())
+          )
+          .sort();
+        setFilteredFinalDestinations(filtered);
+        setShowFinalDestDropdown(filtered.length > 0);
+      } else {
+        setShowFinalDestDropdown(false);
+      }
+    }
   };
 
-  // Handle Summary Changes
-  const handleOriginSummaryChange = (field, value) => {
-    setOriginSummary((prev) => ({
+  // Handle customer selection from dropdown
+  const handleCustomerSelect = (customer) => {
+    setBasicInfo((prev) => ({
       ...prev,
-      [field]: value,
+      customerNameAndAddress: `${customer.name}\n${customer.address}`,
     }));
+    setShowCustomerDropdown(false);
   };
 
-  const handleFreightSummaryChange = (field, value) => {
-    setFreightSummary((prev) => ({
+  // Handle consignee selection from dropdown
+  const handleConsigneeSelect = (consignee) => {
+    setBasicInfo((prev) => ({
       ...prev,
-      [field]: value,
+      consigneeAddress: `${consignee.name}\n${consignee.address}`,
     }));
+    setShowConsigneeDropdown(false);
   };
 
-  const handleDestinationSummaryChange = (field, value) => {
-    setDestinationSummary((prev) => ({
+  // Handle shipping line selection from dropdown
+  const handleShippingLineSelect = (line) => {
+    setBasicInfo((prev) => ({
       ...prev,
-      [field]: value,
+      shippingLine: line,
     }));
+    setShowShippingLineDropdown(false);
+  };
+
+  // Handle POR selection from dropdown
+  const handlePorSelect = (location) => {
+    setBasicInfo((prev) => ({
+      ...prev,
+      por: location,
+    }));
+    setShowPorDropdown(false);
+  };
+
+  // Handle POL selection from dropdown
+  const handlePolSelect = (port) => {
+    setBasicInfo((prev) => ({
+      ...prev,
+      pol: port,
+    }));
+    setShowPolDropdown(false);
+  };
+
+  // Handle POD selection from dropdown
+  const handlePodSelect = (destination) => {
+    setBasicInfo((prev) => ({
+      ...prev,
+      pod: destination,
+    }));
+    setShowPodDropdown(false);
+  };
+
+  // Handle Final Destination selection from dropdown
+  const handleFinalDestSelect = (destination) => {
+    setBasicInfo((prev) => ({
+      ...prev,
+      finalDestination: destination,
+    }));
+    setShowFinalDestDropdown(false);
   };
 
   // Origin Charges Handlers
@@ -212,7 +588,7 @@ const ImportExportQuotationForm = () => {
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("Customer Address (Consignor):", 15, yPos);
+    doc.text("Customer Name Address:", 15, yPos);
     doc.setFont("helvetica", "normal");
     const customerLines = doc.splitTextToSize(
       basicInfo.customerAddress || "N/A",
@@ -436,21 +812,51 @@ const ImportExportQuotationForm = () => {
               Scope of Activities
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
+              <div className="relative">
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Customer Address (Consignor){" "}
+                  Customer Name and Address{" "}
                   <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  name="customerAddress"
-                  value={basicInfo.customerAddress}
+                  name="customerNameAndAddress"
+                  value={basicInfo.customerNameAndAddress}
                   onChange={handleBasicInfoChange}
-                  placeholder="Enter customer address"
+                  onFocus={() => {
+                    if (
+                      basicInfo.customerNameAndAddress &&
+                      filteredCustomers.length > 0
+                    ) {
+                      setShowCustomerDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    // Delay to allow click on dropdown item
+                    setTimeout(() => setShowCustomerDropdown(false), 200);
+                  }}
+                  placeholder="Start typing customer name..."
                   rows="2"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 />
+                {showCustomerDropdown && filteredCustomers.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredCustomers.map((customer, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleCustomerSelect(customer)}
+                        className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="font-semibold text-sm text-gray-800">
+                          {customer.name}
+                        </div>
+                        <div className="text-xs text-gray-600 whitespace-pre-line">
+                          {customer.address}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div>
+              <div className="relative">
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   Delivery Address (Consignee){" "}
                   <span className="text-red-500">*</span>
@@ -459,61 +865,115 @@ const ImportExportQuotationForm = () => {
                   name="consigneeAddress"
                   value={basicInfo.consigneeAddress}
                   onChange={handleBasicInfoChange}
-                  placeholder="Enter consignee address"
+                  onFocus={() => {
+                    if (
+                      basicInfo.consigneeAddress &&
+                      filteredConsignees.length > 0
+                    ) {
+                      setShowConsigneeDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    // Delay to allow click on dropdown item
+                    setTimeout(() => setShowConsigneeDropdown(false), 200);
+                  }}
+                  placeholder="Start typing consignee name..."
                   rows="2"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 />
+                {showConsigneeDropdown && filteredConsignees.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredConsignees.map((consignee, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleConsigneeSelect(consignee)}
+                        className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="font-semibold text-sm text-gray-800">
+                          {consignee.name}
+                        </div>
+                        <div className="text-xs text-gray-600 whitespace-pre-line">
+                          {consignee.address}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </section>
 
           {/* Shipment Details */}
-          <section>
-            <h2 className="text-base font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-blue-500 flex items-center gap-2">
+          <section className="bg-gray-50 p-3 rounded-lg">
+            <h2 className="text-base font-semibold text-gray-800 mb-2 pb-1.5 border-b-2 border-blue-400 flex items-center gap-2">
               <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
                 2
               </span>
               Shipment Details
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+              {/* Row 1: Container & Measurements */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Equipment
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Equipment <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
+                <select
                   name="equipment"
                   value={basicInfo.equipment}
                   onChange={handleBasicInfoChange}
-                  placeholder="e.g., 20ft Container"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent bg-white"
+                >
+                  <option value="">Select Container</option>
+                  <option value="20ft Standard">20ft Standard</option>
+                  <option value="20ft High Cube">20ft High Cube</option>
+                  <option value="40ft Standard">40ft Standard</option>
+                  <option value="40ft High Cube">40ft High Cube</option>
+                  <option value="45ft High Cube">45ft High Cube</option>
+                  <option value="20ft Reefer">20ft Reefer</option>
+                  <option value="40ft Reefer">40ft Reefer</option>
+                  <option value="20ft Open Top">20ft Open Top</option>
+                  <option value="40ft Open Top">40ft Open Top</option>
+                  <option value="20ft Flat Rack">20ft Flat Rack</option>
+                  <option value="40ft Flat Rack">40ft Flat Rack</option>
+                </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Weight (kg)
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Weight (kg) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   name="weight"
                   value={basicInfo.weight}
                   onChange={handleBasicInfoChange}
-                  placeholder="e.g., 5000"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="5000"
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
               </div>
-
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Terms
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  CBM (m³)
+                </label>
+                <input
+                  type="text"
+                  name="cbm"
+                  value={basicInfo.cbm}
+                  onChange={handleBasicInfoChange}
+                  placeholder="25"
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Terms <span className="text-red-500">*</span>
                 </label>
                 <select
                   name="terms"
                   value={basicInfo.terms}
                   onChange={handleBasicInfoChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent bg-white"
                 >
-                  <option value="">Select Terms</option>
+                  <option value="">Select</option>
                   <option value="DDP">DDP</option>
                   <option value="CIF">CIF</option>
                   <option value="DAP">DAP</option>
@@ -522,35 +982,128 @@ const ImportExportQuotationForm = () => {
                   <option value="FCA">FCA</option>
                 </select>
               </div>
-
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  POL (Port of Loading)
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Commodity
+                </label>
+                <input
+                  type="text"
+                  name="items"
+                  value={basicInfo.items}
+                  onChange={handleBasicInfoChange}
+                  placeholder="Electronics, etc."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+
+              {/* Row 2: Ports */}
+              <div className="relative">
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  POR{" "}
+                  <span className="text-gray-500 text-[10px]">(Receipt)</span>
+                </label>
+                <input
+                  type="text"
+                  name="por"
+                  value={basicInfo.por}
+                  onChange={handleBasicInfoChange}
+                  onFocus={() => {
+                    if (basicInfo.por && filteredPorLocations.length > 0) {
+                      setShowPorDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowPorDropdown(false), 200);
+                  }}
+                  placeholder="Type ICD location..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+                {showPorDropdown && filteredPorLocations.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredPorLocations.map((location, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handlePorSelect(location)}
+                        className="px-2 py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                      >
+                        <div className="text-gray-800">{location}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="relative">
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  POL{" "}
+                  <span className="text-gray-500 text-[10px]">(Loading)</span>
                 </label>
                 <input
                   type="text"
                   name="pol"
                   value={basicInfo.pol}
                   onChange={handleBasicInfoChange}
-                  placeholder="e.g., Mumbai"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onFocus={() => {
+                    if (basicInfo.pol && filteredPolPorts.length > 0) {
+                      setShowPolDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowPolDropdown(false), 200);
+                  }}
+                  placeholder="Type port name..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
+                {showPolDropdown && filteredPolPorts.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredPolPorts.map((port, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handlePolSelect(port)}
+                        className="px-2 py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                      >
+                        <div className="text-gray-800">{port}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  POD (Port of Discharge)
+              <div className="relative">
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  POD{" "}
+                  <span className="text-gray-500 text-[10px]">(Discharge)</span>
                 </label>
                 <input
                   type="text"
                   name="pod"
                   value={basicInfo.pod}
                   onChange={handleBasicInfoChange}
-                  placeholder="e.g., Singapore"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onFocus={() => {
+                    if (basicInfo.pod && filteredPodPorts.length > 0) {
+                      setShowPodDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowPodDropdown(false), 200);
+                  }}
+                  placeholder="Type destination..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
+                {showPodDropdown && filteredPodPorts.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredPodPorts.map((destination, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handlePodSelect(destination)}
+                        className="px-2 py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                      >
+                        <div className="text-gray-800">{destination}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="md:col-span-3">
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+              <div className="md:col-span-2 relative">
+                <label className="block font-medium text-gray-700 mb-0.5">
                   Final Destination
                 </label>
                 <input
@@ -558,12 +1111,35 @@ const ImportExportQuotationForm = () => {
                   name="finalDestination"
                   value={basicInfo.finalDestination}
                   onChange={handleBasicInfoChange}
-                  placeholder="Enter final destination"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onFocus={() => {
+                    if (basicInfo.finalDestination && filteredFinalDestinations.length > 0) {
+                      setShowFinalDestDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowFinalDestDropdown(false), 200);
+                  }}
+                  placeholder="Type final destination..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
+                {showFinalDestDropdown && filteredFinalDestinations.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredFinalDestinations.map((destination, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleFinalDestSelect(destination)}
+                        className="px-2 py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                      >
+                        <div className="text-gray-800">{destination}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+
+              {/* Row 3: Shipping & Time Details */}
+              <div className="md:col-span-2 relative">
+                <label className="block font-medium text-gray-700 mb-0.5">
                   Shipping Line
                 </label>
                 <input
@@ -571,46 +1147,75 @@ const ImportExportQuotationForm = () => {
                   name="shippingLine"
                   value={basicInfo.shippingLine}
                   onChange={handleBasicInfoChange}
-                  placeholder="e.g., Maersk, MSC"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onFocus={() => {
+                    if (basicInfo.shippingLine && filteredShippingLines.length > 0) {
+                      setShowShippingLineDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    // Delay to allow click on dropdown item
+                    setTimeout(() => setShowShippingLineDropdown(false), 200);
+                  }}
+                  placeholder="Start typing shipping line..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
+                {showShippingLineDropdown && filteredShippingLines.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredShippingLines.map((line, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleShippingLineSelect(line)}
+                        className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                      >
+                        <div className="text-gray-800">{line}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  ETD (Estimated Time of Departure)
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  ETD
                 </label>
                 <input
                   type="date"
                   name="etd"
                   value={basicInfo.etd}
                   onChange={handleBasicInfoChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Total Transit Time
+              <div className="md:col-span-2">
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Transit Time
                 </label>
-                <input
-                  type="text"
+                <select
                   name="totalTransitTime"
                   value={basicInfo.totalTransitTime}
                   onChange={handleBasicInfoChange}
-                  placeholder="e.g., 15-20 days"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent bg-white"
+                >
+                  <option value="">Select days</option>
+                  {Array.from({ length: 100 }, (_, i) => i + 1).map((day) => (
+                    <option key={day} value={`${day} ${day === 1 ? 'day' : 'days'}`}>
+                      {day} {day === 1 ? 'day' : 'days'}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="md:col-span-4">
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+
+              {/* Row 4: Remarks */}
+              <div className="md:col-span-5">
+                <label className="block font-medium text-gray-700 mb-0.5">
                   Remarks
                 </label>
                 <textarea
                   name="remarks"
                   value={basicInfo.remarks}
                   onChange={handleBasicInfoChange}
-                  placeholder="Enter any additional remarks or notes..."
+                  placeholder="Additional notes..."
                   rows="2"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent resize-none"
                 />
               </div>
             </div>
@@ -642,46 +1247,6 @@ const ImportExportQuotationForm = () => {
                   >
                     <Plus size={12} /> Add
                   </button>
-                </div>
-
-                {/* Summary Row */}
-                <div className="bg-white rounded-md p-2 mb-2 flex items-center gap-2 text-xs">
-                  <span className="font-medium text-gray-700">
-                    Add Origin Charges:
-                  </span>
-                  <select
-                    value={originSummary.currency}
-                    onChange={(e) =>
-                      handleOriginSummaryChange("currency", e.target.value)
-                    }
-                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 bg-white text-xs"
-                  >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                    <option value="INR">INR</option>
-                    <option value="AED">AED</option>
-                  </select>
-                  <input
-                    type="number"
-                    value={originSummary.amount}
-                    onChange={(e) =>
-                      handleOriginSummaryChange("amount", e.target.value)
-                    }
-                    placeholder="0.00"
-                    className="w-20 px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 text-xs"
-                  />
-                  <select
-                    value={originSummary.unit}
-                    onChange={(e) =>
-                      handleOriginSummaryChange("unit", e.target.value)
-                    }
-                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 bg-white text-xs"
-                  >
-                    <option value="/BL">/BL</option>
-                    <option value="/PKG">/PKG</option>
-                    <option value="/HBL">/HBL</option>
-                  </select>
                 </div>
 
                 {/* Compact Table */}
@@ -813,46 +1378,6 @@ const ImportExportQuotationForm = () => {
                   </button>
                 </div>
 
-                {/* Summary Row */}
-                <div className="bg-white rounded-md p-2 mb-2 flex items-center gap-2 text-xs">
-                  <span className="font-medium text-gray-700">
-                    Add Freight Charges:
-                  </span>
-                  <select
-                    value={freightSummary.currency}
-                    onChange={(e) =>
-                      handleFreightSummaryChange("currency", e.target.value)
-                    }
-                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-green-400 bg-white text-xs"
-                  >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                    <option value="INR">INR</option>
-                    <option value="AED">AED</option>
-                  </select>
-                  <input
-                    type="number"
-                    value={freightSummary.amount}
-                    onChange={(e) =>
-                      handleFreightSummaryChange("amount", e.target.value)
-                    }
-                    placeholder="0.00"
-                    className="w-20 px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-green-400 text-xs"
-                  />
-                  <select
-                    value={freightSummary.unit}
-                    onChange={(e) =>
-                      handleFreightSummaryChange("unit", e.target.value)
-                    }
-                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-green-400 bg-white text-xs"
-                  >
-                    <option value="/BL">/BL</option>
-                    <option value="/PKG">/PKG</option>
-                    <option value="/HBL">/HBL</option>
-                  </select>
-                </div>
-
                 {/* Compact Table */}
                 <div className="bg-white rounded-md overflow-hidden border border-gray-200">
                   <table className="w-full text-xs">
@@ -980,46 +1505,6 @@ const ImportExportQuotationForm = () => {
                   >
                     <Plus size={12} /> Add
                   </button>
-                </div>
-
-                {/* Summary Row */}
-                <div className="bg-white rounded-md p-2 mb-2 flex items-center gap-2 text-xs">
-                  <span className="font-medium text-gray-700">
-                    Add Destination Charges:
-                  </span>
-                  <select
-                    value={destinationSummary.currency}
-                    onChange={(e) =>
-                      handleDestinationSummaryChange("currency", e.target.value)
-                    }
-                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-400 bg-white text-xs"
-                  >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                    <option value="INR">INR</option>
-                    <option value="AED">AED</option>
-                  </select>
-                  <input
-                    type="number"
-                    value={destinationSummary.amount}
-                    onChange={(e) =>
-                      handleDestinationSummaryChange("amount", e.target.value)
-                    }
-                    placeholder="0.00"
-                    className="w-20 px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-400 text-xs"
-                  />
-                  <select
-                    value={destinationSummary.unit}
-                    onChange={(e) =>
-                      handleDestinationSummaryChange("unit", e.target.value)
-                    }
-                    className="px-1.5 py-0.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-400 bg-white text-xs"
-                  >
-                    <option value="/BL">/BL</option>
-                    <option value="/PKG">/PKG</option>
-                    <option value="/HBL">/HBL</option>
-                  </select>
                 </div>
 
                 {/* Compact Table */}
