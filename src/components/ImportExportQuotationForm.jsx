@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 import { FileText, Send, CheckCircle, X, Plus, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import OmTransLogo from "../assets/OmTrans.png";
 
-const ImportExportQuotationForm = () => {
+const ImportExportQuotationForm = ({ currentUser }) => {
   // Basic Information State
   const [basicInfo, setBasicInfo] = useState({
-    customerAddress: "",
+    customerNameAndAddress: "",
     consigneeAddress: "",
     equipment: "",
     weight: "",
     terms: "",
+    por: "",
     pol: "",
     pod: "",
     finalDestination: "",
@@ -21,28 +24,45 @@ const ImportExportQuotationForm = () => {
 
   // Popup state
   const [showPopup, setShowPopup] = useState(false);
+  const [quotationNumber, setQuotationNumber] = useState("");
+  const [transportMode, setTransportMode] = useState("Air"); // Air or Sea
 
   // Autocomplete state
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const [showConsigneeDropdown, setShowConsigneeDropdown] = useState(false);
-  const [showShippingLineDropdown, setShowShippingLineDropdown] = useState(false);
+  const [showShippingLineDropdown, setShowShippingLineDropdown] =
+    useState(false);
   const [showPorDropdown, setShowPorDropdown] = useState(false);
   const [showPolDropdown, setShowPolDropdown] = useState(false);
   const [showPodDropdown, setShowPodDropdown] = useState(false);
   const [showFinalDestDropdown, setShowFinalDestDropdown] = useState(false);
-  const [showOriginChargeSuggestions, setShowOriginChargeSuggestions] = useState({});
-  const [filteredOriginChargeSuggestions, setFilteredOriginChargeSuggestions] = useState({});
-  const [showFreightChargeSuggestions, setShowFreightChargeSuggestions] = useState({});
-  const [filteredFreightChargeSuggestions, setFilteredFreightChargeSuggestions] = useState({});
-  const [showDestinationChargeSuggestions, setShowDestinationChargeSuggestions] = useState({});
-  const [filteredDestinationChargeSuggestions, setFilteredDestinationChargeSuggestions] = useState({});
+  const [showOriginChargeSuggestions, setShowOriginChargeSuggestions] =
+    useState({});
+  const [filteredOriginChargeSuggestions, setFilteredOriginChargeSuggestions] =
+    useState({});
+  const [showFreightChargeSuggestions, setShowFreightChargeSuggestions] =
+    useState({});
+  const [
+    filteredFreightChargeSuggestions,
+    setFilteredFreightChargeSuggestions,
+  ] = useState({});
+  const [
+    showDestinationChargeSuggestions,
+    setShowDestinationChargeSuggestions,
+  ] = useState({});
+  const [
+    filteredDestinationChargeSuggestions,
+    setFilteredDestinationChargeSuggestions,
+  ] = useState({});
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [filteredConsignees, setFilteredConsignees] = useState([]);
   const [filteredShippingLines, setFilteredShippingLines] = useState([]);
   const [filteredPorLocations, setFilteredPorLocations] = useState([]);
   const [filteredPolPorts, setFilteredPolPorts] = useState([]);
   const [filteredPodPorts, setFilteredPodPorts] = useState([]);
-  const [filteredFinalDestinations, setFilteredFinalDestinations] = useState([]);
+  const [filteredFinalDestinations, setFilteredFinalDestinations] = useState(
+    []
+  );
 
   // Origin Charge Suggestions
   const originChargeSuggestions = [
@@ -58,7 +78,6 @@ const ImportExportQuotationForm = () => {
     "Seal Charges",
     "VGM Charges",
     "DGFT Charges",
-  
   ].sort();
 
   // Freight Charge Suggestions
@@ -79,7 +98,7 @@ const ImportExportQuotationForm = () => {
     "Documentation",
     "EDI Fees",
     "Certification",
-     "BL Fee",
+    "BL Fee",
     "Customs Clearance",
   ].sort();
 
@@ -281,9 +300,9 @@ const ImportExportQuotationForm = () => {
     "Southampton, UK",
     "Le Havre, France",
     "Barcelona, Spain",
-   
+
     "Genoa, Italy",
-   
+
     "Istanbul, Turkey",
     // North America
     "Los Angeles, USA",
@@ -391,9 +410,7 @@ const ImportExportQuotationForm = () => {
     if (name === "shippingLine") {
       if (value.trim().length > 0) {
         const filtered = shippingLines
-          .filter((line) =>
-            line.toLowerCase().includes(value.toLowerCase())
-          )
+          .filter((line) => line.toLowerCase().includes(value.toLowerCase()))
           .sort();
         setFilteredShippingLines(filtered);
         setShowShippingLineDropdown(filtered.length > 0);
@@ -421,9 +438,7 @@ const ImportExportQuotationForm = () => {
     if (name === "pol") {
       if (value.trim().length > 0) {
         const filtered = indianPorts
-          .filter((port) =>
-            port.toLowerCase().includes(value.toLowerCase())
-          )
+          .filter((port) => port.toLowerCase().includes(value.toLowerCase()))
           .sort();
         setFilteredPolPorts(filtered);
         setShowPolDropdown(filtered.length > 0);
@@ -436,9 +451,7 @@ const ImportExportQuotationForm = () => {
     if (name === "pod") {
       if (value.trim().length > 0) {
         const filtered = foreignDestinations
-          .filter((dest) =>
-            dest.toLowerCase().includes(value.toLowerCase())
-          )
+          .filter((dest) => dest.toLowerCase().includes(value.toLowerCase()))
           .sort();
         setFilteredPodPorts(filtered);
         setShowPodDropdown(filtered.length > 0);
@@ -451,9 +464,7 @@ const ImportExportQuotationForm = () => {
     if (name === "finalDestination") {
       if (value.trim().length > 0) {
         const filtered = foreignDestinations
-          .filter((dest) =>
-            dest.toLowerCase().includes(value.toLowerCase())
-          )
+          .filter((dest) => dest.toLowerCase().includes(value.toLowerCase()))
           .sort();
         setFilteredFinalDestinations(filtered);
         setShowFinalDestDropdown(filtered.length > 0);
@@ -690,221 +701,480 @@ const ImportExportQuotationForm = () => {
     }));
   };
 
+  // Generate quotation number based on transport mode
+  const generateQuotationNumber = () => {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = now.getFullYear();
+    const randomNum = Math.floor(Math.random() * 10); // Random digit 0-9
+
+    const prefix = transportMode === "Air" ? "AIR" : "SEA";
+    return `${prefix}-${day}${month}${year}${randomNum}`;
+  };
+
   // Generate PDF and Submit
   const handleSubmit = () => {
     const doc = new jsPDF();
 
-    // Header
-    doc.setFillColor(37, 99, 235);
-    doc.rect(0, 0, 210, 35, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
-    doc.setFont("helvetica", "bold");
-    doc.text("DOOR-TO-DOOR QUOTATION", 105, 15, { align: "center" });
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("OmTrans Freight Services", 105, 25, { align: "center" });
+    // Generate quotation number at the start
+    const newQuotationNumber = generateQuotationNumber();
+    setQuotationNumber(newQuotationNumber);
 
-    // Reset text color
-    doc.setTextColor(0, 0, 0);
-    let yPos = 45;
+    let yPos = 15;
 
-    // Basic Information
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Scope of Activities", 15, yPos);
-    yPos += 8;
+    // Add Logo (convert to base64 or load from URL)
+    const img = new Image();
+    img.src = OmTransLogo;
 
+    // Add logo at top left
+    doc.addImage(img, "PNG", 15, yPos, 40, 15);
+
+    // Company Info (top right)
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("Customer Name Address:", 15, yPos);
+    doc.setTextColor(37, 99, 235);
+    doc.text("OmTrans Freight Services", 195, yPos + 5, { align: "right" });
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    const customerLines = doc.splitTextToSize(
-      basicInfo.customerAddress || "N/A",
-      85
-    );
-    doc.text(customerLines, 15, yPos + 5);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("Delivery Address (Consignee):", 110, yPos);
-    doc.setFont("helvetica", "normal");
-    const consigneeLines = doc.splitTextToSize(
-      basicInfo.consigneeAddress || "N/A",
-      85
-    );
-    doc.text(consigneeLines, 110, yPos + 5);
-    yPos += 20;
-
-    // Shipment Details
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Shipment Details", 15, yPos);
-    yPos += 8;
-
-    doc.setFontSize(10);
-    const details = [
-      [
-        "Equipment:",
-        basicInfo.equipment || "N/A",
-        "Weight:",
-        basicInfo.weight || "N/A",
-      ],
-      ["Terms:", basicInfo.terms || "N/A", "POL:", basicInfo.pol || "N/A"],
-      [
-        "POD:",
-        basicInfo.pod || "N/A",
-        "Final Destination:",
-        basicInfo.finalDestination || "N/A",
-      ],
-      [
-        "Shipping Line:",
-        basicInfo.shippingLine || "N/A",
-        "ETD:",
-        basicInfo.etd || "N/A",
-      ],
-      ["Total Transit Time:", basicInfo.totalTransitTime || "N/A", "", ""],
-    ];
-
-    details.forEach((row) => {
-      doc.setFont("helvetica", "bold");
-      doc.text(row[0], 15, yPos);
-      doc.setFont("helvetica", "normal");
-      doc.text(row[1], 50, yPos);
-      if (row[2]) {
-        doc.setFont("helvetica", "bold");
-        doc.text(row[2], 110, yPos);
-        doc.setFont("helvetica", "normal");
-        doc.text(row[3], 145, yPos);
-      }
-      yPos += 6;
+    doc.setTextColor(100, 100, 100);
+    doc.text("Global Logistics Solutions", 195, yPos + 10, { align: "right" });
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 195, yPos + 15, {
+      align: "right",
     });
 
-    yPos += 5;
+    yPos += 25;
 
-    // Charges Section
-    doc.setFontSize(14);
+    // Quotation Header
+    doc.setFillColor(37, 99, 235);
+    doc.rect(15, yPos, 180, 15, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
-    doc.text("Charges", 15, yPos);
+    doc.text("QUOTATION", 105, yPos + 10, { align: "center" });
+
+    yPos += 20;
+
+    // Quotation Number Box
+    doc.setFillColor(240, 248, 255);
+    doc.rect(15, yPos, 180, 10, "F");
+    doc.setTextColor(37, 99, 235);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Quotation No: ${newQuotationNumber}`, 105, yPos + 7, {
+      align: "center",
+    });
+
+    yPos += 15;
+    doc.setTextColor(0, 0, 0);
+
+    // Customer & Consignee Section
+    doc.setFillColor(245, 245, 245);
+    doc.rect(15, yPos, 85, 8, "F");
+    doc.rect(110, yPos, 85, 8, "F");
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(37, 99, 235);
+    doc.text("CUSTOMER DETAILS", 17, yPos + 5.5);
+    doc.text("CONSIGNEE DETAILS", 112, yPos + 5.5);
+
     yPos += 10;
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
 
-    // Origin Charges
-    if (originCharges.length > 0) {
-      doc.setFontSize(12);
+    const customerLines = doc.splitTextToSize(
+      basicInfo.customerNameAndAddress || "N/A",
+      80
+    );
+    doc.text(customerLines, 17, yPos);
+
+    const consigneeLines = doc.splitTextToSize(
+      basicInfo.consigneeAddress || "N/A",
+      80
+    );
+    doc.text(consigneeLines, 112, yPos);
+
+    yPos += Math.max(customerLines.length, consigneeLines.length) * 4 + 8;
+
+    // Shipment Details Table
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(37, 99, 235);
+    doc.text("SHIPMENT DETAILS", 15, yPos);
+    yPos += 2;
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [["Field", "Details", "Field", "Details"]],
+      body: [
+        [
+          "Equipment",
+          basicInfo.equipment || "N/A",
+          "Weight",
+          basicInfo.weight || "N/A",
+        ],
+        ["Terms", basicInfo.terms || "N/A", "POR", basicInfo.por || "N/A"],
+        ["POL", basicInfo.pol || "N/A", "POD", basicInfo.pod || "N/A"],
+        [
+          "Final Destination",
+          basicInfo.finalDestination || "N/A",
+          "ETD",
+          basicInfo.etd || "N/A",
+        ],
+        [
+          "Shipping Line",
+          basicInfo.shippingLine || "N/A",
+          "Transit Time",
+          basicInfo.totalTransitTime || "N/A",
+        ],
+      ],
+      theme: "grid",
+      headStyles: {
+        fillColor: [37, 99, 235],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        fontSize: 9,
+      },
+      bodyStyles: {
+        fontSize: 8,
+      },
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 35 },
+        1: { cellWidth: 55 },
+        2: { fontStyle: "bold", cellWidth: 35 },
+        3: { cellWidth: 55 },
+      },
+      margin: { left: 15, right: 15 },
+    });
+
+    yPos = doc.lastAutoTable.finalY + 10;
+
+    // Origin Charges Table
+    if (
+      originCharges.length > 0 &&
+      originCharges.some((c) => c.charges || c.amount)
+    ) {
+      doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
-      doc.text("Origin Charges:", 15, yPos);
-      yPos += 6;
-      doc.setFontSize(9);
-      originCharges.forEach((charge) => {
-        if (charge.charges || charge.amount) {
-          doc.setFont("helvetica", "normal");
-          const text = `${charge.charges || "N/A"} - ${charge.currency} ${
-            charge.amount || "0"
-          } ${charge.unit}`;
-          doc.text(text, 20, yPos);
-          yPos += 5;
-        }
+      doc.setTextColor(37, 99, 235);
+      doc.text("ORIGIN CHARGES", 15, yPos);
+      yPos += 2;
+
+      const originData = originCharges
+        .filter((c) => c.charges || c.amount)
+        .map((charge) => [
+          charge.charges || "N/A",
+          charge.currency || "USD",
+          charge.amount || "0",
+          charge.unit || "Per Shipment",
+        ]);
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [["Charge Description", "Currency", "Amount", "Unit"]],
+        body: originData,
+        theme: "striped",
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          fontSize: 9,
+        },
+        bodyStyles: {
+          fontSize: 8,
+        },
+        columnStyles: {
+          0: { cellWidth: 80 },
+          1: { cellWidth: 30, halign: "left" },
+          2: { cellWidth: 40, halign: "left" },
+          3: { cellWidth: 30 },
+        },
+        margin: { left: 15, right: 15 },
       });
-      yPos += 3;
+
+      yPos = doc.lastAutoTable.finalY + 8;
     }
 
-    // Freight Charges
-    if (freightCharges.length > 0) {
-      doc.setFontSize(12);
+    // Freight Charges Table
+    if (
+      freightCharges.length > 0 &&
+      freightCharges.some((c) => c.charges || c.amount)
+    ) {
+      doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
-      doc.text("Freight Charges:", 15, yPos);
-      yPos += 6;
-      doc.setFontSize(9);
-      freightCharges.forEach((charge) => {
-        if (charge.charges || charge.amount) {
-          doc.setFont("helvetica", "normal");
-          const text = `${charge.charges || "N/A"} - ${charge.currency} ${
-            charge.amount || "0"
-          } ${charge.unit}`;
-          doc.text(text, 20, yPos);
-          yPos += 5;
-        }
+      doc.setTextColor(37, 99, 235);
+      doc.text("FREIGHT CHARGES", 15, yPos);
+      yPos += 2;
+
+      const freightData = freightCharges
+        .filter((c) => c.charges || c.amount)
+        .map((charge) => [
+          charge.charges || "N/A",
+          charge.currency || "USD",
+          charge.amount || "0",
+          charge.unit || "Per Container",
+        ]);
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [["Charge Description", "Currency", "Amount", "Unit"]],
+        body: freightData,
+        theme: "striped",
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          fontSize: 9,
+        },
+        bodyStyles: {
+          fontSize: 8,
+        },
+        columnStyles: {
+          0: { cellWidth: 80 },
+          1: { cellWidth: 30, halign: "left" },
+          2: { cellWidth: 40, halign: "left" },
+          3: { cellWidth: 30 },
+        },
+        margin: { left: 15, right: 15 },
       });
-      yPos += 3;
+
+      yPos = doc.lastAutoTable.finalY + 8;
     }
 
-    // Destination Charges
-    if (destinationCharges.length > 0) {
-      doc.setFontSize(12);
+    // Destination Charges Table
+    if (
+      destinationCharges.length > 0 &&
+      destinationCharges.some((c) => c.charges || c.amount)
+    ) {
+      doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
-      doc.text("Destination Charges:", 15, yPos);
-      yPos += 6;
-      doc.setFontSize(9);
-      destinationCharges.forEach((charge) => {
-        if (charge.charges || charge.amount) {
-          doc.setFont("helvetica", "normal");
-          const text = `${charge.charges || "N/A"} - ${charge.currency} ${
-            charge.amount || "0"
-          } ${charge.unit}`;
-          doc.text(text, 20, yPos);
-          yPos += 5;
-        }
+      doc.setTextColor(37, 99, 235);
+      doc.text("DESTINATION CHARGES", 15, yPos);
+      yPos += 2;
+
+      const destinationData = destinationCharges
+        .filter((c) => c.charges || c.amount)
+        .map((charge) => [
+          charge.charges || "N/A",
+          charge.currency || "USD",
+          charge.amount || "0",
+          charge.unit || "Per Shipment",
+        ]);
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [["Charge Description", "Currency", "Amount", "Unit"]],
+        body: destinationData,
+        theme: "striped",
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          fontSize: 9,
+        },
+        bodyStyles: {
+          fontSize: 8,
+        },
+        columnStyles: {
+          0: { cellWidth: 80 },
+          1: { cellWidth: 30, halign: "left" },
+          2: { cellWidth: 40, halign: "left" },
+          3: { cellWidth: 30 },
+        },
+        margin: { left: 15, right: 15 },
       });
-      yPos += 5;
+
+      yPos = doc.lastAutoTable.finalY + 8;
     }
 
-    // Remarks
-    if (basicInfo.remarks) {
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("Remarks:", 15, yPos);
-      yPos += 6;
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      const remarksLines = doc.splitTextToSize(basicInfo.remarks, 180);
-      doc.text(remarksLines, 15, yPos);
-      yPos += remarksLines.length * 5 + 5;
-    }
-
-    // Terms and Conditions
+    // Check if we need a new page
     if (yPos > 240) {
       doc.addPage();
       yPos = 20;
     }
 
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("Terms and Conditions", 15, yPos);
-    yPos += 8;
+    // Remarks Section
+    if (basicInfo.remarks) {
+      doc.setFillColor(245, 245, 245);
+      doc.rect(15, yPos, 180, 8, "F");
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(37, 99, 235);
+      doc.text("REMARKS", 17, yPos + 5.5);
+      yPos += 12;
 
-    doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      const remarksLines = doc.splitTextToSize(basicInfo.remarks, 175);
+      doc.text(remarksLines, 17, yPos);
+      yPos += remarksLines.length * 4 + 10;
+    }
+
+    // Check if we need a new page for T&C
+    if (yPos > 230) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    // Terms and Conditions
+    doc.setFillColor(245, 245, 245);
+    doc.rect(15, yPos, 180, 8, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(37, 99, 235);
+    doc.text("TERMS AND CONDITIONS", 17, yPos + 5.5);
+    yPos += 12;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     const terms = [
-      "• Freight rates are subject to equipment and space availability.",
-      "• Transit insurance will be at the customer's cost. OmTrans will not be",
-      "  responsible for any claims.",
+      "1. Freight rates are subject to equipment and space availability.",
+      "2. Transit insurance will be at the customer's cost. OmTrans will not be responsible for any claims.",
+      "3. All charges are subject to change without prior notice.",
+      "4. Payment terms: As per agreed contract.",
+      "5. This quotation is valid for 30 days from the date of issue.",
     ];
 
     terms.forEach((term) => {
-      doc.text(term, 15, yPos);
+      doc.text(term, 17, yPos);
       yPos += 5;
     });
 
-    // Footer
+    // Footer with border
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
+
+      // Footer line
+      doc.setDrawColor(37, 99, 235);
+      doc.setLineWidth(0.5);
+      doc.line(15, 285, 195, 285);
+
+      // Footer text
       doc.setFontSize(8);
-      doc.setTextColor(128, 128, 128);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont("helvetica", "normal");
       doc.text(
-        `Generated on ${new Date().toLocaleDateString()} | Page ${i} of ${pageCount}`,
-        105,
-        290,
-        { align: "center" }
+        "OmTrans Freight Services | Global Logistics Solutions",
+        15,
+        290
       );
+      doc.text(`Page ${i} of ${pageCount}`, 195, 290, { align: "right" });
     }
 
     // Save PDF
-    doc.save(`Door_to_Door_Quotation_${Date.now()}.pdf`);
+    const pdfFileName = `Door_to_Door_Quotation_${newQuotationNumber}.pdf`;
+    doc.save(pdfFileName);
+
+    // Save quotation data to localStorage for approval dashboard
+    const quotationData = {
+      id: newQuotationNumber,
+      customerName: basicInfo.customerNameAndAddress,
+      consigneeName: basicInfo.consigneeAddress,
+      equipment: basicInfo.equipment,
+      weight: basicInfo.weight,
+      terms: basicInfo.terms,
+      por: basicInfo.por,
+      pol: basicInfo.pol,
+      pod: basicInfo.pod,
+      finalDestination: basicInfo.finalDestination,
+      shippingLine: basicInfo.shippingLine,
+      etd: basicInfo.etd,
+      transitTime: basicInfo.totalTransitTime,
+      remarks: basicInfo.remarks,
+      originCharges: originCharges,
+      freightCharges: freightCharges,
+      destinationCharges: destinationCharges,
+      status: "Pending",
+      createdBy:
+        currentUser?.fullName || currentUser?.username || "Unknown User",
+      createdByRole: currentUser?.role || "User",
+      createdDate: new Date().toISOString(),
+      pdfFileName: pdfFileName,
+    };
+
+    // Get existing quotations from localStorage
+    const existingQuotations = JSON.parse(
+      localStorage.getItem("importExportQuotations") || "[]"
+    );
+
+    // Add new quotation
+    existingQuotations.push(quotationData);
+
+    // Save back to localStorage
+    localStorage.setItem(
+      "importExportQuotations",
+      JSON.stringify(existingQuotations)
+    );
+
+    // Console log all form data
+    console.log("=== QUOTATION SUBMITTED ===");
+    console.log("Quotation Number:", newQuotationNumber);
+    console.log("Transport Mode:", transportMode);
+    console.log("Basic Information:", basicInfo);
+    console.log("Origin Charges:", originCharges);
+    console.log("Freight Charges:", freightCharges);
+    console.log("Destination Charges:", destinationCharges);
+    console.log("Created By:", currentUser?.fullName || currentUser?.username);
+    console.log("Created Date:", new Date().toISOString());
+    console.log("Complete Quotation Data:", quotationData);
+    console.log("===========================");
 
     // Show popup
     setShowPopup(true);
+
+    // Clear all form fields after submission
+    setBasicInfo({
+      customerNameAndAddress: "",
+      consigneeAddress: "",
+      equipment: "",
+      weight: "",
+      cbm: "",
+      terms: "",
+      commodity: "",
+      por: "",
+      pol: "",
+      pod: "",
+      finalDestination: "",
+      shippingLine: "",
+      etd: "",
+      totalTransitTime: "",
+      remarks: "",
+    });
+
+    setOriginCharges([
+      {
+        id: Date.now(),
+        charges: "",
+        currency: "USD",
+        amount: "",
+        unit: "/BL",
+      },
+    ]);
+
+    setFreightCharges([
+      {
+        id: Date.now() + 1,
+        charges: "",
+        currency: "USD",
+        amount: "",
+        unit: "/BL",
+      },
+    ]);
+
+    setDestinationCharges([
+      {
+        id: Date.now() + 2,
+        charges: "",
+        currency: "USD",
+        amount: "",
+        unit: "/BL",
+      },
+    ]);
 
     // Hide popup after 3 seconds
     setTimeout(() => {
@@ -914,18 +1184,28 @@ const ImportExportQuotationForm = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-3 md:p-6">
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full px-8 sm:px-10 lg:px-20 py-5">
         {/* Header Card */}
         <div className="bg-white rounded-lg shadow-md mb-4 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3">
-            <div className="flex items-center gap-2">
-              <FileText size={24} />
-              <div>
-                <h1 className="text-xl font-bold">Door-to-Door Quotation</h1>
-                <p className="text-xs text-blue-100">
-                  Complete shipping quotation form
-                </p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText size={24} />
+                <div>
+                  <h1 className="text-xl font-bold">Door-to-Door Quotation</h1>
+                  <p className="text-xs text-blue-100">
+                    Complete shipping quotation form
+                  </p>
+                </div>
               </div>
+              {quotationNumber && (
+                <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/30">
+                  <p className="text-xs text-blue-100 font-medium">
+                    Quotation No.
+                  </p>
+                  <p className="text-sm font-bold">{quotationNumber}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -934,12 +1214,39 @@ const ImportExportQuotationForm = () => {
         <div className="bg-white rounded-lg shadow-md p-4 md:p-5 space-y-4">
           {/* Basic Information Section */}
           <section>
-            <h2 className="text-base font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-blue-500 flex items-center gap-2">
-              <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                1
-              </span>
-              Scope of Activities
-            </h2>
+            <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-blue-500">
+              <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                  1
+                </span>
+                Scope of Activities
+              </h2>
+              {/* Air/Sea Radio Buttons */}
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="transportMode"
+                    value="Air"
+                    checked={transportMode === "Air"}
+                    onChange={(e) => setTransportMode(e.target.value)}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Air</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="transportMode"
+                    value="Sea"
+                    checked={transportMode === "Sea"}
+                    onChange={(e) => setTransportMode(e.target.value)}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Sea</span>
+                </label>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="relative">
                 <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -1241,7 +1548,10 @@ const ImportExportQuotationForm = () => {
                   value={basicInfo.finalDestination}
                   onChange={handleBasicInfoChange}
                   onFocus={() => {
-                    if (basicInfo.finalDestination && filteredFinalDestinations.length > 0) {
+                    if (
+                      basicInfo.finalDestination &&
+                      filteredFinalDestinations.length > 0
+                    ) {
                       setShowFinalDestDropdown(true);
                     }
                   }}
@@ -1251,19 +1561,20 @@ const ImportExportQuotationForm = () => {
                   placeholder="Type final destination..."
                   className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
-                {showFinalDestDropdown && filteredFinalDestinations.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                    {filteredFinalDestinations.map((destination, index) => (
-                      <div
-                        key={index}
-                        onClick={() => handleFinalDestSelect(destination)}
-                        className="px-2 py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
-                      >
-                        <div className="text-gray-800">{destination}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {showFinalDestDropdown &&
+                  filteredFinalDestinations.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      {filteredFinalDestinations.map((destination, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleFinalDestSelect(destination)}
+                          className="px-2 py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                        >
+                          <div className="text-gray-800">{destination}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
 
               {/* Row 3: Shipping & Time Details */}
@@ -1277,7 +1588,10 @@ const ImportExportQuotationForm = () => {
                   value={basicInfo.shippingLine}
                   onChange={handleBasicInfoChange}
                   onFocus={() => {
-                    if (basicInfo.shippingLine && filteredShippingLines.length > 0) {
+                    if (
+                      basicInfo.shippingLine &&
+                      filteredShippingLines.length > 0
+                    ) {
                       setShowShippingLineDropdown(true);
                     }
                   }}
@@ -1288,19 +1602,20 @@ const ImportExportQuotationForm = () => {
                   placeholder="Start typing shipping line..."
                   className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
-                {showShippingLineDropdown && filteredShippingLines.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                    {filteredShippingLines.map((line, index) => (
-                      <div
-                        key={index}
-                        onClick={() => handleShippingLineSelect(line)}
-                        className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
-                      >
-                        <div className="text-gray-800">{line}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {showShippingLineDropdown &&
+                  filteredShippingLines.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      {filteredShippingLines.map((line, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleShippingLineSelect(line)}
+                          className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                        >
+                          <div className="text-gray-800">{line}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
               <div>
                 <label className="block font-medium text-gray-700 mb-0.5">
@@ -1326,8 +1641,11 @@ const ImportExportQuotationForm = () => {
                 >
                   <option value="">Select days</option>
                   {Array.from({ length: 100 }, (_, i) => i + 1).map((day) => (
-                    <option key={day} value={`${day} ${day === 1 ? 'day' : 'days'}`}>
-                      {day} {day === 1 ? 'day' : 'days'}
+                    <option
+                      key={day}
+                      value={`${day} ${day === 1 ? "day" : "days"}`}
+                    >
+                      {day} {day === 1 ? "day" : "days"}
                     </option>
                   ))}
                 </select>
@@ -1417,8 +1735,11 @@ const ImportExportQuotationForm = () => {
                               }
                               onFocus={() => {
                                 // Show all suggestions on focus
-                                const filtered = originChargeSuggestions.filter((suggestion) =>
-                                  suggestion.toLowerCase().includes(charge.charges.toLowerCase())
+                                const filtered = originChargeSuggestions.filter(
+                                  (suggestion) =>
+                                    suggestion
+                                      .toLowerCase()
+                                      .includes(charge.charges.toLowerCase())
                                 );
                                 setFilteredOriginChargeSuggestions((prev) => ({
                                   ...prev,
@@ -1443,24 +1764,27 @@ const ImportExportQuotationForm = () => {
                               className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-400"
                             />
                             {showOriginChargeSuggestions[charge.id] &&
-                              filteredOriginChargeSuggestions[charge.id]?.length > 0 && (
+                              filteredOriginChargeSuggestions[charge.id]
+                                ?.length > 0 && (
                                 <div className="absolute z-[100] w-full mt-1 bg-white border-2 border-blue-400 rounded-lg shadow-2xl max-h-60 overflow-y-auto left-0 top-full">
-                                  {filteredOriginChargeSuggestions[charge.id].map(
-                                    (suggestion, index) => (
-                                      <div
-                                        key={index}
-                                        onClick={() =>
-                                          handleOriginChargeSuggestionSelect(
-                                            charge.id,
-                                            suggestion
-                                          )
-                                        }
-                                        className="px-3 py-2.5 hover:bg-blue-100 active:bg-blue-200 cursor-pointer border-b border-gray-200 last:border-b-0 text-xs transition-all"
-                                      >
-                                        <div className="text-gray-900 font-medium">{suggestion}</div>
+                                  {filteredOriginChargeSuggestions[
+                                    charge.id
+                                  ].map((suggestion, index) => (
+                                    <div
+                                      key={index}
+                                      onClick={() =>
+                                        handleOriginChargeSuggestionSelect(
+                                          charge.id,
+                                          suggestion
+                                        )
+                                      }
+                                      className="px-3 py-2.5 hover:bg-blue-100 active:bg-blue-200 cursor-pointer border-b border-gray-200 last:border-b-0 text-xs transition-all"
+                                    >
+                                      <div className="text-gray-900 font-medium">
+                                        {suggestion}
                                       </div>
-                                    )
-                                  )}
+                                    </div>
+                                  ))}
                                 </div>
                               )}
                           </td>
@@ -1593,9 +1917,13 @@ const ImportExportQuotationForm = () => {
                               }
                               onFocus={() => {
                                 // Show all suggestions on focus
-                                const filtered = freightChargeSuggestions.filter((suggestion) =>
-                                  suggestion.toLowerCase().includes(charge.charges.toLowerCase())
-                                );
+                                const filtered =
+                                  freightChargeSuggestions.filter(
+                                    (suggestion) =>
+                                      suggestion
+                                        .toLowerCase()
+                                        .includes(charge.charges.toLowerCase())
+                                  );
                                 setFilteredFreightChargeSuggestions((prev) => ({
                                   ...prev,
                                   [charge.id]: filtered,
@@ -1619,24 +1947,27 @@ const ImportExportQuotationForm = () => {
                               className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-green-400"
                             />
                             {showFreightChargeSuggestions[charge.id] &&
-                              filteredFreightChargeSuggestions[charge.id]?.length > 0 && (
+                              filteredFreightChargeSuggestions[charge.id]
+                                ?.length > 0 && (
                                 <div className="absolute z-[100] w-full mt-1 bg-white border-2 border-green-400 rounded-lg shadow-2xl max-h-60 overflow-y-auto left-0 top-full">
-                                  {filteredFreightChargeSuggestions[charge.id].map(
-                                    (suggestion, index) => (
-                                      <div
-                                        key={index}
-                                        onClick={() =>
-                                          handleFreightChargeSuggestionSelect(
-                                            charge.id,
-                                            suggestion
-                                          )
-                                        }
-                                        className="px-3 py-2.5 hover:bg-green-100 active:bg-green-200 cursor-pointer border-b border-gray-200 last:border-b-0 text-xs transition-all"
-                                      >
-                                        <div className="text-gray-900 font-medium">{suggestion}</div>
+                                  {filteredFreightChargeSuggestions[
+                                    charge.id
+                                  ].map((suggestion, index) => (
+                                    <div
+                                      key={index}
+                                      onClick={() =>
+                                        handleFreightChargeSuggestionSelect(
+                                          charge.id,
+                                          suggestion
+                                        )
+                                      }
+                                      className="px-3 py-2.5 hover:bg-green-100 active:bg-green-200 cursor-pointer border-b border-gray-200 last:border-b-0 text-xs transition-all"
+                                    >
+                                      <div className="text-gray-900 font-medium">
+                                        {suggestion}
                                       </div>
-                                    )
-                                  )}
+                                    </div>
+                                  ))}
                                 </div>
                               )}
                           </td>
@@ -1689,7 +2020,7 @@ const ImportExportQuotationForm = () => {
                               <option value="/BL">/BL</option>
                               <option value="/PKG">/PKG</option>
                               <option value="/HBL">/HBL</option>
-                                   <option value="/Shipment">/Shipment</option>
+                              <option value="/Shipment">/Shipment</option>
                               <option value="/Container">/Container</option>
                             </select>
                           </td>
@@ -1769,50 +2100,63 @@ const ImportExportQuotationForm = () => {
                               }
                               onFocus={() => {
                                 // Show all suggestions on focus
-                                const filtered = destinationChargeSuggestions.filter((suggestion) =>
-                                  suggestion.toLowerCase().includes(charge.charges.toLowerCase())
-                                );
-                                setFilteredDestinationChargeSuggestions((prev) => ({
-                                  ...prev,
-                                  [charge.id]: filtered,
-                                }));
-                                if (filtered.length > 0) {
-                                  setShowDestinationChargeSuggestions((prev) => ({
+                                const filtered =
+                                  destinationChargeSuggestions.filter(
+                                    (suggestion) =>
+                                      suggestion
+                                        .toLowerCase()
+                                        .includes(charge.charges.toLowerCase())
+                                  );
+                                setFilteredDestinationChargeSuggestions(
+                                  (prev) => ({
                                     ...prev,
-                                    [charge.id]: true,
-                                  }));
+                                    [charge.id]: filtered,
+                                  })
+                                );
+                                if (filtered.length > 0) {
+                                  setShowDestinationChargeSuggestions(
+                                    (prev) => ({
+                                      ...prev,
+                                      [charge.id]: true,
+                                    })
+                                  );
                                 }
                               }}
                               onBlur={() => {
                                 setTimeout(() => {
-                                  setShowDestinationChargeSuggestions((prev) => ({
-                                    ...prev,
-                                    [charge.id]: false,
-                                  }));
+                                  setShowDestinationChargeSuggestions(
+                                    (prev) => ({
+                                      ...prev,
+                                      [charge.id]: false,
+                                    })
+                                  );
                                 }, 200);
                               }}
                               placeholder="Type charge name..."
                               className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-purple-400"
                             />
                             {showDestinationChargeSuggestions[charge.id] &&
-                              filteredDestinationChargeSuggestions[charge.id]?.length > 0 && (
+                              filteredDestinationChargeSuggestions[charge.id]
+                                ?.length > 0 && (
                                 <div className="absolute z-[100] w-full mt-1 bg-white border-2 border-purple-400 rounded-lg shadow-2xl max-h-60 overflow-y-auto left-0 top-full">
-                                  {filteredDestinationChargeSuggestions[charge.id].map(
-                                    (suggestion, index) => (
-                                      <div
-                                        key={index}
-                                        onClick={() =>
-                                          handleDestinationChargeSuggestionSelect(
-                                            charge.id,
-                                            suggestion
-                                          )
-                                        }
-                                        className="px-3 py-2.5 hover:bg-purple-100 active:bg-purple-200 cursor-pointer border-b border-gray-200 last:border-b-0 text-xs transition-all"
-                                      >
-                                        <div className="text-gray-900 font-medium">{suggestion}</div>
+                                  {filteredDestinationChargeSuggestions[
+                                    charge.id
+                                  ].map((suggestion, index) => (
+                                    <div
+                                      key={index}
+                                      onClick={() =>
+                                        handleDestinationChargeSuggestionSelect(
+                                          charge.id,
+                                          suggestion
+                                        )
+                                      }
+                                      className="px-3 py-2.5 hover:bg-purple-100 active:bg-purple-200 cursor-pointer border-b border-gray-200 last:border-b-0 text-xs transition-all"
+                                    >
+                                      <div className="text-gray-900 font-medium">
+                                        {suggestion}
                                       </div>
-                                    )
-                                  )}
+                                    </div>
+                                  ))}
                                 </div>
                               )}
                           </td>
@@ -1865,7 +2209,7 @@ const ImportExportQuotationForm = () => {
                               <option value="/BL">/BL</option>
                               <option value="/PKG">/PKG</option>
                               <option value="/HBL">/HBL</option>
-                                   <option value="/Shipment">/Shipment</option>
+                              <option value="/Shipment">/Shipment</option>
                               <option value="/Container">/Container</option>
                             </select>
                           </td>
@@ -1946,7 +2290,7 @@ const ImportExportQuotationForm = () => {
       {/* Success Popup */}
       {showPopup && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-lg shadow-2xl p-6 max-w-sm w-full animate-bounce-in">
+          <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full animate-bounce-in">
             <div className="flex items-center justify-center mb-4">
               <div className="bg-green-100 rounded-full p-3">
                 <CheckCircle size={48} className="text-green-600" />
@@ -1955,6 +2299,14 @@ const ImportExportQuotationForm = () => {
             <h3 className="text-xl font-bold text-center text-gray-800 mb-2">
               Quotation Submitted Successfully!
             </h3>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <p className="text-xs text-blue-600 font-medium text-center mb-1">
+                Quotation Number
+              </p>
+              <p className="text-lg font-bold text-blue-900 text-center">
+                {quotationNumber}
+              </p>
+            </div>
             <p className="text-center text-gray-600 text-sm mb-4">
               Your quotation has been generated and the PDF is downloading.
             </p>
