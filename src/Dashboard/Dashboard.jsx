@@ -12,7 +12,7 @@ import {
   Calendar,
   X,
 } from "lucide-react";
-import OmTransLogo from "../assets/Omtrans.jpg";
+import OmTransLogo from "../assets/omtrans.jpg";
 import VikramImg from "../assets/vikram.jpg";
 import TarunImg from "../assets/tarun.jpeg";
 import HarmeetImg from "../assets/harmeet.jpg";
