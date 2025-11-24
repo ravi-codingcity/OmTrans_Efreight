@@ -294,7 +294,7 @@ const Dashboard = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <FileText className="text-blue-600" size={18} />
-                          <span className="font-semibold text-gray-900">
+                          <span className="font-semibold text-gray-900 text-sm">
                             {quote.id}
                           </span>
                         </div>
@@ -307,7 +307,7 @@ const Dashboard = () => {
                             className="w-10 h-10 rounded-full object-cover border-[1px] border-black"
                           />
                           <div>
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-gray-900 text-sm">
                               {quote.createdBy}
                             </div>
                             <div className="text-xs text-gray-500">
@@ -356,10 +356,11 @@ const Dashboard = () => {
                       <td className="px-6 py-4">
                         <button
                           onClick={() => viewDetails(quote)}
-                          className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all font-medium text-sm border border-blue-200"
                           title="View Details"
                         >
-                          <Eye size={18} />
+                          <Eye size={16} />
+                          <span>View</span>
                         </button>
                       </td>
                     </tr>
@@ -444,98 +445,111 @@ const Dashboard = () => {
 
       {/* Quotation Details Modal */}
       {showDetailsModal && selectedQuotation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full my-8">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-              <div>
-                <h3 className="text-2xl font-bold">Quotation Details</h3>
-                <p className="text-sm text-blue-100 mt-1">
-                  {selectedQuotation.id}
-                </p>
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-3 rounded-t-xl sticky top-0 z-10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold">Quotation Details</h3>
+                  <p className="text-xs text-blue-100 mt-0.5">
+                    {selectedQuotation.id}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    setSelectedQuotation(null);
+                  }}
+                  className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                  title="Close"
+                >
+                  <X size={20} />
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  setShowDetailsModal(false);
-                  setSelectedQuotation(null);
-                }}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                title="Close"
-              >
-                <X size={24} />
-              </button>
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 space-y-6">
+            <div className="p-5 max-h-[calc(90vh-120px)] overflow-y-auto space-y-4">
               {/* Status Badge */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <User className="text-gray-400" size={20} />
+              <div className="flex items-center justify-between pb-3 border-b">
+                <div className="flex items-center gap-2.5">
+                  <div className="bg-blue-600 p-2 rounded-full">
+                    <User className="text-white" size={16} />
+                  </div>
                   <div>
-                    <p className="text-sm text-gray-600">Created By</p>
-                    <p className="font-semibold text-gray-900">
-                      {selectedQuotation.createdBy} ({selectedQuotation.createdByRole})
+                    <p className="text-xs text-gray-600">Created By</p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {selectedQuotation.createdBy} <span className="text-xs text-gray-600">({selectedQuotation.createdByRole})</span>
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(selectedQuotation.createdDate).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
                   </div>
                 </div>
                 {selectedQuotation.status === "Pending" ? (
-                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-300">
-                    <Clock size={18} />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-300">
+                    <Clock size={14} />
                     Pending
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-300">
-                    <CheckCircle size={18} />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-300">
+                    <CheckCircle size={14} />
                     Approved
                   </span>
                 )}
               </div>
 
               {/* Customer & Consignee Information */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                    <User size={18} />
-                    Customer Information
+              <div className="grid md:grid-cols-2 gap-3">
+                <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                  <h4 className="text-xs font-semibold text-blue-900 mb-1.5 flex items-center gap-1.5">
+                    <User size={14} />
+                    Customer
                   </h4>
-                  <p className="text-sm text-gray-700 whitespace-pre-line">
+                  <p className="text-xs text-gray-700 whitespace-pre-line line-clamp-3">
                     {selectedQuotation.customerName || "N/A"}
                   </p>
                 </div>
-                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                  <h4 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
-                    <User size={18} />
-                    Consignee Information
+                <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                  <h4 className="text-xs font-semibold text-purple-900 mb-1.5 flex items-center gap-1.5">
+                    <User size={14} />
+                    Consignee
                   </h4>
-                  <p className="text-sm text-gray-700 whitespace-pre-line">
+                  <p className="text-xs text-gray-700 whitespace-pre-line line-clamp-3">
                     {selectedQuotation.consigneeName || "N/A"}
                   </p>
                 </div>
               </div>
 
               {/* Shipment Details */}
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Package size={18} />
+              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                <h4 className="text-xs font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+                  <Package size={14} />
                   Shipment Details
                 </h4>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">Equipment</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-xs text-gray-600 mb-0.5">Equipment</p>
+                    <p className="text-xs font-medium text-gray-900">
                       {selectedQuotation.equipment || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">Weight</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-xs text-gray-600 mb-0.5">Weight</p>
+                    <p className="text-xs font-medium text-gray-900">
                       {selectedQuotation.weight || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">Terms</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-xs text-gray-600 mb-0.5">Terms</p>
+                    <p className="text-xs font-medium text-gray-900">
                       {selectedQuotation.terms || "N/A"}
                     </p>
                   </div>
@@ -543,153 +557,151 @@ const Dashboard = () => {
               </div>
 
               {/* Route Information */}
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200">
-                <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Ship size={18} />
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 border border-blue-200">
+                <h4 className="text-xs font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+                  <Ship size={14} />
                   Route Information
                 </h4>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">Place of Receipt</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-xs text-gray-600 mb-0.5">POR</p>
+                    <p className="text-xs font-medium text-gray-900">
                       {selectedQuotation.por || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">Port of Loading</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-xs text-gray-600 mb-0.5">POL</p>
+                    <p className="text-xs font-medium text-gray-900">
                       {selectedQuotation.pol || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">Port of Discharge</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-xs text-gray-600 mb-0.5">POD</p>
+                    <p className="text-xs font-medium text-gray-900">
                       {selectedQuotation.pod || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">Final Destination</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-xs text-gray-600 mb-0.5">Final Dest.</p>
+                    <p className="text-xs font-medium text-gray-900">
                       {selectedQuotation.finalDestination || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">Shipping Line</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-xs text-gray-600 mb-0.5">Shipping Line</p>
+                    <p className="text-xs font-medium text-gray-900">
                       {selectedQuotation.shippingLine || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">ETD</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-xs text-gray-600 mb-0.5">ETD</p>
+                    <p className="text-xs font-medium text-gray-900">
                       {selectedQuotation.etd || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">Transit Time</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-xs text-gray-600 mb-0.5">Transit Time</p>
+                    <p className="text-xs font-medium text-gray-900">
                       {selectedQuotation.transitTime || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Created Date</p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {new Date(selectedQuotation.createdDate).toLocaleString()}
                     </p>
                   </div>
                 </div>
               </div>
 
               {/* Charges Tables */}
-              {selectedQuotation.originCharges && selectedQuotation.originCharges.length > 0 && (
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="bg-blue-600 text-white px-4 py-2">
-                    <h4 className="font-semibold">Origin Charges</h4>
-                  </div>
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-2 text-left font-medium text-gray-700">Charge Description</th>
-                        <th className="px-4 py-2 text-left font-medium text-gray-700">Currency</th>
-                        <th className="px-4 py-2 text-right font-medium text-gray-700">Amount</th>
-                        <th className="px-4 py-2 text-left font-medium text-gray-700">Unit</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {selectedQuotation.originCharges.map((charge, idx) => (
-                        <tr key={idx}>
-                          <td className="px-4 py-2 text-gray-900">{charge.charges || "N/A"}</td>
-                          <td className="px-4 py-2 text-gray-900">{charge.currency || "USD"}</td>
-                          <td className="px-4 py-2 text-right text-gray-900">{charge.amount || "0"}</td>
-                          <td className="px-4 py-2 text-gray-900">{charge.unit || "Per Shipment"}</td>
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-gray-900">Charges Breakdown</h4>
+                
+                {selectedQuotation.originCharges && selectedQuotation.originCharges.length > 0 && (
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="bg-blue-600 text-white px-3 py-1.5">
+                      <h5 className="text-xs font-semibold">Origin Charges</h5>
+                    </div>
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 py-1.5 text-left font-medium text-gray-700">Description</th>
+                          <th className="px-3 py-1.5 text-left font-medium text-gray-700">Currency</th>
+                          <th className="px-3 py-1.5 text-right font-medium text-gray-700">Amount</th>
+                          <th className="px-3 py-1.5 text-left font-medium text-gray-700">Unit</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {selectedQuotation.originCharges.map((charge, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-3 py-1.5 text-gray-900">{charge.charges || "N/A"}</td>
+                            <td className="px-3 py-1.5 text-gray-700">{charge.currency || "USD"}</td>
+                            <td className="px-3 py-1.5 text-right text-gray-900 font-medium">{charge.amount || "0"}</td>
+                            <td className="px-3 py-1.5 text-gray-700">{charge.unit || "Per Shipment"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
 
-              {selectedQuotation.freightCharges && selectedQuotation.freightCharges.length > 0 && (
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="bg-purple-600 text-white px-4 py-2">
-                    <h4 className="font-semibold">Freight Charges</h4>
-                  </div>
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-2 text-left font-medium text-gray-700">Charge Description</th>
-                        <th className="px-4 py-2 text-left font-medium text-gray-700">Currency</th>
-                        <th className="px-4 py-2 text-right font-medium text-gray-700">Amount</th>
-                        <th className="px-4 py-2 text-left font-medium text-gray-700">Unit</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {selectedQuotation.freightCharges.map((charge, idx) => (
-                        <tr key={idx}>
-                          <td className="px-4 py-2 text-gray-900">{charge.charges || "N/A"}</td>
-                          <td className="px-4 py-2 text-gray-900">{charge.currency || "USD"}</td>
-                          <td className="px-4 py-2 text-right text-gray-900">{charge.amount || "0"}</td>
-                          <td className="px-4 py-2 text-gray-900">{charge.unit || "Per Container"}</td>
+                {selectedQuotation.freightCharges && selectedQuotation.freightCharges.length > 0 && (
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="bg-purple-600 text-white px-3 py-1.5">
+                      <h5 className="text-xs font-semibold">Freight Charges</h5>
+                    </div>
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 py-1.5 text-left font-medium text-gray-700">Description</th>
+                          <th className="px-3 py-1.5 text-left font-medium text-gray-700">Currency</th>
+                          <th className="px-3 py-1.5 text-right font-medium text-gray-700">Amount</th>
+                          <th className="px-3 py-1.5 text-left font-medium text-gray-700">Unit</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {selectedQuotation.freightCharges.map((charge, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-3 py-1.5 text-gray-900">{charge.charges || "N/A"}</td>
+                            <td className="px-3 py-1.5 text-gray-700">{charge.currency || "USD"}</td>
+                            <td className="px-3 py-1.5 text-right text-gray-900 font-medium">{charge.amount || "0"}</td>
+                            <td className="px-3 py-1.5 text-gray-700">{charge.unit || "Per Container"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
 
-              {selectedQuotation.destinationCharges && selectedQuotation.destinationCharges.length > 0 && (
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="bg-green-600 text-white px-4 py-2">
-                    <h4 className="font-semibold">Destination Charges</h4>
-                  </div>
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-2 text-left font-medium text-gray-700">Charge Description</th>
-                        <th className="px-4 py-2 text-left font-medium text-gray-700">Currency</th>
-                        <th className="px-4 py-2 text-right font-medium text-gray-700">Amount</th>
-                        <th className="px-4 py-2 text-left font-medium text-gray-700">Unit</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {selectedQuotation.destinationCharges.map((charge, idx) => (
-                        <tr key={idx}>
-                          <td className="px-4 py-2 text-gray-900">{charge.charges || "N/A"}</td>
-                          <td className="px-4 py-2 text-gray-900">{charge.currency || "USD"}</td>
-                          <td className="px-4 py-2 text-right text-gray-900">{charge.amount || "0"}</td>
-                          <td className="px-4 py-2 text-gray-900">{charge.unit || "Per Shipment"}</td>
+                {selectedQuotation.destinationCharges && selectedQuotation.destinationCharges.length > 0 && (
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="bg-green-600 text-white px-3 py-1.5">
+                      <h5 className="text-xs font-semibold">Destination Charges</h5>
+                    </div>
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 py-1.5 text-left font-medium text-gray-700">Description</th>
+                          <th className="px-3 py-1.5 text-left font-medium text-gray-700">Currency</th>
+                          <th className="px-3 py-1.5 text-right font-medium text-gray-700">Amount</th>
+                          <th className="px-3 py-1.5 text-left font-medium text-gray-700">Unit</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {selectedQuotation.destinationCharges.map((charge, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-3 py-1.5 text-gray-900">{charge.charges || "N/A"}</td>
+                            <td className="px-3 py-1.5 text-gray-700">{charge.currency || "USD"}</td>
+                            <td className="px-3 py-1.5 text-right text-gray-900 font-medium">{charge.amount || "0"}</td>
+                            <td className="px-3 py-1.5 text-gray-700">{charge.unit || "Per Shipment"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
 
               {/* Remarks */}
               {selectedQuotation.remarks && (
-                <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
-                  <h4 className="font-semibold text-yellow-900 mb-2">Remarks</h4>
-                  <p className="text-sm text-gray-700 whitespace-pre-line">
+                <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                  <h4 className="text-xs font-semibold text-yellow-900 mb-1">Remarks</h4>
+                  <p className="text-xs text-gray-700 whitespace-pre-line">
                     {selectedQuotation.remarks}
                   </p>
                 </div>
@@ -697,13 +709,13 @@ const Dashboard = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="bg-gray-50 px-6 py-4 flex justify-end border-t">
+            <div className="bg-gray-50 px-5 py-3 flex justify-end border-t rounded-b-xl">
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedQuotation(null);
                 }}
-                className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors"
               >
                 Close
               </button>

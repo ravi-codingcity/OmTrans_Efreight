@@ -66,40 +66,40 @@ const ImportExportQuotationForm = ({ currentUser }) => {
 
   // Origin Charge Suggestions
   const originChargeSuggestions = [
-    "Transport",
-    "BL Fee",
-    "Customs Clearance",
-    "Loading Charges",
-    "Unloading Charges",
-    "Documentation Charges",
-    "Port Handling Charges",
-    "THC",
-    "CFS ",
-    "Seal Charges",
-    "VGM Charges",
-    "DGFT Charges",
+    "Transport Charge",
+    "BL Fee Charge",
+    "Customs Clearance Charge",
+    "Loading Charge",
+    "Unloading Charge",
+    "Documentation Charge",
+    "Port Handling Charge",
+    "THC Charge",
+    "CFS Charge",
+    "Seal Charge",
+    "VGM Charge",
+    "DGFT Charge",
   ].sort();
 
   // Freight Charge Suggestions
   const freightChargeSuggestions = [
     "Ocean Charges",
-    "ISPS",
-    "Seal",
-    "ACD",
-    "ENS",
+    "ISPS Charge",
+    "Seal Charge",
+    "ACD Charge",
+    "ENS Charge",
     "BL Charges",
-    "THC",
-    "Lift On/Lift Off",
+    "THC Charge",
+    "Lift On/Lift Off Charge",
   ].sort();
 
   // Destination Charge Suggestions
   const destinationChargeSuggestions = [
-    "Shipping Line",
-    "Documentation",
-    "EDI Fees",
-    "Certification",
-    "BL Fee",
-    "Customs Clearance",
+    "Shipping Line Charge",
+    "Documentation Charge",
+    "EDI Fees Charge",
+    "Certification Charge",
+    "BL Fee Charge",
+    "Customs Clearance Charge",
   ].sort();
 
   // Dummy customer data
