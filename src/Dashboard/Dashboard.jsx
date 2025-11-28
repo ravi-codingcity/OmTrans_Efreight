@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   FileText,
   CheckCircle,
-  Clock,
   TrendingUp,
   Package,
   Ship,
@@ -11,6 +10,8 @@ import {
   User,
   Calendar,
   X,
+  XCircle,
+  Briefcase,
 } from "lucide-react";
 import OmTransLogo from "../assets/omtrans.jpg";
 import VikramImg from "../assets/vikram.jpg";
@@ -33,8 +34,8 @@ const Dashboard = () => {
   // State for statistics
   const [stats, setStats] = useState({
     totalQuotations: 0,
-    pendingQuotations: 0,
-    approvedQuotations: 0,
+    businessNotConverted: 0,
+    jobsCreated: 0,
     totalBookings: 0,
   });
 
@@ -65,11 +66,11 @@ const Dashboard = () => {
 
     // Calculate statistics
     const totalQuotations = importExportQuotations.length;
-    const pendingQuotations = importExportQuotations.filter(
-      (q) => q.status === "Pending"
+    const businessNotConverted = importExportQuotations.filter(
+      (q) => q.businessStatus === "Not Converted"
     ).length;
-    const approvedQuotations = importExportQuotations.filter(
-      (q) => q.status === "Approved"
+    const jobsCreated = importExportQuotations.filter(
+      (q) => q.businessStatus === "Job Created"
     ).length;
 
     // Load bookings (placeholder - will be implemented later)
@@ -78,8 +79,8 @@ const Dashboard = () => {
 
     setStats({
       totalQuotations,
-      pendingQuotations,
-      approvedQuotations,
+      businessNotConverted,
+      jobsCreated,
       totalBookings,
     });
   };
@@ -97,10 +98,13 @@ const Dashboard = () => {
   };
 
   // Filter quotations based on selected status and sort by date (most recent first)
+  // Filter quotations based on selected status and sort by date (most recent first)
   const filteredQuotations = quotations
     .filter((quote) => {
       if (filterStatus === "All") return true;
-      return quote.status === filterStatus;
+      if (filterStatus === "Not Converted") return quote.businessStatus === "Not Converted";
+      if (filterStatus === "Job Created") return quote.businessStatus === "Job Created";
+      return true;
     })
     .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
 
@@ -158,52 +162,52 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Pending Quotations */}
+          {/* Business Not Converted */}
           <div 
-            onClick={() => handleCardClick("Pending")}
-            className={`bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500 hover:shadow-xl transition-all hover:scale-105 cursor-pointer ${
-              filterStatus === "Pending" ? "ring-2 ring-yellow-500" : ""
+            onClick={() => handleCardClick("Not Converted")}
+            className={`bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500 hover:shadow-xl transition-all hover:scale-105 cursor-pointer ${
+              filterStatus === "Not Converted" ? "ring-2 ring-red-500" : ""
             }`}
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1">
-                  Pending Quotations
+                  Business Not Converted
                 </p>
                 <h3 className="text-4xl font-bold text-gray-900">
-                  {stats.pendingQuotations}
+                  {stats.businessNotConverted}
                 </h3>
                 <p className="text-xs text-gray-500 mt-2">
-                  Awaiting approval
+                  Lost opportunities
                 </p>
               </div>
-              <div className="bg-yellow-100 p-4 rounded-full">
-                <Clock className="text-yellow-600" size={28} />
+              <div className="bg-red-100 p-4 rounded-full">
+                <XCircle className="text-red-600" size={28} />
               </div>
             </div>
           </div>
 
-          {/* Approved Quotations */}
+          {/* Jobs Created */}
           <div 
-            onClick={() => handleCardClick("Approved")}
+            onClick={() => handleCardClick("Job Created")}
             className={`bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:shadow-xl transition-all hover:scale-105 cursor-pointer ${
-              filterStatus === "Approved" ? "ring-2 ring-green-500" : ""
+              filterStatus === "Job Created" ? "ring-2 ring-green-500" : ""
             }`}
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1">
-                  Approved Quotations
+                  Jobs Created
                 </p>
                 <h3 className="text-4xl font-bold text-gray-900">
-                  {stats.approvedQuotations}
+                  {stats.jobsCreated}
                 </h3>
                 <p className="text-xs text-gray-500 mt-2">
-                  Successfully approved
+                  Converted to jobs
                 </p>
               </div>
               <div className="bg-green-100 p-4 rounded-full">
-                <CheckCircle className="text-green-600" size={28} />
+                <Briefcase className="text-green-600" size={28} />
               </div>
             </div>
           </div>
@@ -261,9 +265,6 @@ const Dashboard = () => {
                     Created Date
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Action
                   </th>
                 </tr>
@@ -271,7 +272,7 @@ const Dashboard = () => {
               <tbody className="divide-y divide-gray-200">
                 {filteredQuotations.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-12 text-center">
+                    <td colSpan="6" className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <Package className="text-gray-300" size={48} />
                         <p className="text-gray-500 text-lg">
@@ -280,7 +281,7 @@ const Dashboard = () => {
                         <p className="text-gray-400 text-sm">
                           {filterStatus === "All"
                             ? "No quotations have been created yet"
-                            : `No ${filterStatus.toLowerCase()} quotations`}
+                            : `No quotations with "${filterStatus}" status`}
                         </p>
                       </div>
                     </td>
@@ -339,19 +340,6 @@ const Dashboard = () => {
                           <Calendar size={16} />
                           {new Date(quote.createdDate).toLocaleDateString()}
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        {quote.status === "Pending" ? (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-300">
-                            <Clock size={14} />
-                            Pending
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-300">
-                            <CheckCircle size={14} />
-                            Approved
-                          </span>
-                        )}
                       </td>
                       <td className="px-6 py-4">
                         <button
@@ -493,17 +481,6 @@ const Dashboard = () => {
                     </p>
                   </div>
                 </div>
-                {selectedQuotation.status === "Pending" ? (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-300">
-                    <Clock size={14} />
-                    Pending
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-300">
-                    <CheckCircle size={14} />
-                    Approved
-                  </span>
-                )}
               </div>
 
               {/* Customer & Consignee Information */}

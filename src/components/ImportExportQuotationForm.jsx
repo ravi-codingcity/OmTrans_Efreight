@@ -300,9 +300,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     "Southampton, UK",
     "Le Havre, France",
     "Barcelona, Spain",
-
     "Genoa, Italy",
-
     "Istanbul, Turkey",
     // North America
     "Los Angeles, USA",

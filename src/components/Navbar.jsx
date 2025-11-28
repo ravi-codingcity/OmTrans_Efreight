@@ -4,7 +4,6 @@ import {
   LogOut,
   User,
   FileText,
-  ClipboardList,
   Package,
   LayoutDashboard,
 } from "lucide-react";
@@ -80,7 +79,7 @@ const Navbar = ({ currentUser, onLogout, onNavigate, currentView }) => {
               <button
                 onClick={() => setShowQuotationMenu(!showQuotationMenu)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                  currentView === "form" || currentView === "approval"
+                  currentView === "form"
                     ? "bg-blue-50 text-blue-700"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
@@ -116,28 +115,6 @@ const Navbar = ({ currentUser, onLogout, onNavigate, currentView }) => {
                       </div>
                     </div>
                   </button>
-
-                  {/* Admin Only - Quotation Approval */}
-                  {currentUser?.role === "Admin" && (
-                    <button
-                      onClick={() => handleQuotationClick("approval")}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                        currentView === "approval"
-                          ? "bg-blue-50 text-blue-700"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="bg-purple-100 p-2 rounded-lg">
-                        <ClipboardList size={18} className="text-purple-600" />
-                      </div>
-                      <div>
-                        <div className="font-medium">Quotation Approval</div>
-                        <div className="text-xs text-gray-500">
-                          Admin dashboard
-                        </div>
-                      </div>
-                    </button>
-                  )}
                 </div>
               )}
             </div>
