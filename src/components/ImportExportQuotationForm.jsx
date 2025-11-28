@@ -25,7 +25,22 @@ const ImportExportQuotationForm = ({ currentUser }) => {
   // Popup state
   const [showPopup, setShowPopup] = useState(false);
   const [quotationNumber, setQuotationNumber] = useState("");
-  const [transportMode, setTransportMode] = useState("Air"); // Air or Sea
+  const [quotationSegment, setQuotationSegment] = useState(""); // Quotation segment selection
+
+  // Quotation segment options with prefixes
+  const quotationSegments = [
+    { label: "Sea Export LCL", prefix: "SELCL" },
+    { label: "Sea Export FCL", prefix: "SEFCL" },
+    { label: "Sea Import LCL", prefix: "SILCL" },
+    { label: "Sea Import FCL", prefix: "SIFCL" },
+    { label: "Break Bulk Export", prefix: "BBE" },
+    { label: "Break Bulk Import", prefix: "BBI" },
+    { label: "Air Export LCL", prefix: "AELCL" },
+    { label: "Air Export FCL", prefix: "AEFCL" },
+    { label: "Air Import LCL", prefix: "AILCL" },
+    { label: "Air Import FCL", prefix: "AIFCL" },
+    { label: "Service Job", prefix: "SJ" },
+  ];
 
   // Autocomplete state
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
@@ -699,20 +714,30 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     }));
   };
 
-  // Generate quotation number based on transport mode
+  // Generate quotation number based on selected segment
   const generateQuotationNumber = () => {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, "0");
     const month = String(now.getMonth() + 1).padStart(2, "0");
-    const year = now.getFullYear();
-    const randomNum = Math.floor(Math.random() * 10); // Random digit 0-9
-
-    const prefix = transportMode === "Air" ? "AIR" : "SEA";
-    return `${prefix}-${day}${month}${year}${randomNum}`;
+    
+    // Generate unique 2-3 digit random number
+    const randomNum = Math.floor(Math.random() * 900) + 100; // Random 3-digit number (100-999)
+    
+    // Find the prefix for selected segment
+    const selectedSegment = quotationSegments.find(seg => seg.label === quotationSegment);
+    const prefix = selectedSegment ? selectedSegment.prefix : "QT";
+    
+    return `${prefix}-${day}${month}-${randomNum}`;
   };
 
   // Generate PDF and Submit
   const handleSubmit = () => {
+    // Validate required segment selection
+    if (!quotationSegment) {
+      alert("Please select a Quotation Segment before submitting.");
+      return;
+    }
+
     const doc = new jsPDF();
 
     // Generate quotation number at the start
@@ -753,17 +778,23 @@ const ImportExportQuotationForm = ({ currentUser }) => {
 
     yPos += 20;
 
-    // Quotation Number Box
+    // Quotation Number and Segment Box
     doc.setFillColor(240, 248, 255);
-    doc.rect(15, yPos, 180, 10, "F");
+    doc.rect(15, yPos, 180, 16, "F");
     doc.setTextColor(37, 99, 235);
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
-    doc.text(`Quotation No: ${newQuotationNumber}`, 105, yPos + 7, {
+    doc.text(`Quotation No: ${newQuotationNumber}`, 105, yPos + 6, {
+      align: "center",
+    });
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Segment: ${quotationSegment}`, 105, yPos + 12, {
       align: "center",
     });
 
-    yPos += 15;
+    yPos += 20;
     doc.setTextColor(0, 0, 0);
 
     // Customer & Consignee Section
@@ -1068,9 +1099,14 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     const pdfFileName = `Door_to_Door_Quotation_${newQuotationNumber}.pdf`;
     doc.save(pdfFileName);
 
+    // Get the selected segment details
+    const selectedSegmentDetails = quotationSegments.find(s => s.label === quotationSegment);
+
     // Save quotation data to localStorage for approval dashboard
     const quotationData = {
       id: newQuotationNumber,
+      quotationSegment: quotationSegment,
+      quotationSegmentPrefix: selectedSegmentDetails?.prefix || "",
       customerName: basicInfo.customerNameAndAddress,
       consigneeName: basicInfo.consigneeAddress,
       equipment: basicInfo.equipment,
@@ -1112,7 +1148,8 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     // Console log all form data
     console.log("=== QUOTATION SUBMITTED ===");
     console.log("Quotation Number:", newQuotationNumber);
-    console.log("Transport Mode:", transportMode);
+    console.log("Quotation Segment:", quotationSegment);
+    console.log("Segment Prefix:", selectedSegmentDetails?.prefix);
     console.log("Basic Information:", basicInfo);
     console.log("Origin Charges:", originCharges);
     console.log("Freight Charges:", freightCharges);
@@ -1124,6 +1161,9 @@ const ImportExportQuotationForm = ({ currentUser }) => {
 
     // Show popup
     setShowPopup(true);
+
+    // Reset quotation segment after submission
+    setQuotationSegment("");
 
     // Clear all form fields after submission
     setBasicInfo({
@@ -1219,32 +1259,35 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                 </span>
                 Scope of Activities
               </h2>
-              {/* Air/Sea Radio Buttons */}
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="transportMode"
-                    value="Air"
-                    checked={transportMode === "Air"}
-                    onChange={(e) => setTransportMode(e.target.value)}
-                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Air</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="transportMode"
-                    value="Sea"
-                    checked={transportMode === "Sea"}
-                    onChange={(e) => setTransportMode(e.target.value)}
-                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Sea</span>
-                </label>
-              </div>
             </div>
+            
+            {/* Quotation Segment Selection - Required */}
+            <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
+                Select Your Quotation Segment <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={quotationSegment}
+                onChange={(e) => setQuotationSegment(e.target.value)}
+                className={`w-full md:w-1/2 px-4 py-2.5 text-sm border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                  quotationSegment ? "border-green-400 bg-white" : "border-blue-300 bg-white"
+                }`}
+                required
+              >
+                <option value="">-- Select Quotation Segment --</option>
+                {quotationSegments.map((segment, index) => (
+                  <option key={index} value={segment.label}>
+                    {segment.label}
+                  </option>
+                ))}
+              </select>
+              {quotationSegment && (
+                <p className="mt-2 text-xs text-green-600 font-medium">
+                  ✓ Selected: {quotationSegment} (Prefix: {quotationSegments.find(s => s.label === quotationSegment)?.prefix})
+                </p>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="relative">
                 <label className="block text-xs font-medium text-gray-700 mb-1">

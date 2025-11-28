@@ -253,6 +253,9 @@ const Dashboard = () => {
                     Quotation No.
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Segment
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Created By
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -272,7 +275,7 @@ const Dashboard = () => {
               <tbody className="divide-y divide-gray-200">
                 {filteredQuotations.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-12 text-center">
+                    <td colSpan="7" className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <Package className="text-gray-300" size={48} />
                         <p className="text-gray-500 text-lg">
@@ -299,6 +302,11 @@ const Dashboard = () => {
                             {quote.id}
                           </span>
                         </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                          {quote.quotationSegment || "N/A"}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -459,7 +467,7 @@ const Dashboard = () => {
 
             {/* Modal Content */}
             <div className="p-5 max-h-[calc(90vh-120px)] overflow-y-auto space-y-4">
-              {/* Status Badge */}
+              {/* Segment and Status */}
               <div className="flex items-center justify-between pb-3 border-b">
                 <div className="flex items-center gap-2.5">
                   <div className="bg-blue-600 p-2 rounded-full">
@@ -481,6 +489,14 @@ const Dashboard = () => {
                     </p>
                   </div>
                 </div>
+                {selectedQuotation.quotationSegment && (
+                  <div className="text-right">
+                    <p className="text-xs text-gray-600">Quotation Segment</p>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800">
+                      {selectedQuotation.quotationSegment}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Customer & Consignee Information */}
