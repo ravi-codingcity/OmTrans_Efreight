@@ -9,6 +9,9 @@ import { foreignDestinations } from "./POD";
 import { customerData } from "./CustomerData";
 import { consigneeData } from "./ConsigneeData";
 import { shippingLines } from "./ShippingLines";
+import { airlines } from "./Airlines";
+import { airportsOfDeparture } from "./AirportOfDeparture";
+import { airportsOfDestination } from "./AirportOfDestination";
 
 const ImportExportQuotationForm = ({ currentUser }) => {
   // Basic Information State
@@ -17,7 +20,9 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     consigneeAddress: "",
     equipment: "",
     weight: "",
+    cbm: "",
     terms: "",
+    commodity: "",
     por: "",
     pol: "",
     pod: "",
@@ -26,12 +31,21 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     etd: "",
     totalTransitTime: "",
     remarks: "",
+    numberOfPackets: "",
+    cargoSize: "",
+    airLines: "",
+    airPortOfDeparture: "",
+    airPortOfDestination: "",
+    chargeableWeight: "",
+    volumeWeight: "",
+    size: "",
   });
 
   // Popup state
   const [showPopup, setShowPopup] = useState(false);
   const [quotationNumber, setQuotationNumber] = useState("");
   const [quotationSegment, setQuotationSegment] = useState(""); // Quotation segment selection
+  const [serviceJobType, setServiceJobType] = useState(""); // For Service Job radio selection
 
   // Quotation segment options with prefixes
   const quotationSegments = [
@@ -82,6 +96,12 @@ const ImportExportQuotationForm = ({ currentUser }) => {
   const [filteredFinalDestinations, setFilteredFinalDestinations] = useState(
     []
   );
+  const [showAirlinesDropdown, setShowAirlinesDropdown] = useState(false);
+  const [filteredAirlines, setFilteredAirlines] = useState([]);
+  const [showAirportDepartureDropdown, setShowAirportDepartureDropdown] = useState(false);
+  const [filteredAirportsDeparture, setFilteredAirportsDeparture] = useState([]);
+  const [showAirportDestinationDropdown, setShowAirportDestinationDropdown] = useState(false);
+  const [filteredAirportsDestination, setFilteredAirportsDestination] = useState([]);
 
   // Origin Charge Suggestions
   const originChargeSuggestions = [
@@ -258,6 +278,45 @@ const ImportExportQuotationForm = ({ currentUser }) => {
         setShowFinalDestDropdown(false);
       }
     }
+
+    // Handle autocomplete for Airlines
+    if (name === "airLines") {
+      if (value.trim().length > 0) {
+        const filtered = airlines
+          .filter((airline) => airline.toLowerCase().includes(value.toLowerCase()))
+          .sort();
+        setFilteredAirlines(filtered);
+        setShowAirlinesDropdown(filtered.length > 0);
+      } else {
+        setShowAirlinesDropdown(false);
+      }
+    }
+
+    // Handle autocomplete for Airport of Departure
+    if (name === "airPortOfDeparture") {
+      if (value.trim().length > 0) {
+        const filtered = airportsOfDeparture
+          .filter((airport) => airport.toLowerCase().includes(value.toLowerCase()))
+          .sort();
+        setFilteredAirportsDeparture(filtered);
+        setShowAirportDepartureDropdown(filtered.length > 0);
+      } else {
+        setShowAirportDepartureDropdown(false);
+      }
+    }
+
+    // Handle autocomplete for Airport of Destination
+    if (name === "airPortOfDestination") {
+      if (value.trim().length > 0) {
+        const filtered = airportsOfDestination
+          .filter((airport) => airport.toLowerCase().includes(value.toLowerCase()))
+          .sort();
+        setFilteredAirportsDestination(filtered);
+        setShowAirportDestinationDropdown(filtered.length > 0);
+      } else {
+        setShowAirportDestinationDropdown(false);
+      }
+    }
   };
 
   // Handle customer selection from dropdown
@@ -321,6 +380,33 @@ const ImportExportQuotationForm = ({ currentUser }) => {
       finalDestination: destination,
     }));
     setShowFinalDestDropdown(false);
+  };
+
+  // Handle Airlines selection from dropdown
+  const handleAirlinesSelect = (airline) => {
+    setBasicInfo((prev) => ({
+      ...prev,
+      airLines: airline,
+    }));
+    setShowAirlinesDropdown(false);
+  };
+
+  // Handle Airport of Departure selection from dropdown
+  const handleAirportDepartureSelect = (airport) => {
+    setBasicInfo((prev) => ({
+      ...prev,
+      airPortOfDeparture: airport,
+    }));
+    setShowAirportDepartureDropdown(false);
+  };
+
+  // Handle Airport of Destination selection from dropdown
+  const handleAirportDestinationSelect = (airport) => {
+    setBasicInfo((prev) => ({
+      ...prev,
+      airPortOfDestination: airport,
+    }));
+    setShowAirportDestinationDropdown(false);
   };
 
   // Origin Charges Handlers
@@ -504,6 +590,79 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     return `${prefix}-${day}${month}${year}-${randomNum}`;
   };
 
+  // Helper function to determine which fields should be visible based on segment
+  const getVisibleFields = () => {
+    if (!quotationSegment) return [];
+
+    const segment = quotationSegment.toLowerCase();
+
+    // Sea Export FCL or Sea Import FCL
+    if (segment === "sea export fcl" || segment === "sea import fcl") {
+      return [
+        "weight",
+        "equipment",
+        "commodity",
+        "terms",
+        "por",
+        "pol",
+        "pod",
+        "finalDestination",
+        "shippingLine",
+        "totalTransitTime",
+        "etd",
+        "remarks",
+      ];
+    }
+
+    // Sea Export LCL, Sea Import LCL, Break Bulk Export, Break Bulk Import
+    if (
+      segment === "sea export lcl" ||
+      segment === "sea import lcl" ||
+      segment === "sea export break bulk" ||
+      segment === "sea import break bulk"
+    ) {
+      return [
+        "numberOfPackets",
+        "weight",
+        "cargoSize",
+        "cbm",
+        "commodity",
+        "terms",
+        "por",
+        "pol",
+        "pod",
+        "finalDestination",
+        "shippingLine",
+        "totalTransitTime",
+        "etd",
+        "remarks",
+      ];
+    }
+
+    // Air Export and Air Import
+    if (segment === "air export" || segment === "air import") {
+      return [
+        "numberOfPackets",
+        "weight",
+        "cargoSize",
+        "volumeWeight",
+        "chargeableWeight",
+        "commodity",
+        "airPortOfDeparture",
+        "airPortOfDestination",
+        "airLines",
+        "remarks",
+      ];
+    }
+
+    // Service Job - show special section
+    if (segment === "service job") {
+      return ["serviceJobRadio", "remarks"];
+    }
+
+    return [];
+  };
+
   // Generate PDF and Submit
   const handleSubmit = () => {
     // Validate required segment selection
@@ -608,31 +767,66 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     doc.text("SHIPMENT DETAILS", 15, yPos);
     yPos += 2;
 
+    // Build PDF body dynamically based on visible fields
+    const visibleFields = getVisibleFields();
+    const pdfBody = [];
+    
+    // Define field mappings
+    const fieldMap = {
+      numberOfPackets: ["Number of Packets", basicInfo.numberOfPackets || "N/A"],
+      weight: ["Gross Weight (kg)", basicInfo.weight || "N/A"],
+      equipment: ["Equipment", basicInfo.equipment || "N/A"],
+      cargoSize: ["Cargo Size", basicInfo.cargoSize || "N/A"],
+      cbm: ["CBM (m³)", basicInfo.cbm || "N/A"],
+      commodity: ["Commodity", basicInfo.commodity || "N/A"],
+      terms: ["Terms", basicInfo.terms || "N/A"],
+      por: ["POR", basicInfo.por || "N/A"],
+      pol: ["POL", basicInfo.pol || "N/A"],
+      pod: ["POD", basicInfo.pod || "N/A"],
+      finalDestination: ["Final Destination", basicInfo.finalDestination || "N/A"],
+      shippingLine: ["Shipping Line", basicInfo.shippingLine || "N/A"],
+      totalTransitTime: ["Transit Time", basicInfo.totalTransitTime || "N/A"],
+      etd: ["ETD", basicInfo.etd || "N/A"],
+      airLines: ["Airlines", basicInfo.airLines || "N/A"],
+      airPortOfDeparture: ["Airport of Departure", basicInfo.airPortOfDeparture || "N/A"],
+      airPortOfDestination: ["Airport of Destination", basicInfo.airPortOfDestination || "N/A"],
+      chargeableWeight: ["Chargeable Weight", basicInfo.chargeableWeight || "N/A"],
+      volumeWeight: ["Volume Weight", basicInfo.volumeWeight || "N/A"],
+      size: ["Size", basicInfo.size || "N/A"],
+    };
+
+    // Add Service Job Type if applicable
+    if (quotationSegment.toLowerCase() === "service job") {
+      pdfBody.push(["Service Type", serviceJobType || "N/A", "", ""]);
+    }
+
+    // Build rows in pairs for 2-column layout
+    let currentRow = [];
+    visibleFields.forEach((field) => {
+      if (field === "serviceJobRadio" || field === "remarks") return; // Skip these in shipment details
+      
+      if (fieldMap[field]) {
+        currentRow.push(fieldMap[field][0], fieldMap[field][1]);
+        
+        if (currentRow.length === 4) {
+          pdfBody.push([...currentRow]);
+          currentRow = [];
+        }
+      }
+    });
+    
+    // Add remaining fields if row is not complete
+    if (currentRow.length > 0) {
+      while (currentRow.length < 4) {
+        currentRow.push("");
+      }
+      pdfBody.push(currentRow);
+    }
+
     autoTable(doc, {
       startY: yPos,
       head: [["Field", "Details", "Field", "Details"]],
-      body: [
-        [
-          "Equipment",
-          basicInfo.equipment || "N/A",
-          "Weight",
-          basicInfo.weight || "N/A",
-        ],
-        ["Terms", basicInfo.terms || "N/A", "POR", basicInfo.por || "N/A"],
-        ["POL", basicInfo.pol || "N/A", "POD", basicInfo.pod || "N/A"],
-        [
-          "Final Destination",
-          basicInfo.finalDestination || "N/A",
-          "ETD",
-          basicInfo.etd || "N/A",
-        ],
-        [
-          "Shipping Line",
-          basicInfo.shippingLine || "N/A",
-          "Transit Time",
-          basicInfo.totalTransitTime || "N/A",
-        ],
-      ],
+      body: pdfBody,
       theme: "grid",
       headStyles: {
         fillColor: [37, 99, 235],
@@ -885,7 +1079,9 @@ const ImportExportQuotationForm = ({ currentUser }) => {
       consigneeName: basicInfo.consigneeAddress,
       equipment: basicInfo.equipment,
       weight: basicInfo.weight,
+      cbm: basicInfo.cbm,
       terms: basicInfo.terms,
+      commodity: basicInfo.commodity,
       por: basicInfo.por,
       pol: basicInfo.pol,
       pod: basicInfo.pod,
@@ -894,10 +1090,21 @@ const ImportExportQuotationForm = ({ currentUser }) => {
       etd: basicInfo.etd,
       transitTime: basicInfo.totalTransitTime,
       remarks: basicInfo.remarks,
+      // Air-specific fields
+      numberOfPackets: basicInfo.numberOfPackets,
+      cargoSize: basicInfo.cargoSize,
+      airLines: basicInfo.airLines,
+      airPortOfDeparture: basicInfo.airPortOfDeparture,
+      airPortOfDestination: basicInfo.airPortOfDestination,
+      chargeableWeight: basicInfo.chargeableWeight,
+      volumeWeight: basicInfo.volumeWeight,
+      size: basicInfo.size,
+      // Service Job field
+      serviceJobType: serviceJobType,
+      // Charges
       originCharges: originCharges,
       freightCharges: freightCharges,
       destinationCharges: destinationCharges,
-      status: "Pending",
       createdBy:
         currentUser?.fullName || currentUser?.username || "Unknown User",
       createdByRole: currentUser?.role || "User",
@@ -956,7 +1163,18 @@ const ImportExportQuotationForm = ({ currentUser }) => {
       etd: "",
       totalTransitTime: "",
       remarks: "",
+      numberOfPackets: "",
+      cargoSize: "",
+      airLines: "",
+      airPortOfDeparture: "",
+      airPortOfDestination: "",
+      chargeableWeight: "",
+      volumeWeight: "",
+      size: "",
     });
+
+    // Reset service job type
+    setServiceJobType("");
 
     setOriginCharges([
       {
@@ -995,8 +1213,8 @@ const ImportExportQuotationForm = ({ currentUser }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-3 md:p-6">
-      <div className="w-full px-8 sm:px-10 lg:px-20 py-5">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-0 md:py-6">
+      <div className="w-full px-8 sm:px-10 lg:px-10 py-5">
         {/* Header Card */}
         <div className="bg-white rounded-lg shadow-md mb-4 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3">
@@ -1022,45 +1240,158 @@ const ImportExportQuotationForm = ({ currentUser }) => {
           </div>
         </div>
 
-        {/* Main Form */}
-        <div className="bg-white rounded-lg shadow-md p-4 md:p-5 space-y-4">
-          {/* Basic Information Section */}
-          <section>
-            <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-blue-500">
-              <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
-                <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                  1
-                </span>
-                Scope of Activities
-              </h2>
+        {/* Segment Selection Screen */}
+        {!quotationSegment ? (
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 max-w-3xl mx-auto">
+            {/* Compact Header */}
+            <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-6 py-4 border-b-4 border-blue-600">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-600 p-2.5 rounded-lg shadow-md">
+                  <FileText size={24} className="text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white tracking-tight">
+                    Create New Quotation
+                  </h2>
+                  <p className="text-slate-300 text-sm">
+                    Select shipment segment to proceed
+                  </p>
+                </div>
+              </div>
             </div>
-            
-            {/* Quotation Segment Selection - Required */}
-            <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Select Your Quotation Segment <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={quotationSegment}
-                onChange={(e) => setQuotationSegment(e.target.value)}
-                className={`w-full md:w-1/2 px-4 py-2.5 text-sm border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-                  quotationSegment ? "border-green-400 bg-white" : "border-blue-300 bg-white"
-                }`}
-                required
-              >
-                <option value="">-- Select Quotation Segment --</option>
-                {quotationSegments.map((segment, index) => (
-                  <option key={index} value={segment.label}>
-                    {segment.label}
-                  </option>
-                ))}
-              </select>
-              {quotationSegment && (
-                <p className="mt-2 text-xs text-green-600 font-medium">
-                  ✓ Selected: {quotationSegment} (Prefix: {quotationSegments.find(s => s.label === quotationSegment)?.prefix})
-                </p>
-              )}
+
+            {/* Segment Selection */}
+            <div className="p-6">
+              <div className="flex items-start gap-4">
+                {/* Quick Reference Panel */}
+                <div className="hidden lg:block w-64 flex-shrink-0">
+                  <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                    <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Available Services
+                    </h3>
+                    <div className="space-y-3 text-xs">
+                      <div>
+                        <div className="font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                          </svg>
+                          Sea Freight
+                        </div>
+                        <div className="text-slate-600 space-y-0.5 ml-5">
+                          <div>FCL Export/Import</div>
+                          <div>LCL Export/Import</div>
+                          <div>Break Bulk</div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                          </svg>
+                          Air Freight
+                        </div>
+                        <div className="text-slate-600 space-y-0.5 ml-5">
+                          <div>Air Export</div>
+                          <div>Air Import</div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+                          </svg>
+                          Services
+                        </div>
+                        <div className="text-slate-600 space-y-0.5 ml-5">
+                          <div>Transportation</div>
+                          <div>Warehousing</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Main Selection Area */}
+                <div className="flex-1">
+                  <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-3">
+                    <span className="bg-blue-600 text-white w-6 h-6 rounded flex items-center justify-center text-xs font-bold">
+                      1
+                    </span>
+                    Select Quotation Segment
+                    <span className="text-red-500">*</span>
+                  </label>
+                  
+                  <select
+                    value={quotationSegment}
+                    onChange={(e) => setQuotationSegment(e.target.value)}
+                    className="w-full  px-3 py-3 text-sm border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white hover:border-slate-400 cursor-pointer font-medium text-slate-700"
+                    required
+                  >
+                    <option value="">-- Select Service Type --</option>
+                    {quotationSegments.map((segment, index) => (
+                      <option key={index} value={segment.label}>
+                        {segment.label} • {segment.prefix}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Compact Info */}
+                  <div className="mt-4 p-3 bg-blue-50 border-l-4 border-blue-600 rounded">
+                    <p className="text-xs text-slate-700 leading-relaxed">
+                      <span className="font-semibold text-blue-700">Note:</span> Form fields will dynamically adjust based on your selected segment. Choose the service type that best matches your shipment requirements.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+        ) : (
+          /* Main Form - Shows after segment selection */
+          <div className="bg-white rounded-lg shadow-md p-4 md:p-5 space-y-4">
+            {/* Segment Info Banner */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-green-600 text-white w-10 h-10 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">Selected Segment</p>
+                    <p className="text-lg font-bold text-gray-800">
+                      {quotationSegment} 
+                      <span className="text-sm text-green-600 ml-2">
+                        ({quotationSegments.find(s => s.label === quotationSegment)?.prefix})
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setQuotationSegment("");
+                    setServiceJobType("");
+                  }}
+                  className="px-4 py-2 bg-white border-2 border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all"
+                >
+                  Change Segment
+                </button>
+              </div>
+            </div>
+
+            {/* Basic Information Section */}
+            <section>
+              <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-blue-500">
+                <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                  <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                    1
+                  </span>
+                  Scope of Activities
+                </h2>
+              </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="relative">
@@ -1162,8 +1493,51 @@ const ImportExportQuotationForm = ({ currentUser }) => {
               </span>
               Shipment Details
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+
+            {/* Show message if no segment selected */}
+            {!quotationSegment && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+                <p className="text-sm text-yellow-800 font-medium">
+                  ⚠️ Please select a Quotation Segment above to view shipment details fields
+                </p>
+              </div>
+            )}
+
+            {/* Fields display based on selected segment */}
+            {quotationSegment && (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
               {/* Row 1: Container & Measurements */}
+              {getVisibleFields().includes("numberOfPackets") && (
+              <div>
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Number of Packets
+                </label>
+                <input
+                  type="text"
+                  name="numberOfPackets"
+                  value={basicInfo.numberOfPackets}
+                  onChange={handleBasicInfoChange}
+                  placeholder="Enter number of packets"
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              )}
+              {getVisibleFields().includes("weight") && (
+              <div>
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Gross Weight (kg) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="weight"
+                  value={basicInfo.weight}
+                  onChange={handleBasicInfoChange}
+                  placeholder="5000"
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              )}
+              {getVisibleFields().includes("equipment") && (
               <div>
                 <label className="block font-medium text-gray-700 mb-0.5">
                   Equipment <span className="text-red-500">*</span>
@@ -1188,19 +1562,53 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                   <option value="40ft Flat Rack">40ft Flat Rack</option>
                 </select>
               </div>
+              )}
+              {getVisibleFields().includes("cargoSize") && (
               <div>
                 <label className="block font-medium text-gray-700 mb-0.5">
-                  Weight (kg) <span className="text-red-500">*</span>
+                  Cargo Size
                 </label>
                 <input
                   type="text"
-                  name="weight"
-                  value={basicInfo.weight}
+                  name="cargoSize"
+                  value={basicInfo.cargoSize}
                   onChange={handleBasicInfoChange}
-                  placeholder="5000"
+                  placeholder="Enter cargo size"
                   className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
               </div>
+              )}
+              {getVisibleFields().includes("volumeWeight") && (
+              <div>
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Volume Weight
+                </label>
+                <input
+                  type="text"
+                  name="volumeWeight"
+                  value={basicInfo.volumeWeight}
+                  onChange={handleBasicInfoChange}
+                  placeholder="Enter volume weight"
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              )}
+              {getVisibleFields().includes("chargeableWeight") && (
+              <div>
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Chargeable Weight
+                </label>
+                <input
+                  type="text"
+                  name="chargeableWeight"
+                  value={basicInfo.chargeableWeight}
+                  onChange={handleBasicInfoChange}
+                  placeholder="Enter chargeable weight"
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              )}
+              {getVisibleFields().includes("cbm") && (
               <div>
                 <label className="block font-medium text-gray-700 mb-0.5">
                   CBM (m³)
@@ -1214,6 +1622,23 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                   className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
               </div>
+              )}
+              {getVisibleFields().includes("commodity") && (
+              <div>
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Commodity
+                </label>
+                <input
+                  type="text"
+                  name="commodity"
+                  value={basicInfo.commodity}
+                  onChange={handleBasicInfoChange}
+                  placeholder="Electronics, etc."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              )}
+              {getVisibleFields().includes("terms") && (
               <div>
                 <label className="block font-medium text-gray-700 mb-0.5">
                   Terms <span className="text-red-500">*</span>
@@ -1233,21 +1658,10 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                   <option value="FCA">FCA</option>
                 </select>
               </div>
-              <div>
-                <label className="block font-medium text-gray-700 mb-0.5">
-                  Commodity
-                </label>
-                <input
-                  type="text"
-                  name="items"
-                  value={basicInfo.items}
-                  onChange={handleBasicInfoChange}
-                  placeholder="Electronics, etc."
-                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
-                />
-              </div>
+              )}
 
               {/* Row 2: Ports */}
+              {getVisibleFields().includes("por") && (
               <div className="relative">
                 <label className="block font-medium text-gray-700 mb-0.5">
                   POR{" "}
@@ -1283,6 +1697,8 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                   </div>
                 )}
               </div>
+              )}
+              {getVisibleFields().includes("pol") && (
               <div className="relative">
                 <label className="block font-medium text-gray-700 mb-0.5">
                   POL{" "}
@@ -1318,6 +1734,8 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                   </div>
                 )}
               </div>
+              )}
+              {getVisibleFields().includes("pod") && (
               <div className="relative">
                 <label className="block font-medium text-gray-700 mb-0.5">
                   POD{" "}
@@ -1353,6 +1771,8 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                   </div>
                 )}
               </div>
+              )}
+              {getVisibleFields().includes("finalDestination") && (
               <div className="md:col-span-2 relative">
                 <label className="block font-medium text-gray-700 mb-0.5">
                   Final Destination
@@ -1391,8 +1811,10 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                     </div>
                   )}
               </div>
+              )}
 
               {/* Row 3: Shipping & Time Details */}
+              {getVisibleFields().includes("shippingLine") && (
               <div className="md:col-span-2 relative">
                 <label className="block font-medium text-gray-700 mb-0.5">
                   Shipping Line
@@ -1432,6 +1854,8 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                     </div>
                   )}
               </div>
+              )}
+              {getVisibleFields().includes("etd") && (
               <div>
                 <label className="block font-medium text-gray-700 mb-0.5">
                   ETD
@@ -1444,6 +1868,8 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                   className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
               </div>
+              )}
+              {getVisibleFields().includes("totalTransitTime") && (
               <div className="md:col-span-2">
                 <label className="block font-medium text-gray-700 mb-0.5">
                   Transit Time
@@ -1465,8 +1891,157 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                   ))}
                 </select>
               </div>
+              )}
 
-              {/* Row 4: Remarks */}
+              {/* Row 4: Additional Shipment Details */}
+              {getVisibleFields().includes("airPortOfDeparture") && (
+              <div className="md:col-span-2 relative">
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Airport of Departure
+                </label>
+                <input
+                  type="text"
+                  name="airPortOfDeparture"
+                  value={basicInfo.airPortOfDeparture}
+                  onChange={handleBasicInfoChange}
+                  onFocus={() => {
+                    if (basicInfo.airPortOfDeparture && filteredAirportsDeparture.length > 0) {
+                      setShowAirportDepartureDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowAirportDepartureDropdown(false), 200);
+                  }}
+                  placeholder="Type airport name..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+                {showAirportDepartureDropdown && filteredAirportsDeparture.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredAirportsDeparture.map((airport, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleAirportDepartureSelect(airport)}
+                        className="px-2 py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                      >
+                        <div className="text-gray-800">{airport}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              )}
+
+              {/* Row 5: More Shipment Details */}
+              {getVisibleFields().includes("airPortOfDestination") && (
+              <div className="md:col-span-2 relative">
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Airport of Destination
+                </label>
+                <input
+                  type="text"
+                  name="airPortOfDestination"
+                  value={basicInfo.airPortOfDestination}
+                  onChange={handleBasicInfoChange}
+                  onFocus={() => {
+                    if (basicInfo.airPortOfDestination && filteredAirportsDestination.length > 0) {
+                      setShowAirportDestinationDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowAirportDestinationDropdown(false), 200);
+                  }}
+                  placeholder="Type airport name..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+                {showAirportDestinationDropdown && filteredAirportsDestination.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredAirportsDestination.map((airport, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleAirportDestinationSelect(airport)}
+                        className="px-2 py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                      >
+                        <div className="text-gray-800">{airport}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              )}
+              {getVisibleFields().includes("airLines") && (
+              <div className="relative">
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Airlines
+                </label>
+                <input
+                  type="text"
+                  name="airLines"
+                  value={basicInfo.airLines}
+                  onChange={handleBasicInfoChange}
+                  onFocus={() => {
+                    if (basicInfo.airLines && filteredAirlines.length > 0) {
+                      setShowAirlinesDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowAirlinesDropdown(false), 200);
+                  }}
+                  placeholder="Type airline name..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+                {showAirlinesDropdown && filteredAirlines.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredAirlines.map((airline, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleAirlinesSelect(airline)}
+                        className="px-2 py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                      >
+                        <div className="text-gray-800">{airline}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              )}
+
+              {/* Service Job Selection */}
+              {getVisibleFields().includes("serviceJobRadio") && (
+              <div className="md:col-span-5">
+                <label className="block font-medium text-gray-700 mb-2">
+                  Service Type <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {[
+                    "Sea Export LCL",
+                    "Sea Export FCL",
+                    "Sea Export Bulk",
+                    "Sea Import LCL",
+                    "Sea Import FCL",
+                    "Sea Import Break Bulk",
+                    "Air Import",
+                    "Air Export",
+                    "Warehousing",
+                  ].map((type) => (
+                    <label key={type} className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="serviceJobType"
+                        value={type}
+                        checked={serviceJobType === type}
+                        onChange={(e) => setServiceJobType(e.target.value)}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <span className="text-xs text-gray-700">{type}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              )}
+          
+
+              {/* Row 6: Remarks */}
+              {getVisibleFields().includes("remarks") && (
               <div className="md:col-span-5">
                 <label className="block font-medium text-gray-700 mb-0.5">
                   Remarks
@@ -1480,7 +2055,9 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                   className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent resize-none"
                 />
               </div>
+              )}
             </div>
+            )}
           </section>
 
           {/* Section 3: Charges */}
@@ -2092,14 +2669,15 @@ const ImportExportQuotationForm = ({ currentUser }) => {
               Submit & Download PDF
             </button>
           </div>
-        </div>
 
-        {/* Summary Footer */}
-        <div className="mt-4 text-center">
-          <p className="text-xs text-gray-500">
-            Door-to-Door Quotation Form • All amounts in INR (₹)
-          </p>
+          {/* Summary Footer */}
+          <div className="mt-4 text-center">
+            <p className="text-xs text-gray-500">
+              Door-to-Door Quotation Form • All amounts in INR (₹)
+            </p>
+          </div>
         </div>
+        )}
       </div>
 
       {/* Success Popup */}

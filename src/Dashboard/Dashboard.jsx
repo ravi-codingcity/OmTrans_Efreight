@@ -66,12 +66,8 @@ const Dashboard = () => {
 
     // Calculate statistics
     const totalQuotations = importExportQuotations.length;
-    const businessNotConverted = importExportQuotations.filter(
-      (q) => q.businessStatus === "Not Converted"
-    ).length;
-    const jobsCreated = importExportQuotations.filter(
-      (q) => q.businessStatus === "Job Created"
-    ).length;
+    const businessNotConverted = 0;
+    const jobsCreated = 0;
 
     // Load bookings (placeholder - will be implemented later)
     const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
@@ -98,14 +94,7 @@ const Dashboard = () => {
   };
 
   // Filter quotations based on selected status and sort by date (most recent first)
-  // Filter quotations based on selected status and sort by date (most recent first)
   const filteredQuotations = quotations
-    .filter((quote) => {
-      if (filterStatus === "All") return true;
-      if (filterStatus === "Not Converted") return quote.businessStatus === "Not Converted";
-      if (filterStatus === "Job Created") return quote.businessStatus === "Job Created";
-      return true;
-    })
     .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
 
   // View quotation details
@@ -335,12 +324,27 @@ const Dashboard = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm">
-                          <div className="font-medium text-gray-900">
-                            {quote.pol || "N/A"}
-                          </div>
-                          <div className="text-gray-500 flex items-center gap-1">
-                            <span>→</span> {quote.pod || "N/A"}
-                          </div>
+                          {quote.quotationSegment && (quote.quotationSegment.toLowerCase().includes("air")) ? (
+                            // Air Route
+                            <>
+                              <div className="font-medium text-gray-900">
+                                {quote.airPortOfDeparture || "N/A"}
+                              </div>
+                              <div className="text-gray-500 flex items-center gap-1">
+                                <span>→</span> {quote.airPortOfDestination || "N/A"}
+                              </div>
+                            </>
+                          ) : (
+                            // Sea/Other Route
+                            <>
+                              <div className="font-medium text-gray-900">
+                                {quote.pol || "N/A"}
+                              </div>
+                              <div className="text-gray-500 flex items-center gap-1">
+                                <span>→</span> {quote.pod || "N/A"}
+                              </div>
+                            </>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -527,26 +531,111 @@ const Dashboard = () => {
                   <Package size={14} />
                   Shipment Details
                 </h4>
-                <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
-                  <div>
-                    <p className="text-xs text-gray-600 mb-0.5">Equipment</p>
-                    <p className="text-xs font-medium text-gray-900">
-                      {selectedQuotation.equipment || "N/A"}
-                    </p>
+                {selectedQuotation.quotationSegment && selectedQuotation.quotationSegment.toLowerCase().includes("air") ? (
+                  // Air Shipment Details
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {selectedQuotation.numberOfPackets && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Number of Packets</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.numberOfPackets}
+                        </p>
+                      </div>
+                    )}
+                    {selectedQuotation.weight && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Gross Weight (kg)</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.weight}
+                        </p>
+                      </div>
+                    )}
+                    {selectedQuotation.cargoSize && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Cargo Size</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.cargoSize}
+                        </p>
+                      </div>
+                    )}
+                    {selectedQuotation.volumeWeight && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Volume Weight</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.volumeWeight}
+                        </p>
+                      </div>
+                    )}
+                    {selectedQuotation.chargeableWeight && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Chargeable Weight</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.chargeableWeight}
+                        </p>
+                      </div>
+                    )}
+                    {selectedQuotation.commodity && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Commodity</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.commodity}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-0.5">Weight</p>
-                    <p className="text-xs font-medium text-gray-900">
-                      {selectedQuotation.weight || "N/A"}
-                    </p>
+                ) : (
+                  // Sea/Other Shipment Details
+                  <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+                    {selectedQuotation.equipment && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Equipment</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.equipment}
+                        </p>
+                      </div>
+                    )}
+                    {selectedQuotation.weight && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Weight</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.weight}
+                        </p>
+                      </div>
+                    )}
+                    {selectedQuotation.cbm && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">CBM</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.cbm}
+                        </p>
+                      </div>
+                    )}
+                    {selectedQuotation.commodity && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Commodity</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.commodity}
+                        </p>
+                      </div>
+                    )}
+                    {selectedQuotation.terms && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Terms</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.terms}
+                        </p>
+                      </div>
+                    )}
+                    {selectedQuotation.numberOfPackets && (
+                      <div>
+                        <p className="text-xs text-gray-600 mb-0.5">Number of Packets</p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {selectedQuotation.numberOfPackets}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-0.5">Terms</p>
-                    <p className="text-xs font-medium text-gray-900">
-                      {selectedQuotation.terms || "N/A"}
-                    </p>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Route Information */}
@@ -555,50 +644,75 @@ const Dashboard = () => {
                   <Ship size={14} />
                   Route Information
                 </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div>
-                    <p className="text-xs text-gray-600 mb-0.5">POR</p>
-                    <p className="text-xs font-medium text-gray-900">
-                      {selectedQuotation.por || "N/A"}
-                    </p>
+                {selectedQuotation.quotationSegment && selectedQuotation.quotationSegment.toLowerCase().includes("air") ? (
+                  // Air Route Information
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">Airport of Departure</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.airPortOfDeparture || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">Airport of Destination</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.airPortOfDestination || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">Airlines</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.airLines || "N/A"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-0.5">POL</p>
-                    <p className="text-xs font-medium text-gray-900">
-                      {selectedQuotation.pol || "N/A"}
-                    </p>
+                ) : (
+                  // Sea/Other Route Information
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">POR</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.por || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">POL</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.pol || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">POD</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.pod || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">Final Dest.</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.finalDestination || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">Shipping Line</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.shippingLine || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">ETD</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.etd || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">Transit Time</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.transitTime || "N/A"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-0.5">POD</p>
-                    <p className="text-xs font-medium text-gray-900">
-                      {selectedQuotation.pod || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-0.5">Final Dest.</p>
-                    <p className="text-xs font-medium text-gray-900">
-                      {selectedQuotation.finalDestination || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-0.5">Shipping Line</p>
-                    <p className="text-xs font-medium text-gray-900">
-                      {selectedQuotation.shippingLine || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-0.5">ETD</p>
-                    <p className="text-xs font-medium text-gray-900">
-                      {selectedQuotation.etd || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-0.5">Transit Time</p>
-                    <p className="text-xs font-medium text-gray-900">
-                      {selectedQuotation.transitTime || "N/A"}
-                    </p>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Charges Tables */}
