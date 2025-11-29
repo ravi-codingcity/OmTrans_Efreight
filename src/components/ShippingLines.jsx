@@ -1,0 +1,22 @@
+// Shipping lines data (alphabetically sorted)
+export const shippingLines = [
+  "Maersk Line",
+  "CMA CGM",
+  "COSCO Shipping",
+  "Evergreen Marine",
+  "Hapag-Lloyd",
+  "HMM",
+  "MSC",
+  "ONE",
+  "Orient Overseas Container Line (OOCL)",
+  "PIL",
+  "Yang Ming Marine Transport",
+  "Zim",
+  "Wan Hai Lines",
+  "Matson Navigation",
+  "KMTC",
+  "Arkas Line",
+  "TS Lines",
+  "IRISL",
+  "X-Press Feeders",
+].sort();

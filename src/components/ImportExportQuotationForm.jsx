@@ -3,6 +3,12 @@ import { FileText, Send, CheckCircle, X, Plus, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import OmTransLogo from "../assets/OmTrans.png";
+import { icdLocations } from "./POR";
+import { indianPorts } from "./POL";
+import { foreignDestinations } from "./POD";
+import { customerData } from "./CustomerData";
+import { consigneeData } from "./ConsigneeData";
+import { shippingLines } from "./ShippingLines";
 
 const ImportExportQuotationForm = ({ currentUser }) => {
   // Basic Information State
@@ -31,14 +37,12 @@ const ImportExportQuotationForm = ({ currentUser }) => {
   const quotationSegments = [
     { label: "Sea Export LCL", prefix: "SELCL" },
     { label: "Sea Export FCL", prefix: "SEFCL" },
+    { label: "Sea Export Break Bulk", prefix: "BBE" },
     { label: "Sea Import LCL", prefix: "SILCL" },
     { label: "Sea Import FCL", prefix: "SIFCL" },
-    { label: "Break Bulk Export", prefix: "BBE" },
-    { label: "Break Bulk Import", prefix: "BBI" },
-    { label: "Air Export LCL", prefix: "AELCL" },
-    { label: "Air Export FCL", prefix: "AEFCL" },
-    { label: "Air Import LCL", prefix: "AILCL" },
-    { label: "Air Import FCL", prefix: "AIFCL" },
+    { label: "Sea Import Break Bulk", prefix: "BBI" },
+    { label: "Air Export", prefix: "AE" },
+    { label: "Air Import", prefix: "AI" },
     { label: "Service Job", prefix: "SJ" },
   ];
 
@@ -115,237 +119,6 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     "Certification Charge",
     "BL Fee Charge",
     "Customs Clearance Charge",
-  ].sort();
-
-  // Dummy customer data
-  const customerData = [
-    {
-      name: "Adani Electronics Ltd",
-      address: "123 Tech Park, Silicon Valley San Francisco, CA 94016, USA",
-    },
-    {
-      name: "Reliance Manufacturing",
-      address: "789 Industrial Area Detroit, MI 48201, USA",
-    },
-    {
-      name: "Tech Solutions Inc",
-      address: "321 Innovation Drive Austin, TX 78701, USA",
-    },
-    {
-      name: "Ocean Logistics Pvt Ltd",
-      address: "Plot 45, MIDC Area Mumbai, Maharashtra 400001, India",
-    },
-  ];
-
-  // Dummy consignee data
-  const consigneeData = [
-    {
-      name: "Asia Warehouse Solutions",
-      address: "99 Cargo Terminal Road Hong Kong",
-    },
-    {
-      name: "UK Import Services",
-      address: "45 Dover Port London, SE1 9SG, UK",
-    },
-    {
-      name: "Australian Freight Co",
-      address: "78 Port Road Sydney, NSW 2000, Australia",
-    },
-    {
-      name: "Canadian Storage Inc",
-      address: "321 Maple Avenue Toronto, ON M5H 2N2, Canada",
-    },
-    {
-      name: "Japan Trading House",
-      address: "5-10 Minato-ku Tokyo 105-0013, Japan",
-    },
-  ];
-
-  // Shipping lines data (alphabetically sorted)
-  const shippingLines = [
-    "Maersk Line",
-    "CMA CGM",
-    "COSCO Shipping",
-    "Evergreen Marine",
-    "Hapag-Lloyd",
-    "HMM",
-    "MSC",
-    "ONE",
-    "Orient Overseas Container Line (OOCL)",
-    "PIL",
-    "Yang Ming Marine Transport",
-    "Zim",
-    "Wan Hai Lines",
-    "Matson Navigation",
-    "KMTC",
-    "Arkas Line",
-    "TS Lines",
-    "IRISL",
-    "X-Press Feeders",
-  ].sort();
-
-  // ICD locations in India (alphabetically sorted)
-  const icdLocations = [
-    "ICD Agra, Uttar Pradesh",
-    "ICD Ahmedabad, Gujarat",
-    "ICD Ajmer, Rajasthan",
-    "ICD Amingaon, Assam",
-    "ICD Anaparthy, Andhra Pradesh",
-    "ICD Bangalore, Karnataka",
-    "ICD Bhadohi, Uttar Pradesh",
-    "ICD Bhilwara, Rajasthan",
-    "ICD Bhiwadi, Rajasthan",
-    "ICD Coimbatore, Tamil Nadu",
-    "ICD Dadri, Uttar Pradesh",
-    "ICD Durgapur, West Bengal",
-    "ICD Faridabad (Ballabhgarh), Haryana",
-    "ICD Garhi Harsaru, Haryana",
-    "ICD Guntur, Andhra Pradesh",
-    "ICD Hyderabad, Telangana",
-    "ICD Jaipur, Rajasthan",
-    "ICD Jallandhar, Punjab",
-    "ICD Jodhpur, Rajasthan",
-    "ICD Kanpur, Uttar Pradesh",
-    "ICD Kota, Rajasthan",
-    "ICD Loni, Uttar Pradesh",
-    "ICD Ludhiana, Punjab",
-    "ICD Moradabad, Uttar Pradesh",
-    "ICD Nagpur, Maharashtra",
-    "ICD Nasik, Maharashtra",
-    "ICD Patli Gurgaon, Haryana",
-    "ICD Pithampur, Madhya Pradesh",
-    "ICD Piyala Rewari, Haryana",
-    "ICD Pune, Maharashtra",
-    "ICD Raipur, Chhattisgarh",
-    "ICD Rewari, Haryana",
-    "ICD Sachhin, Gujarat",
-    "ICD Singanalur, Tamil Nadu",
-    "ICD Talegaon, Maharashtra",
-    "ICD TKD, Delhi",
-    "ICD Vadodara, Gujarat",
-    "ICD Varanasi, Uttar Pradesh",
-    "ICD Whitefield Bangalore, Karnataka",
-  ].sort();
-
-  // Indian Ports (alphabetically sorted)
-  const indianPorts = [
-    "Chennai Port, Tamil Nadu",
-    "Cochin Port, Kerala",
-    "Ennore Port, Tamil Nadu",
-    "Hazira Port, Gujarat",
-    "JNPT (Jawaharlal Nehru Port), Maharashtra",
-    "Kamarajar Port, Tamil Nadu",
-    "Kandla Port, Gujarat",
-    "Kolkata Port, West Bengal",
-    "Mangalore Port, Karnataka",
-    "Mormugao Port, Goa",
-    "Mumbai Port, Maharashtra",
-    "Mundra Port, Gujarat",
-    "Paradip Port, Odisha",
-    "Pipavav Port, Gujarat",
-    "Sikka Port, Gujarat",
-    "Tuticorin Port, Tamil Nadu",
-    "Visakhapatnam Port, Andhra Pradesh",
-    "Dahej Port, Gujarat",
-    "Haldia Port, West Bengal",
-    "Krishnapatnam Port, Andhra Pradesh",
-    "Dhamra Port, Odisha",
-    "Kakinada Port, Andhra Pradesh",
-    "Magdalla Port, Gujarat",
-    "Porbandar Port, Gujarat",
-    "Okha Port, Gujarat",
-    "Bhavnagar Port, Gujarat",
-    "Veraval Port, Gujarat",
-    "Nagapattinam Port, Tamil Nadu",
-    "Karaikal Port, Puducherry",
-    "Cuddalore Port, Tamil Nadu",
-    "Port Blair, Andaman and Nicobar",
-  ].sort();
-
-  // Foreign Destinations - Major Ports and Cities (alphabetically sorted)
-  const foreignDestinations = [
-    // Middle East
-    "Dubai, UAE",
-    "Jebel Ali, UAE",
-    "Abu Dhabi, UAE",
-    "Sharjah, UAE",
-    "Doha, Qatar",
-    "Muscat, Oman",
-    "Sohar, Oman",
-    "Salalah, Oman",
-    "Kuwait City, Kuwait",
-    "Dammam, Saudi Arabia",
-    "Jeddah, Saudi Arabia",
-    "Riyadh, Saudi Arabia",
-    "Bahrain",
-    // Southeast Asia
-    "Singapore",
-    "Port Klang, Malaysia",
-    "Penang, Malaysia",
-    "Kuala Lumpur, Malaysia",
-    "Bangkok, Thailand",
-    "Laem Chabang, Thailand",
-    "Ho Chi Minh City, Vietnam",
-    "Haiphong, Vietnam",
-    "Manila, Philippines",
-    "Jakarta, Indonesia",
-    "Surabaya, Indonesia",
-    "Yangon, Myanmar",
-    // East Asia
-    "Shanghai, China",
-    "Ningbo, China",
-    "Shenzhen, China",
-    "Guangzhou, China",
-    "Qingdao, China",
-    "Tianjin, China",
-    "Hong Kong",
-    "Tokyo, Japan",
-    "Yokohama, Japan",
-    "Osaka, Japan",
-    "Kobe, Japan",
-    "Busan, South Korea",
-    "Incheon, South Korea",
-    "Seoul, South Korea",
-    // Europe
-    "Rotterdam, Netherlands",
-    "Hamburg, Germany",
-    "Antwerp, Belgium",
-    "Felixstowe, UK",
-    "London, UK",
-    "Southampton, UK",
-    "Le Havre, France",
-    "Barcelona, Spain",
-    "Genoa, Italy",
-    "Istanbul, Turkey",
-    // North America
-    "Los Angeles, USA",
-    "Long Beach, USA",
-    "New York, USA",
-    "Newark, USA",
-    "Savannah, USA",
-    "Houston, USA",
-    "Miami, USA",
-    "Seattle, USA",
-    "Vancouver, Canada",
-    "Montreal, Canada",
-    "Toronto, Canada",
-    // Australia & New Zealand
-    "Sydney, Australia",
-    "Melbourne, Australia",
-    "Brisbane, Australia",
-    "Perth, Australia",
-    "Adelaide, Australia",
-    "Auckland, New Zealand",
-    // Africa
-    "Durban, South Africa",
-    "Cape Town, South Africa",
-    "Lagos, Nigeria",
-    "Mombasa, Kenya",
-    "Dar es Salaam, Tanzania",
-    // South America
-    "Santos, Brazil",
-    "Buenos Aires, Argentina",
-    "Valparaiso, Chile",
   ].sort();
 
   // Origin Charges State
@@ -719,6 +492,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, "0");
     const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = String(now.getFullYear()).slice(-2); // Get last 2 digits of year
     
     // Generate unique 2-3 digit random number
     const randomNum = Math.floor(Math.random() * 900) + 100; // Random 3-digit number (100-999)
@@ -727,7 +501,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     const selectedSegment = quotationSegments.find(seg => seg.label === quotationSegment);
     const prefix = selectedSegment ? selectedSegment.prefix : "QT";
     
-    return `${prefix}-${day}${month}-${randomNum}`;
+    return `${prefix}-${day}${month}${year}-${randomNum}`;
   };
 
   // Generate PDF and Submit
