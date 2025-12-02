@@ -26,6 +26,7 @@ function App() {
       username: user.username,
       fullName: user.fullName,
       role: user.role,
+      location: user.location,
     })
     setIsAuthenticated(true)
   }

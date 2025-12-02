@@ -12,6 +12,8 @@ import {
   X,
   XCircle,
   Briefcase,
+  Filter,
+  MapPin,
 } from "lucide-react";
 import OmTransLogo from "../assets/omtrans.jpg";
 import VikramImg from "../assets/vikram.jpg";
@@ -44,6 +46,26 @@ const Dashboard = () => {
   const [filterStatus, setFilterStatus] = useState("All");
   const [selectedQuotation, setSelectedQuotation] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  
+  // Filter states
+  const [filterLocation, setFilterLocation] = useState("All");
+  const [filterYear, setFilterYear] = useState("All");
+  const [filterMonth, setFilterMonth] = useState("All");
+  
+  // Location options
+  const locations = ["Delhi", "Mumbai", "Pune", "Kolkata", "Chennai"];
+  
+  // Get unique years from quotations
+  const getAvailableYears = () => {
+    const years = quotations.map(q => new Date(q.createdDate).getFullYear());
+    return [...new Set(years)].sort((a, b) => b - a);
+  };
+  
+  // Month options
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
 
   // Load statistics and quotations from localStorage
   useEffect(() => {
@@ -93,8 +115,33 @@ const Dashboard = () => {
     setFilterStatus(status);
   };
 
-  // Filter quotations based on selected status and sort by date (most recent first)
+  // Filter quotations based on selected filters and sort by date (most recent first)
   const filteredQuotations = quotations
+    .filter((quote) => {
+      // Location filter
+      if (filterLocation !== "All" && quote.createdByLocation !== filterLocation) {
+        return false;
+      }
+      
+      // Year filter
+      if (filterYear !== "All") {
+        const quoteYear = new Date(quote.createdDate).getFullYear();
+        if (quoteYear !== parseInt(filterYear)) {
+          return false;
+        }
+      }
+      
+      // Month filter
+      if (filterMonth !== "All") {
+        const quoteMonth = new Date(quote.createdDate).getMonth();
+        const selectedMonthIndex = months.indexOf(filterMonth);
+        if (quoteMonth !== selectedMonthIndex) {
+          return false;
+        }
+      }
+      
+      return true;
+    })
     .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
 
   // View quotation details
@@ -222,6 +269,73 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Filters Section */}
+        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-gray-700 font-medium">
+              <Filter size={18} className="text-blue-600" />
+              <span>Filters:</span>
+            </div>
+            
+            {/* Location Filter */}
+            <select
+              value={filterLocation}
+              onChange={(e) => setFilterLocation(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            >
+              <option value="All">All Locations</option>
+              {locations.map((location) => (
+                <option key={location} value={location}>
+                  {location}
+                </option>
+              ))}
+            </select>
+
+            {/* Year Filter */}
+            <select
+              value={filterYear}
+              onChange={(e) => setFilterYear(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            >
+              <option value="All">All Years</option>
+              {getAvailableYears().map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+
+            {/* Month Filter */}
+            <select
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            >
+              <option value="All">All Months</option>
+              {months.map((month) => (
+                <option key={month} value={month}>
+                  {month}
+                </option>
+              ))}
+            </select>
+
+            {/* Clear Filters Button */}
+            {(filterLocation !== "All" || filterYear !== "All" || filterMonth !== "All") && (
+              <button
+                onClick={() => {
+                  setFilterLocation("All");
+                  setFilterYear("All");
+                  setFilterMonth("All");
+                }}
+                className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors flex items-center gap-1.5"
+              >
+                <X size={14} />
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Quotations Table */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4">
@@ -238,25 +352,25 @@ const Dashboard = () => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Quotation No.
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Segment
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Created By
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Customer
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Route
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Created Date
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Action
                   </th>
                 </tr>
@@ -284,20 +398,20 @@ const Dashboard = () => {
                       key={quote.id}
                       className="hover:bg-blue-50 transition-colors"
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
                           <FileText className="text-blue-600" size={18} />
-                          <span className="font-semibold text-gray-900 text-sm">
+                          <span className="font-semibold text-gray-900 text-xs">
                             {quote.id}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-4">
                         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                           {quote.quotationSegment || "N/A"}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           <img
                             src={getUserImage(quote.createdBy)}
@@ -305,25 +419,25 @@ const Dashboard = () => {
                             className="w-10 h-10 rounded-full object-cover border-[1px] border-black"
                           />
                           <div>
-                            <div className="font-medium text-gray-900 text-sm">
+                            <div className="font-medium text-gray-900 text-xs">
                               {quote.createdBy}
                             </div>
-                            <div className="text-xs text-gray-500">
-                              {quote.createdByRole}
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              {quote.createdByLocation || "N/A"}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">
+                      <td className="px-5 py-4">
+                        <div className="text-xs font-medium text-gray-900">
                           {quote.customerName
                             ? quote.customerName.split("\n")[0].substring(0, 30) +
                               (quote.customerName.length > 30 ? "..." : "")
                             : "N/A"}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm">
+                      <td className="px-5 py-4">
+                        <div className="text-xs">
                           {quote.quotationSegment && (quote.quotationSegment.toLowerCase().includes("air")) ? (
                             // Air Route
                             <>
@@ -347,13 +461,13 @@ const Dashboard = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
                           <Calendar size={16} />
                           {new Date(quote.createdDate).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-4">
                         <button
                           onClick={() => viewDetails(quote)}
                           className="flex items-center gap-2 px-3 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all font-medium text-sm border border-blue-200"
@@ -482,7 +596,13 @@ const Dashboard = () => {
                     <p className="text-sm font-semibold text-gray-900">
                       {selectedQuotation.createdBy} <span className="text-xs text-gray-600">({selectedQuotation.createdByRole})</span>
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <div className="flex items-center gap-2 mt-1">
+                      <MapPin size={12} className="text-blue-600" />
+                      <p className="text-xs text-gray-600">
+                        {selectedQuotation.createdByLocation || "N/A"}
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
                       {new Date(selectedQuotation.createdDate).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "short",

@@ -18,13 +18,14 @@ const Login = ({ onLoginSuccess }) => {
 
   // Trial accounts
   const validAccounts = [
-    { username: "vikram", password: "123", fullName: "Vikram", role: "Admin" },
-    { username: "ravi", password: "123", fullName: "Ravi", role: "Manager" },
+    { username: "vikram", password: "123", fullName: "Vikram", role: "Admin" , location: "Delhi"},
+    { username: "ravi", password: "123", fullName: "Ravi", role: "Manager", location: "Mumbai" },
     {
       username: "harmeet",
       password: "123",
       fullName: "Harmeet",
       role: "Manager",
+      location: "Chennai"
     },
   ];
 
@@ -47,6 +48,7 @@ const Login = ({ onLoginSuccess }) => {
             username: account.username,
             fullName: account.fullName,
             role: account.role,
+            location: account.location,
             loginTime: new Date().toISOString(),
           })
         );

@@ -1108,6 +1108,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
       createdBy:
         currentUser?.fullName || currentUser?.username || "Unknown User",
       createdByRole: currentUser?.role || "User",
+      createdByLocation: currentUser?.location || "N/A",
       createdDate: new Date().toISOString(),
       pdfFileName: pdfFileName,
     };
