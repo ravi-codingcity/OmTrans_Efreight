@@ -20,6 +20,8 @@ import VikramImg from "../assets/vikram.jpg";
 import TarunImg from "../assets/tarun.jpeg";
 import HarmeetImg from "../assets/harmeet.jpg";
 
+const API_BASE_URL = "http://localhost:5000/api";
+
 const Dashboard = () => {
   // Helper function to get user image based on username
   const getUserImage = (username) => {
@@ -67,27 +69,20 @@ const Dashboard = () => {
     "July", "August", "September", "October", "November", "December"
   ];
 
-  // Load statistics and quotations from localStorage
+  // Load quotations from API
   useEffect(() => {
-    loadStatistics();
     loadQuotations();
     
-    // Set up interval to refresh stats every 5 seconds
+    // Set up interval to refresh data every 5 seconds
     const interval = setInterval(() => {
-      loadStatistics();
       loadQuotations();
     }, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  const loadStatistics = () => {
-    // Load Import/Export Quotations
-    const importExportQuotations = JSON.parse(
-      localStorage.getItem("importExportQuotations") || "[]"
-    );
-
-    // Calculate statistics
-    const totalQuotations = importExportQuotations.length;
+  const loadStatistics = (quotationsData = []) => {
+    // Calculate statistics from quotations data
+    const totalQuotations = quotationsData.length;
     const businessNotConverted = 0;
     const jobsCreated = 0;
 
@@ -103,10 +98,24 @@ const Dashboard = () => {
     });
   };
 
-  const loadQuotations = () => {
-    const storedQuotations = localStorage.getItem("importExportQuotations");
-    if (storedQuotations) {
-      setQuotations(JSON.parse(storedQuotations));
+  const loadQuotations = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/quotations`);
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        const quotationsData = data.data || [];
+        setQuotations(quotationsData);
+        loadStatistics(quotationsData);
+      } else {
+        console.error("Failed to load quotations:", data.message);
+        setQuotations([]);
+        loadStatistics([]);
+      }
+    } catch (error) {
+      console.error("Error fetching quotations:", error);
+      setQuotations([]);
+      loadStatistics([]);
     }
   };
 

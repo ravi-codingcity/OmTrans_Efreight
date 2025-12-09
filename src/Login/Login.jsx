@@ -9,6 +9,8 @@ import {
   Package,
 } from "lucide-react";
 
+const API_BASE_URL = "http://localhost:5000/api/auth";
+
 const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -16,50 +18,50 @@ const Login = ({ onLoginSuccess }) => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Trial accounts
-  const validAccounts = [
-    { username: "vikram", password: "123", fullName: "Vikram", role: "Admin" , location: "Delhi"},
-    { username: "ravi", password: "123", fullName: "Ravi", role: "Manager", location: "Mumbai" },
-    {
-      username: "harmeet",
-      password: "123",
-      fullName: "Harmeet",
-      role: "Manager",
-      location: "Chennai"
-    },
-  ];
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    // Simulate a small delay for better UX
-    setTimeout(() => {
-      const account = validAccounts.find(
-        (acc) => acc.username === username && acc.password === password
-      );
+    try {
+      const response = await fetch(`${API_BASE_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-      if (account) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         // Store user info in localStorage
         localStorage.setItem(
           "currentUser",
           JSON.stringify({
-            username: account.username,
-            fullName: account.fullName,
-            role: account.role,
-            location: account.location,
+            username: data.data.username,
+            fullName: data.data.fullName,
+            role: data.data.role,
+            location: data.data.location,
             loginTime: new Date().toISOString(),
           })
         );
 
+        // Store token if provided
+        if (data.token) {
+          localStorage.setItem("authToken", data.token);
+        }
+
         // Call the success callback
-        onLoginSuccess(account);
+        onLoginSuccess(data.data);
       } else {
-        setError("Invalid username or password. Please try again.");
-        setIsLoading(false);
+        setError(data.message || "Invalid username or password. Please try again.");
       }
-    }, 800);
+    } catch (err) {
+      setError("Unable to connect to server. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

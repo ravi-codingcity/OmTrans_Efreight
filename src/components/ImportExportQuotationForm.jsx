@@ -13,6 +13,8 @@ import { airlines } from "./Airlines";
 import { airportsOfDeparture } from "./AirportOfDeparture";
 import { airportsOfDestination } from "./AirportOfDestination";
 
+const API_BASE_URL = "http://localhost:5000/api";
+
 const ImportExportQuotationForm = ({ currentUser }) => {
   // Basic Information State
   const [basicInfo, setBasicInfo] = useState({
@@ -43,6 +45,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
 
   // Popup state
   const [showPopup, setShowPopup] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [quotationNumber, setQuotationNumber] = useState("");
   const [quotationSegment, setQuotationSegment] = useState(""); // Quotation segment selection
   const [serviceJobType, setServiceJobType] = useState(""); // For Service Job radio selection
@@ -664,14 +667,18 @@ const ImportExportQuotationForm = ({ currentUser }) => {
   };
 
   // Generate PDF and Submit
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate required segment selection
     if (!quotationSegment) {
       alert("Please select a Quotation Segment before submitting.");
       return;
     }
 
-    const doc = new jsPDF();
+    setIsSubmitting(true);
+
+    const doc = new jsPDF({
+      compress: true
+    });
 
     // Generate quotation number at the start
     const newQuotationNumber = generateQuotationNumber();
@@ -679,12 +686,49 @@ const ImportExportQuotationForm = ({ currentUser }) => {
 
     let yPos = 15;
 
-    // Add Logo (convert to base64 or load from URL)
-    const img = new Image();
-    img.src = OmTransLogo;
+    // Compress and add logo - use canvas to resize and compress image
+    const compressImage = (src, maxWidth, maxHeight, quality) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+          
+          // Calculate new dimensions while maintaining aspect ratio
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convert to JPEG with compression
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = () => resolve(null);
+        img.src = src;
+      });
+    };
 
-    // Add logo at top left
-    doc.addImage(img, "PNG", 15, yPos, 40, 15);
+    // Compress logo to smaller size (150px max width, 60px max height, 70% quality)
+    const compressedLogo = await compressImage(OmTransLogo, 150, 60, 0.7);
+    
+    // Add compressed logo
+    if (compressedLogo) {
+      doc.addImage(compressedLogo, "JPEG", 15, yPos, 40, 15);
+    }
 
     // Company Info (top right)
     doc.setFontSize(10);
@@ -1113,19 +1157,32 @@ const ImportExportQuotationForm = ({ currentUser }) => {
       pdfFileName: pdfFileName,
     };
 
-    // Get existing quotations from localStorage
-    const existingQuotations = JSON.parse(
-      localStorage.getItem("importExportQuotations") || "[]"
-    );
+    // Save quotation to backend API
+    try {
+      const response = await fetch(`${API_BASE_URL}/quotations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(quotationData),
+      });
 
-    // Add new quotation
-    existingQuotations.push(quotationData);
+      const result = await response.json();
 
-    // Save back to localStorage
-    localStorage.setItem(
-      "importExportQuotations",
-      JSON.stringify(existingQuotations)
-    );
+      if (!response.ok) {
+        console.error("Failed to save quotation:", result.message);
+        alert(`Failed to save quotation: ${result.message || "Unknown error"}`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log("Quotation saved successfully:", result);
+    } catch (error) {
+      console.error("Error saving quotation:", error);
+      alert("Failed to connect to server. Please try again later.");
+      setIsSubmitting(false);
+      return;
+    }
 
     // Console log all form data
     console.log("=== QUOTATION SUBMITTED ===");
@@ -1143,6 +1200,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
 
     // Show popup
     setShowPopup(true);
+    setIsSubmitting(false);
 
     // Reset quotation segment after submission
     setQuotationSegment("");
@@ -2664,10 +2722,20 @@ const ImportExportQuotationForm = ({ currentUser }) => {
             <button
               type="button"
               onClick={handleSubmit}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-3 rounded-md text-sm font-medium transition shadow-md hover:shadow-lg"
+              disabled={isSubmitting}
+              className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-3 rounded-md text-sm font-medium transition shadow-md hover:shadow-lg ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              <Send size={18} />
-              Submit & Download PDF
+              {isSubmitting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Submitting...</span>
+                </>
+              ) : (
+                <>
+                  <Send size={18} />
+                  Submit & Download PDF
+                </>
+              )}
             </button>
           </div>
 

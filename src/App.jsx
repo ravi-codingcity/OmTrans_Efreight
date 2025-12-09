@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import ImportExportQuotationForm from './components/ImportExportQuotationForm.jsx'
 import Dashboard from './Dashboard/Dashboard.jsx'
 import Login from './Login/Login.jsx'
+import Signup from './Signup/Signup.jsx'
+import ResetPassword from './ResetPassword/ResetPassword.jsx'
 import Navbar from './components/Navbar.jsx'
 import './App.css'
 
@@ -9,6 +11,10 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [currentUser, setCurrentUser] = useState(null)
   const [currentView, setCurrentView] = useState('dashboard') // 'dashboard', 'form', 'approval', or 'booking'
+
+  // Check if accessing secret signup page via URL hash
+  const isSignupPage = window.location.hash === '#/admin-signup'
+  const isResetPasswordPage = window.location.hash === '#/admin-reset-password'
 
   // Check if user is already logged in on component mount
   useEffect(() => {
@@ -42,6 +48,30 @@ function App() {
   // Handle navigation
   const handleNavigate = (view) => {
     setCurrentView(view)
+  }
+
+  // Handle successful signup - redirect to login
+  const handleSignupSuccess = () => {
+    window.location.hash = ''
+  }
+
+  // If accessing secret reset password page, show reset password form
+  if (isResetPasswordPage) {
+    return (
+      <ResetPassword
+        onSwitchToLogin={() => { window.location.hash = '' }}
+      />
+    )
+  }
+
+  // If accessing secret signup page, show signup form
+  if (isSignupPage) {
+    return (
+      <Signup
+        onSignupSuccess={handleSignupSuccess}
+        onSwitchToLogin={() => { window.location.hash = '' }}
+      />
+    )
   }
 
   // If not authenticated, show login page
