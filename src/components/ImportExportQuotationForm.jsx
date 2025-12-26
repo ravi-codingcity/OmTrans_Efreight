@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { FileText, Send, CheckCircle, X, Plus, Trash2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { FileText, Send, CheckCircle, X, Plus, Trash2, Search } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import OmTransLogo from "../assets/OmTrans.png";
@@ -12,6 +12,7 @@ import { shippingLines } from "./ShippingLines";
 import { airlines } from "./Airlines";
 import { airportsOfDeparture } from "./AirportOfDeparture";
 import { airportsOfDestination } from "./AirportOfDestination";
+import { allAvailableTerms, getTermsForSegment } from "./Terms_and_Conditions";
 
 const API_BASE_URL = "http://localhost:5000/api";
 
@@ -49,6 +50,12 @@ const ImportExportQuotationForm = ({ currentUser }) => {
   const [quotationNumber, setQuotationNumber] = useState("");
   const [quotationSegment, setQuotationSegment] = useState(""); // Quotation segment selection
   const [serviceJobType, setServiceJobType] = useState(""); // For Service Job radio selection
+
+  // Terms and Conditions state
+  const [selectedTerms, setSelectedTerms] = useState([]);
+  const [termSearchInput, setTermSearchInput] = useState("");
+  const [showTermsSuggestions, setShowTermsSuggestions] = useState(false);
+  const [filteredTermsSuggestions, setFilteredTermsSuggestions] = useState([]);
 
   // Quotation segment options with prefixes
   const quotationSegments = [
@@ -105,6 +112,59 @@ const ImportExportQuotationForm = ({ currentUser }) => {
   const [filteredAirportsDeparture, setFilteredAirportsDeparture] = useState([]);
   const [showAirportDestinationDropdown, setShowAirportDestinationDropdown] = useState(false);
   const [filteredAirportsDestination, setFilteredAirportsDestination] = useState([]);
+
+  // Effect to load terms when quotation segment or terms option changes
+  useEffect(() => {
+    if (quotationSegment) {
+      const terms = getTermsForSegment(quotationSegment, basicInfo.terms);
+      setSelectedTerms(terms);
+    } else {
+      setSelectedTerms([]);
+    }
+  }, [quotationSegment, basicInfo.terms]);
+
+  // Handler for term search input
+  const handleTermSearchChange = (value) => {
+    setTermSearchInput(value);
+    if (value.trim().length > 0) {
+      const filtered = allAvailableTerms.filter(
+        (term) =>
+          term.toLowerCase().includes(value.toLowerCase()) &&
+          !selectedTerms.includes(term)
+      );
+      setFilteredTermsSuggestions(filtered);
+      setShowTermsSuggestions(true);
+    } else {
+      setFilteredTermsSuggestions(
+        allAvailableTerms.filter((term) => !selectedTerms.includes(term))
+      );
+      setShowTermsSuggestions(true);
+    }
+  };
+
+  // Handler to add a term
+  const handleAddTerm = (term) => {
+    if (term && !selectedTerms.includes(term)) {
+      setSelectedTerms((prev) => [...prev, term]);
+    }
+    setTermSearchInput("");
+    setShowTermsSuggestions(false);
+  };
+
+  // Handler to add custom term
+  const handleAddCustomTerm = () => {
+    const customTerm = termSearchInput.trim();
+    if (customTerm && !selectedTerms.includes(customTerm)) {
+      setSelectedTerms((prev) => [...prev, customTerm]);
+    }
+    setTermSearchInput("");
+    setShowTermsSuggestions(false);
+  };
+
+  // Handler to remove a term
+  const handleRemoveTerm = (index) => {
+    setSelectedTerms((prev) => prev.filter((_, i) => i !== index));
+  };
 
   // Origin Charge Suggestions
   const originChargeSuggestions = [
@@ -651,6 +711,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
         "volumeWeight",
         "chargeableWeight",
         "commodity",
+         "terms",
         "airPortOfDeparture",
         "airPortOfDestination",
         "airLines",
@@ -1072,18 +1133,34 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    const terms = [
-      "1. Freight rates are subject to equipment and space availability.",
-      "2. Transit insurance will be at the customer's cost. OmTrans will not be responsible for any claims.",
-      "3. All charges are subject to change without prior notice.",
-      "4. Payment terms: As per agreed contract.",
-      "5. This quotation is valid for 30 days from the date of issue.",
+
+    // Helper function to replace ₹ with Rs. for PDF compatibility
+    const sanitizeForPDF = (text) => {
+      return text.replace(/₹/g, "Rs.");
+    };
+
+    // Use dynamic selectedTerms instead of hardcoded terms
+    const termsToRender = selectedTerms.length > 0 ? selectedTerms : [
+      "Freight rates are subject to equipment and space availability.",
+      "Transit insurance will be at the customer's cost. OmTrans will not be responsible for any claims.",
+      "All charges are subject to change without prior notice.",
+      "Payment terms: As per agreed contract.",
+      "This quotation is valid for 30 days from the date of issue.",
     ];
 
-    terms.forEach((term) => {
-      doc.text(term, 17, yPos);
-      yPos += 5;
+    termsToRender.forEach((term, index) => {
+      // Check if we need a new page for more terms
+      if (yPos > 275) {
+        doc.addPage();
+        yPos = 20;
+      }
+      const termText = `${index + 1}. ${sanitizeForPDF(term)}`;
+      const termLines = doc.splitTextToSize(termText, 175);
+      doc.text(termLines, 17, yPos);
+      yPos += termLines.length * 4 + 2;
     });
+
+    yPos += 5;
 
     // Footer with border
     const pageCount = doc.internal.getNumberOfPages();
@@ -2688,33 +2765,103 @@ const ImportExportQuotationForm = ({ currentUser }) => {
             <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
               <FileText size={18} className="text-yellow-600" />
               Terms and Conditions
+              {quotationSegment && (
+                <span className="text-xs font-normal text-gray-500 ml-2">
+                  ({quotationSegment}
+                  {["Sea Export FCL", "Sea Export LCL", "Sea Export Break Bulk"].includes(quotationSegment) && 
+                   basicInfo.terms && 
+                   ` - ${basicInfo.terms}`})
+                </span>
+              )}
             </h3>
-            <ul className="space-y-2 text-xs text-gray-700">
-              <li className="flex items-start gap-2">
-                <span className="text-yellow-600 font-bold mt-0.5">•</span>
-                <span>
-                  Freight rates are subject to equipment and space availability.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-yellow-600 font-bold mt-0.5">•</span>
-                <span>
-                  Transit insurance will be at the customer's cost. OmTrans will
-                  not be responsible for any claims.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-yellow-600 font-bold mt-0.5">•</span>
-                <span>
-                  *2hrs free for offloading after this 75euro/half hour
-                  detention will be applied.{" "}
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-yellow-600 font-bold mt-0.5">•</span>
-                <span>*Freight valid till 16th Oct 2025 sailing only </span>
-              </li>
-            </ul>
+
+            {/* Add Term Section */}
+            <div className="mb-4 relative">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
+                    <Search size={14} className="text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search or add custom term..."
+                    value={termSearchInput}
+                    onChange={(e) => handleTermSearchChange(e.target.value)}
+                    onFocus={() => {
+                      setFilteredTermsSuggestions(
+                        allAvailableTerms.filter((term) => !selectedTerms.includes(term))
+                      );
+                      setShowTermsSuggestions(true);
+                    }}
+                    onBlur={() => setTimeout(() => setShowTermsSuggestions(false), 200)}
+                    className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-yellow-400 focus:border-yellow-400"
+                  />
+                </div>
+                {termSearchInput.trim() && (
+                  <button
+                    type="button"
+                    onClick={handleAddCustomTerm}
+                    className="flex items-center gap-1 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded-md transition"
+                  >
+                    <Plus size={14} />
+                    Add Custom
+                  </button>
+                )}
+              </div>
+
+              {/* Suggestions Dropdown */}
+              {showTermsSuggestions && filteredTermsSuggestions.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {filteredTermsSuggestions.slice(0, 10).map((term, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleAddTerm(term)}
+                      className="px-3 py-2 text-xs text-gray-700 hover:bg-yellow-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    >
+                      {term}
+                    </div>
+                  ))}
+                  {filteredTermsSuggestions.length > 10 && (
+                    <div className="px-3 py-2 text-xs text-gray-400 text-center">
+                      +{filteredTermsSuggestions.length - 10} more terms...
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Selected Terms List */}
+            {selectedTerms.length === 0 ? (
+              <p className="text-xs text-gray-500 italic">
+                {quotationSegment
+                  ? "No terms selected. Add terms using the search above."
+                  : "Please select a quotation segment to load default terms."}
+              </p>
+            ) : (
+              <ul className="space-y-1.5 text-xs text-gray-700">
+                {selectedTerms.map((term, index) => (
+                  <li key={index} className="flex items-start gap-1 bg-white rounded px-2 py-1 border border-yellow-200 hover:border-red-300 transition group">
+                    <span className="text-yellow-600 font-bold mt-0.5 min-w-[20px]">{index + 1}.</span>
+                    <span className="flex-1 leading-relaxed">{term}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTerm(index)}
+                      className="ml-1 text-red-400 hover:text-red-600 hover:bg-red-50 p-1 rounded transition flex-shrink-0"
+                      title="Remove term"
+                    >
+                      <X size={14} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* Term Count */}
+            {selectedTerms.length > 0 && (
+              <p className="mt-3 text-xs text-gray-400 text-right">
+                {selectedTerms.length} term{selectedTerms.length !== 1 ? "s" : ""} added
+              </p>
+            )}
           </section>
 
           {/* Action Button */}
