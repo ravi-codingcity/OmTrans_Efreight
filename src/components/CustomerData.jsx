@@ -1,7 +1,7 @@
 // Customer data
 export const customerData = [
   {
-    name: "Aeroco.m Metals Limited",
+    name: "Aerocom Metals Limited",
     address: "UNIT B Groverlands IND. Estate, Great Britain (united Kingdom)",
   },
   {
@@ -19,11 +19,11 @@ export const customerData = [
     address: "Itosb 5 Cadde NO 20tepeoren Tuzia Istanbul, Turkey",
   },
   {
-    name: "Co.mmerciale TUBI Acciaio SPA",
+    name: "Commerciale TUBI Acciaio SPA",
     address: "Viale Lidice 40 10095 Grugliasco. (to)., Italy",
   },
   {
-    name: "Co.mpletion EM Co. Ltd",
+    name: "Completion EM Co. Ltd",
     address:
       "No.710 Chung YI ROAD Sec.2 KUEI SHAN Village Taoyuan Co.unty Taiwan, Taiwan",
   },
@@ -47,7 +47,7 @@ export const customerData = [
   {
     name: "Importadora Golden BOY S.a..s[mumbai]",
     address:
-      "Calle 98 SUR NRO. 48 - 225 LA Estrella Co.lombia TEL (574) 444 20 25 CTC: Andres Velez -Augusto Velezemail: Jefeimportaciones@igbco.lombia.co.mco.mercioexteri, Co.lombia",
+      "Calle 98 SUR NRO. 48 - 225 LA Estrella Colombia TEL (574) 444 20 25 CTC: Andres Velez -Augusto Velezemail: Jefeimportaciones@igbco.lombia.co.mco.mercioexteri, Colombia",
   },
   {
     name: "KATO Co. Ltd",
@@ -78,9 +78,9 @@ export const customerData = [
     address: "HCI Godown ROAD ROAD Village Kunda, India",
   },
   {
-    name: "National GAS Co.mpany (natgas)[mumbai]",
+    name: "National GAS Company (natgas)[mumbai]",
     address:
-      "National GAS Co.mpany (natgas)13 Street NO 270new Maadi Cairo Egypt, Egypt",
+      "National GAS Company (natgas)13 Street NO 270new Maadi Cairo Egypt, Egypt",
   },
   {
     name: "NEW JET Enterprises Co. Ltd",
@@ -89,7 +89,7 @@ export const customerData = [
   {
     name: "Perma Shipping LINE India Pvt Ltd",
     address:
-      '507 "B" WING Kohinoor CITY Co.mmercial Co.mplex Kirol ROAD OFF L.b.s MARG Kurla (west) Mumbai Â€"400 070 Tel.: 91 22 6684 7000 FAX : 91-22-6684 7010, India',
+      '507 "B" WING Kohinoor CITY Commercial Complex Kirol ROAD OFF L.b.s MARG Kurla (west) Mumbai Â€"400 070 Tel.: 91 22 6684 7000 FAX : 91-22-6684 7010, India',
   },
   {
     name: "Reliable Educational Materials Supplier PLC",
@@ -98,7 +98,7 @@ export const customerData = [
   {
     name: "T.i.a.c. the International",
     address:
-      "Co.mpany S.r.l SOC. Unipersonale VIA Monte Cervino 2/4 C.p.72, Italy",
+      "Company S.r.l SOC. Unipersonale VIA Monte Cervino 2/4 C.p.72, Italy",
   },
   {
     name: "Universal TUBE Accessories Pvt Ltd[mumbai]",
