@@ -20,10 +20,10 @@ import VikramImg from "../assets/vikram.jpg";
 import TarunImg from "../assets/tarun.jpeg";
 import HarmeetImg from "../assets/harmeet.jpg";
 
-const API_BASE_URL = "https://omtransefreight-rjph1xtg.b4a.run/api";
+const API_BASE_URL = "https://omtransefreight-p8nrxzmy.b4a.run/api";
 
 const Dashboard = () => {
-  // Helper function to get user image based on username
+  // Helper function to get user image based on username 
   const getUserImage = (username) => {
     if (!username) return OmTransLogo;
     
