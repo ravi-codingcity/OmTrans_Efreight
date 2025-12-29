@@ -11,7 +11,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-const API_BASE_URL = "https://omtransefreight-p8nrxzmy.b4a.run/api/auth";
+const API_BASE_URL = "https://omtrans-efreight-backend.onrender.com/api/auth";
 
 const ResetPassword = ({ onSwitchToLogin }) => {
   const [formData, setFormData] = useState({

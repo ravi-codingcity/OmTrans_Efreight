@@ -20,7 +20,7 @@ import VikramImg from "../assets/vikram.jpg";
 import TarunImg from "../assets/tarun.jpeg";
 import HarmeetImg from "../assets/harmeet.jpg";
 
-const API_BASE_URL = "https://omtransefreight-p8nrxzmy.b4a.run/api";
+const API_BASE_URL = "https://omtrans-efreight-backend.onrender.com/api";
 
 const Dashboard = () => {
   // Helper function to get user image based on username 

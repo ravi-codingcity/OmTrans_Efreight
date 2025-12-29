@@ -14,7 +14,7 @@ import { airportsOfDeparture } from "./AirportOfDeparture";
 import { airportsOfDestination } from "./AirportOfDestination";
 import { allAvailableTerms, getTermsForSegment } from "./Terms_and_Conditions";
 
-const API_BASE_URL = "https://omtransefreight-p8nrxzmy.b4a.run/api";
+const API_BASE_URL = "https://omtrans-efreight-backend.onrender.com/api";
 
 const ImportExportQuotationForm = ({ currentUser }) => {
   // Basic Information State
