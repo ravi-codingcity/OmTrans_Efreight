@@ -162,7 +162,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Main Content */}
-      <div className="w-full px-4 sm:px-12 lg:px-20 py-8">
+      <div className="w-full  sm:px-12 lg:px-14 py-8">
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -358,28 +358,29 @@ const Dashboard = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full border-collapse border border-gray-200">
               <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                <tr className="divide-x divide-gray-200">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Quotation No.
                   </th>
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Segment
-                  </th>
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                 
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Created By
                   </th>
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                   <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Segment
+                  </th>
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Customer
                   </th>
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Route
                   </th>
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Created Date
                   </th>
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Action
                   </th>
                 </tr>
@@ -405,9 +406,9 @@ const Dashboard = () => {
                   filteredQuotations.map((quote) => (
                     <tr
                       key={quote.id}
-                      className="hover:bg-blue-50 transition-colors"
+                      className="hover:bg-blue-50 transition-colors divide-x divide-gray-200"
                     >
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-4">
                         <div className="flex items-center gap-2">
                           <FileText className="text-blue-600" size={18} />
                           <span className="font-semibold text-gray-900 text-xs">
@@ -415,12 +416,8 @@ const Dashboard = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="px-5 py-4">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                          {quote.quotationSegment || "N/A"}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
+                     
+                      <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
                           <img
                             src={getUserImage(quote.createdBy)}
@@ -437,7 +434,12 @@ const Dashboard = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                       <td className="px-4 py-4">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                          {quote.quotationSegment || "N/A"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
                         <div className="text-xs font-medium text-gray-900">
                           {quote.customerName
                             ? quote.customerName.split("\n")[0].substring(0, 30) +
@@ -445,16 +447,22 @@ const Dashboard = () => {
                             : "N/A"}
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-4">
                         <div className="text-xs">
                           {quote.quotationSegment && (quote.quotationSegment.toLowerCase().includes("air")) ? (
                             // Air Route
                             <>
                               <div className="font-medium text-gray-900">
-                                {quote.airPortOfDeparture || "N/A"}
+                                {quote.airPortOfDeparture
+                                  ? quote.airPortOfDeparture.substring(0, 30) +
+                                    (quote.airPortOfDeparture.length > 30 ? "..." : "")
+                                  : "N/A"}
                               </div>
                               <div className="text-gray-500 flex items-center gap-1">
-                                <span>→</span> {quote.airPortOfDestination || "N/A"}
+                                <span>→</span> {quote.airPortOfDestination
+                                  ? quote.airPortOfDestination.substring(0, 30) +
+                                    (quote.airPortOfDestination.length > 30 ? "..." : "")
+                                  : "N/A"}
                               </div>
                             </>
                           ) : (
@@ -470,13 +478,13 @@ const Dashboard = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-4">
                         <div className="flex items-center gap-2 text-xs text-gray-600">
                           <Calendar size={16} />
                           {new Date(quote.createdDate).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-4">
                         <button
                           onClick={() => viewDetails(quote)}
                           className="flex items-center gap-2 px-3 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all font-medium text-sm border border-blue-200"
@@ -725,7 +733,7 @@ const Dashboard = () => {
                     )}
                     {selectedQuotation.weight && (
                       <div>
-                        <p className="text-xs text-gray-600 mb-0.5">Weight</p>
+                        <p className="text-xs text-gray-600 mb-0.5">Weight (kg)</p>
                         <p className="text-xs font-medium text-gray-900">
                           {selectedQuotation.weight}
                         </p>
@@ -940,6 +948,21 @@ const Dashboard = () => {
                   <p className="text-xs text-gray-700 whitespace-pre-line">
                     {selectedQuotation.remarks}
                   </p>
+                </div>
+              )}
+
+              {/* Terms and Conditions */}
+              {selectedQuotation.termsAndConditions && selectedQuotation.termsAndConditions.length > 0 && (
+                <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                  <h4 className="text-xs font-semibold text-green-900 mb-2">Terms & Conditions</h4>
+                  <ul className="text-xs text-gray-700 space-y-1">
+                    {selectedQuotation.termsAndConditions.map((term, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-green-600 font-medium">{idx + 1}.</span>
+                        <span>{term}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>

@@ -5,12 +5,12 @@ export const consigneeData = [
     address: "UNIT B Groverlands IND. Estate, Great Britain (united Kingdom)",
   },
   {
-    name: "Afglobal Co.rp[mumbai]",
+    name: "Afglobal Corp[mumbai]",
     address:
       "13770 Industrial RD Attn: Doc-1 Houston Txusa 77015, United States of America",
   },
   {
-    name: "Ameri-Forge Co.rporation[mumbai]",
+    name: "Ameri-Forge Corporation[mumbai]",
     address:
       "Riser Assembly 13770 Industrial ROAD Houston Texas, United States of America",
   },
@@ -25,7 +25,7 @@ export const consigneeData = [
   {
     name: "Completion EM Co. Ltd",
     address:
-      "No.710 Chung YI ROAD Sec.2 KUEI SHAN Village Taoyuan Co.unty Taiwan, Taiwan",
+      "No.710 Chung YI ROAD Sec.2 KUEI SHAN Village Taoyuan County Taiwan, Taiwan",
   },
   {
     name: "GEM Enterprises India",

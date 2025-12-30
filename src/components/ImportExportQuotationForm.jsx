@@ -16,7 +16,7 @@ import { allAvailableTerms, getTermsForSegment } from "./Terms_and_Conditions";
 
 const API_BASE_URL = "https://omtrans-efreight-backend.onrender.com/api";
 
-const ImportExportQuotationForm = ({ currentUser }) => {
+const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
   // Basic Information State
   const [basicInfo, setBasicInfo] = useState({
     customerNameAndAddress: "",
@@ -168,7 +168,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
 
   // Origin Charge Suggestions
   const originChargeSuggestions = [
-    "Transport Charge",
+    "Transport Charge", 
     "BL Fee Charge",
     "Customs Clearance Charge",
     "Loading Charge",
@@ -180,6 +180,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     "Seal Charge",
     "VGM Charge",
     "DGFT Charge",
+    "ISPS Charge"
   ].sort();
 
   // Freight Charge Suggestions
@@ -211,7 +212,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
       charges: "",
       currency: "USD",
       amount: "",
-      unit: "/BL",
+      unit: "per BL",
     },
   ]);
 
@@ -222,7 +223,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
       charges: "",
       currency: "USD",
       amount: "",
-      unit: "/BL",
+      unit: "per BL",
     },
   ]);
 
@@ -233,7 +234,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
       charges: "",
       currency: "USD",
       amount: "",
-      unit: "/BL",
+      unit: "per BL",
     },
   ]);
 
@@ -481,7 +482,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "/BL",
+        unit: "per BL",
       },
     ]);
   };
@@ -535,7 +536,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "/BL",
+        unit: "per BL",
       },
     ]);
   };
@@ -589,7 +590,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "/BL",
+        unit: "per BL",
       },
     ]);
   };
@@ -727,11 +728,34 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     return [];
   };
 
+  // Check if all required fields are filled
+  const isFormValid = () => {
+    return (
+      quotationSegment &&
+      basicInfo.customerNameAndAddress?.trim() &&
+      basicInfo.terms?.trim() &&
+      basicInfo.commodity?.trim() &&
+      basicInfo.weight?.trim()
+    );
+  };
+
   // Generate PDF and Submit
   const handleSubmit = async () => {
     // Validate required segment selection
     if (!quotationSegment) {
       alert("Please select a Quotation Segment before submitting.");
+      return;
+    }
+
+    // Validate required fields
+    const missingFields = [];
+    if (!basicInfo.customerNameAndAddress?.trim()) missingFields.push("Customer Name & Address");
+    if (!basicInfo.terms?.trim()) missingFields.push("Terms");
+    if (!basicInfo.commodity?.trim()) missingFields.push("Commodity");
+    if (!basicInfo.weight?.trim()) missingFields.push("Gross Weight (kg)");
+
+    if (missingFields.length > 0) {
+      alert(`Please fill in the following required fields:\n• ${missingFields.join("\n• ")}`);
       return;
     }
 
@@ -795,7 +819,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(37, 99, 235);
-    doc.text("OmTrans Freight Services", 195, yPos + 5, { align: "right" });
+    doc.text("OmTrans Logistics Ltd.", 195, yPos + 5, { align: "right" });
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 100, 100);
@@ -1177,7 +1201,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
       doc.setTextColor(100, 100, 100);
       doc.setFont("helvetica", "normal");
       doc.text(
-        "OmTrans Freight Services | Global Logistics Solutions",
+        "OmTrans Logistics Ltd. | Global Logistics Solutions",
         15,
         290
       );
@@ -1185,7 +1209,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
     }
 
     // Save PDF
-    const pdfFileName = `Door_to_Door_Quotation_${newQuotationNumber}.pdf`;
+    const pdfFileName = `${quotationSegment} ${newQuotationNumber}.pdf`;
     doc.save(pdfFileName);
 
     // Get the selected segment details
@@ -1226,6 +1250,8 @@ const ImportExportQuotationForm = ({ currentUser }) => {
       originCharges: originCharges,
       freightCharges: freightCharges,
       destinationCharges: destinationCharges,
+      // Terms and Conditions
+      termsAndConditions: selectedTerms,
       createdBy:
         currentUser?.fullName || currentUser?.username || "Unknown User",
       createdByRole: currentUser?.role || "User",
@@ -1318,7 +1344,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "/BL",
+        unit: "per BL",
       },
     ]);
 
@@ -1328,7 +1354,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "/BL",
+        unit: "per BL",
       },
     ]);
 
@@ -1338,13 +1364,16 @@ const ImportExportQuotationForm = ({ currentUser }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "/BL",
+        unit: "per BL",
       },
     ]);
 
-    // Hide popup after 3 seconds
+    // Hide popup after 3 seconds and redirect to Dashboard
     setTimeout(() => {
       setShowPopup(false);
+      if (onNavigate) {
+        onNavigate("dashboard");
+      }
     }, 3000);
   };
 
@@ -1552,7 +1581,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                     setTimeout(() => setShowCustomerDropdown(false), 200);
                   }}
                   placeholder="Start typing customer name..."
-                  rows="2"
+                  rows="3"
                   className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 />
                 {showCustomerDropdown && filteredCustomers.length > 0 && (
@@ -1577,7 +1606,6 @@ const ImportExportQuotationForm = ({ currentUser }) => {
               <div className="relative">
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   Delivery Address (Consignee){" "}
-                  <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   name="consigneeAddress"
@@ -1596,7 +1624,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                     setTimeout(() => setShowConsigneeDropdown(false), 200);
                   }}
                   placeholder="Start typing consignee name..."
-                  rows="2"
+                  rows="3"
                   className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 />
                 {showConsigneeDropdown && filteredConsignees.length > 0 && (
@@ -1762,7 +1790,7 @@ const ImportExportQuotationForm = ({ currentUser }) => {
               {getVisibleFields().includes("commodity") && (
               <div>
                 <label className="block font-medium text-gray-700 mb-0.5">
-                  Commodity
+                  Commodity <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -2362,11 +2390,11 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                               }
                               className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-400 bg-white"
                             >
-                              <option value="/BL">/BL</option>
-                              <option value="/PKG">/PKG</option>
-                              <option value="/HBL">/HBL</option>
-                              <option value="/Shipment">/Shipment</option>
-                              <option value="/Container">/Container</option>
+                              <option value="Per BL">/BL</option>
+                              <option value="Per PKG">/PKG</option>
+                              <option value="Per HBL">/HBL</option>
+                              <option value="Per Shipment">/Shipment</option>
+                              <option value="Per Container">/Container</option>
                             </select>
                           </td>
                           <td className="px-1 py-1.5 text-center">
@@ -2545,11 +2573,11 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                               }
                               className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-green-400 bg-white"
                             >
-                              <option value="/BL">/BL</option>
-                              <option value="/PKG">/PKG</option>
-                              <option value="/HBL">/HBL</option>
-                              <option value="/Shipment">/Shipment</option>
-                              <option value="/Container">/Container</option>
+                              <option value="Per BL">/BL</option>
+                              <option value="Per PKG">/PKG</option>
+                              <option value="Per HBL">/HBL</option>
+                              <option value="Per Shipment">/Shipment</option>
+                              <option value="Per Container">/Container</option>
                             </select>
                           </td>
                           <td className="px-1 py-1.5 text-center">
@@ -2734,11 +2762,11 @@ const ImportExportQuotationForm = ({ currentUser }) => {
                               }
                               className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-purple-400 bg-white"
                             >
-                              <option value="/BL">/BL</option>
-                              <option value="/PKG">/PKG</option>
-                              <option value="/HBL">/HBL</option>
-                              <option value="/Shipment">/Shipment</option>
-                              <option value="/Container">/Container</option>
+                              <option value="Per BL">/BL</option>
+                              <option value="Per PKG">/PKG</option>
+                              <option value="Per HBL">/HBL</option>
+                              <option value="Per Shipment">/Shipment</option>
+                              <option value="Per Container">/Container</option>
                             </select>
                           </td>
                           <td className="px-1 py-1.5 text-center">
@@ -2869,8 +2897,8 @@ const ImportExportQuotationForm = ({ currentUser }) => {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isSubmitting}
-              className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-3 rounded-md text-sm font-medium transition shadow-md hover:shadow-lg ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+              disabled={isSubmitting || !isFormValid()}
+              className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-3 rounded-md text-sm font-medium transition shadow-md hover:shadow-lg ${(isSubmitting || !isFormValid()) ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {isSubmitting ? (
                 <>

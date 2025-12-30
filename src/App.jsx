@@ -92,7 +92,7 @@ function App() {
       {/* Content */}
       <div>
         {currentView === 'dashboard' && <Dashboard />}
-        {currentView === 'form' && <ImportExportQuotationForm currentUser={currentUser} />}
+        {currentView === 'form' && <ImportExportQuotationForm currentUser={currentUser} onNavigate={handleNavigate} />}
         {currentView === 'booking' && (
           <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
