@@ -3,7 +3,6 @@
 // Common terms shown for all segments
 export const commonTerms = [
   "Above rates are subject to booking and space confirmation.",
-  "Transit insurance will be in the shipper/consignee's account.",
   "OmTrans will not be responsible for any insurance claim.",
   "All receipted and incidental charges will be charged as actuals.",
 ];
@@ -13,7 +12,6 @@ export const termsBasedConditions = {
   "Ex-WORK": [
     "5% GST on freight and 18% on other charges will be applicable.",
     "Transit insurance will be in the shipper/consignee's account.",
-    "OmTrans will not be responsible for any insurance claim.",
     "Above quote is based on factory stuffing.",
     "Above rates are port-to-port basis and subject to destination local charges.",
     "Receipted or incidental charges will be charged as actuals.",
