@@ -1388,9 +1388,6 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                 <FileText size={24} />
                 <div>
                   <h1 className="text-xl font-bold">Quotation Form</h1>
-                  <p className="text-xs text-blue-100">
-                    Complete shipping quotation form
-                  </p>
                 </div>
               </div>
               {quotationNumber && (
