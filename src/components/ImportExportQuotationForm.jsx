@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { FileText, Send, CheckCircle, X, Plus, Trash2, Search } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -16,7 +16,57 @@ import { allAvailableTerms, getTermsForSegment } from "./Terms_and_Conditions";
 
 const API_BASE_URL = "https://omtrans-efreight-backend.onrender.com/api";
 
+// Module-level cache for quotations data (shared across component instances)
+const suggestionsCache = {
+  data: null,
+  timestamp: null,
+  CACHE_DURATION: 60000, // 1 minute cache
+  isLoading: false,
+  promise: null,
+};
+
+// Prefetch function that can be called early (e.g., on app load or route change)
+export const prefetchSuggestionData = async () => {
+  const now = Date.now();
+  
+  // Return cached data if valid
+  if (
+    suggestionsCache.data &&
+    suggestionsCache.timestamp &&
+    now - suggestionsCache.timestamp < suggestionsCache.CACHE_DURATION
+  ) {
+    return suggestionsCache.data;
+  }
+  
+  // Return existing promise if already loading
+  if (suggestionsCache.isLoading && suggestionsCache.promise) {
+    return suggestionsCache.promise;
+  }
+  
+  // Start new fetch
+  suggestionsCache.isLoading = true;
+  suggestionsCache.promise = fetch(`${API_BASE_URL}/quotations`)
+    .then((response) => response.json())
+    .then((result) => {
+      const quotations = result.data || result || [];
+      suggestionsCache.data = quotations;
+      suggestionsCache.timestamp = Date.now();
+      suggestionsCache.isLoading = false;
+      return quotations;
+    })
+    .catch((error) => {
+      console.error("Error prefetching suggestions:", error);
+      suggestionsCache.isLoading = false;
+      return [];
+    });
+  
+  return suggestionsCache.promise;
+};
+
 const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
+  // Data loading state
+  const [isDataReady, setIsDataReady] = useState(!!suggestionsCache.data);
+  const abortControllerRef = useRef(null);
   // Basic Information State
   const [basicInfo, setBasicInfo] = useState({
     customerNameAndAddress: "",
@@ -112,6 +162,191 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
   const [filteredAirportsDeparture, setFilteredAirportsDeparture] = useState([]);
   const [showAirportDestinationDropdown, setShowAirportDestinationDropdown] = useState(false);
   const [filteredAirportsDestination, setFilteredAirportsDestination] = useState([]);
+  const [showCommodityDropdown, setShowCommodityDropdown] = useState(false);
+  const [filteredCommodities, setFilteredCommodities] = useState([]);
+
+  // State for merged customer and consignee data (static + custom from DB)
+  const [mergedCustomerData, setMergedCustomerData] = useState(customerData);
+  const [mergedConsigneeData, setMergedConsigneeData] = useState(consigneeData);
+
+  // State for merged POR, POL, POD data (static + custom from DB)
+  const [mergedPorData, setMergedPorData] = useState(icdLocations);
+  const [mergedPolData, setMergedPolData] = useState(indianPorts);
+  const [mergedPodData, setMergedPodData] = useState(foreignDestinations);
+
+  // State for merged Commodity, Final Destination, Airport data (static + custom from DB)
+  const [mergedCommodityData, setMergedCommodityData] = useState([]);
+  const [mergedFinalDestData, setMergedFinalDestData] = useState(foreignDestinations);
+  const [mergedAirportDepartureData, setMergedAirportDepartureData] = useState(airportsOfDeparture);
+  const [mergedAirportDestinationData, setMergedAirportDestinationData] = useState(airportsOfDestination);
+
+  // Load previously submitted customer, consignee, POR, POL, POD data from quotations on mount
+  useEffect(() => {
+    // Cancel any existing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    const processQuotationsData = (quotations) => {
+      // Extract unique values from quotations
+      const submittedCustomers = [];
+      const submittedConsignees = [];
+      const seenCustomers = new Set();
+      const seenConsignees = new Set();
+      const submittedPor = new Set();
+      const submittedPol = new Set();
+      const submittedPod = new Set();
+      const submittedCommodity = new Set();
+      const submittedFinalDest = new Set();
+      const submittedAirportDeparture = new Set();
+      const submittedAirportDestination = new Set();
+
+      quotations.forEach((q) => {
+        // Process customer data
+        if (q.customerName && !seenCustomers.has(q.customerName.toLowerCase())) {
+          seenCustomers.add(q.customerName.toLowerCase());
+          const lines = q.customerName.split('\n');
+          const name = lines[0]?.trim() || '';
+          const address = lines.slice(1).join('\n').trim() || '';
+          if (name) {
+            submittedCustomers.push({ name, address });
+          }
+        }
+
+        // Process consignee data
+        if (q.consigneeName && !seenConsignees.has(q.consigneeName.toLowerCase())) {
+          seenConsignees.add(q.consigneeName.toLowerCase());
+          const lines = q.consigneeName.split('\n');
+          const name = lines[0]?.trim() || '';
+          const address = lines.slice(1).join('\n').trim() || '';
+          if (name) {
+            submittedConsignees.push({ name, address });
+          }
+        }
+
+        // Process POR data
+        if (q.por && q.por.trim()) {
+          submittedPor.add(q.por.trim());
+        }
+
+        // Process POL data
+        if (q.pol && q.pol.trim()) {
+          submittedPol.add(q.pol.trim());
+        }
+
+        // Process POD data
+        if (q.pod && q.pod.trim()) {
+          submittedPod.add(q.pod.trim());
+        }
+
+        // Process Commodity data
+        if (q.commodity && q.commodity.trim()) {
+          submittedCommodity.add(q.commodity.trim());
+        }
+
+        // Process Final Destination data
+        if (q.finalDestination && q.finalDestination.trim()) {
+          submittedFinalDest.add(q.finalDestination.trim());
+        }
+
+        // Process Airport of Departure data
+        if (q.airPortOfDeparture && q.airPortOfDeparture.trim()) {
+          submittedAirportDeparture.add(q.airPortOfDeparture.trim());
+        }
+
+        // Process Airport of Destination data
+        if (q.airPortOfDestination && q.airPortOfDestination.trim()) {
+          submittedAirportDestination.add(q.airPortOfDestination.trim());
+        }
+      });
+
+      // Merge static data with submitted data (remove duplicates)
+      const existingCustomerKeys = new Set(
+        customerData.map((c) => `${c.name}\n${c.address}`.toLowerCase())
+      );
+      const uniqueSubmittedCustomers = submittedCustomers.filter(
+        (c) => !existingCustomerKeys.has(`${c.name}\n${c.address}`.toLowerCase())
+      );
+      setMergedCustomerData([...customerData, ...uniqueSubmittedCustomers]);
+
+      const existingConsigneeKeys = new Set(
+        consigneeData.map((c) => `${c.name}\n${c.address}`.toLowerCase())
+      );
+      const uniqueSubmittedConsignees = submittedConsignees.filter(
+        (c) => !existingConsigneeKeys.has(`${c.name}\n${c.address}`.toLowerCase())
+      );
+      setMergedConsigneeData([...consigneeData, ...uniqueSubmittedConsignees]);
+
+      // Merge POR data
+      const existingPorKeys = new Set(icdLocations.map((p) => p.toLowerCase()));
+      const uniqueSubmittedPor = [...submittedPor].filter(
+        (p) => !existingPorKeys.has(p.toLowerCase())
+      );
+      setMergedPorData([...icdLocations, ...uniqueSubmittedPor]);
+
+      // Merge POL data
+      const existingPolKeys = new Set(indianPorts.map((p) => p.toLowerCase()));
+      const uniqueSubmittedPol = [...submittedPol].filter(
+        (p) => !existingPolKeys.has(p.toLowerCase())
+      );
+      setMergedPolData([...indianPorts, ...uniqueSubmittedPol]);
+
+      // Merge POD data
+      const existingPodKeys = new Set(foreignDestinations.map((p) => p.toLowerCase()));
+      const uniqueSubmittedPod = [...submittedPod].filter(
+        (p) => !existingPodKeys.has(p.toLowerCase())
+      );
+      setMergedPodData([...foreignDestinations, ...uniqueSubmittedPod]);
+
+      // Set Commodity data from submitted quotations
+      setMergedCommodityData([...submittedCommodity]);
+
+      // Merge Final Destination data
+      const existingFinalDestKeys = new Set(foreignDestinations.map((p) => p.toLowerCase()));
+      const uniqueSubmittedFinalDest = [...submittedFinalDest].filter(
+        (p) => !existingFinalDestKeys.has(p.toLowerCase())
+      );
+      setMergedFinalDestData([...foreignDestinations, ...uniqueSubmittedFinalDest]);
+
+      // Merge Airport of Departure data
+      const existingAirportDepartureKeys = new Set(airportsOfDeparture.map((p) => p.toLowerCase()));
+      const uniqueSubmittedAirportDeparture = [...submittedAirportDeparture].filter(
+        (p) => !existingAirportDepartureKeys.has(p.toLowerCase())
+      );
+      setMergedAirportDepartureData([...airportsOfDeparture, ...uniqueSubmittedAirportDeparture]);
+
+      // Merge Airport of Destination data
+      const existingAirportDestinationKeys = new Set(airportsOfDestination.map((p) => p.toLowerCase()));
+      const uniqueSubmittedAirportDestination = [...submittedAirportDestination].filter(
+        (p) => !existingAirportDestinationKeys.has(p.toLowerCase())
+      );
+      setMergedAirportDestinationData([...airportsOfDestination, ...uniqueSubmittedAirportDestination]);
+      
+      setIsDataReady(true);
+    };
+
+    const loadSubmittedData = async () => {
+      try {
+        // Use prefetch function which handles caching
+        const quotations = await prefetchSuggestionData();
+        processQuotationsData(quotations);
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error("Error loading submitted data:", error);
+        }
+        setIsDataReady(true); // Still mark as ready to use static data
+      }
+    };
+
+    loadSubmittedData();
+    
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // Effect to load terms when quotation segment or terms option changes
   useEffect(() => {
@@ -249,7 +484,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     // Handle autocomplete for customer address
     if (name === "customerNameAndAddress") {
       if (value.trim().length > 0) {
-        const filtered = customerData.filter(
+        const filtered = mergedCustomerData.filter(
           (customer) =>
             customer.name.toLowerCase().includes(value.toLowerCase()) ||
             customer.address.toLowerCase().includes(value.toLowerCase())
@@ -264,7 +499,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     // Handle autocomplete for consignee address
     if (name === "consigneeAddress") {
       if (value.trim().length > 0) {
-        const filtered = consigneeData.filter(
+        const filtered = mergedConsigneeData.filter(
           (consignee) =>
             consignee.name.toLowerCase().includes(value.toLowerCase()) ||
             consignee.address.toLowerCase().includes(value.toLowerCase())
@@ -292,7 +527,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     // Handle autocomplete for POR
     if (name === "por") {
       if (value.trim().length > 0) {
-        const filtered = icdLocations
+        const filtered = mergedPorData
           .filter((location) =>
             location.toLowerCase().includes(value.toLowerCase())
           )
@@ -307,7 +542,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     // Handle autocomplete for POL
     if (name === "pol") {
       if (value.trim().length > 0) {
-        const filtered = indianPorts
+        const filtered = mergedPolData
           .filter((port) => port.toLowerCase().includes(value.toLowerCase()))
           .sort();
         setFilteredPolPorts(filtered);
@@ -320,7 +555,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     // Handle autocomplete for POD
     if (name === "pod") {
       if (value.trim().length > 0) {
-        const filtered = foreignDestinations
+        const filtered = mergedPodData
           .filter((dest) => dest.toLowerCase().includes(value.toLowerCase()))
           .sort();
         setFilteredPodPorts(filtered);
@@ -333,7 +568,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     // Handle autocomplete for Final Destination
     if (name === "finalDestination") {
       if (value.trim().length > 0) {
-        const filtered = foreignDestinations
+        const filtered = mergedFinalDestData
           .filter((dest) => dest.toLowerCase().includes(value.toLowerCase()))
           .sort();
         setFilteredFinalDestinations(filtered);
@@ -359,7 +594,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     // Handle autocomplete for Airport of Departure
     if (name === "airPortOfDeparture") {
       if (value.trim().length > 0) {
-        const filtered = airportsOfDeparture
+        const filtered = mergedAirportDepartureData
           .filter((airport) => airport.toLowerCase().includes(value.toLowerCase()))
           .sort();
         setFilteredAirportsDeparture(filtered);
@@ -372,13 +607,26 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     // Handle autocomplete for Airport of Destination
     if (name === "airPortOfDestination") {
       if (value.trim().length > 0) {
-        const filtered = airportsOfDestination
+        const filtered = mergedAirportDestinationData
           .filter((airport) => airport.toLowerCase().includes(value.toLowerCase()))
           .sort();
         setFilteredAirportsDestination(filtered);
         setShowAirportDestinationDropdown(filtered.length > 0);
       } else {
         setShowAirportDestinationDropdown(false);
+      }
+    }
+
+    // Handle autocomplete for Commodity
+    if (name === "commodity") {
+      if (value.trim().length > 0 && mergedCommodityData.length > 0) {
+        const filtered = mergedCommodityData
+          .filter((commodity) => commodity.toLowerCase().includes(value.toLowerCase()))
+          .sort();
+        setFilteredCommodities(filtered);
+        setShowCommodityDropdown(filtered.length > 0);
+      } else {
+        setShowCommodityDropdown(false);
       }
     }
   };
@@ -471,6 +719,15 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       airPortOfDestination: airport,
     }));
     setShowAirportDestinationDropdown(false);
+  };
+
+  // Handle Commodity selection from dropdown
+  const handleCommoditySelect = (commodity) => {
+    setBasicInfo((prev) => ({
+      ...prev,
+      commodity: commodity,
+    }));
+    setShowCommodityDropdown(false);
   };
 
   // Origin Charges Handlers
@@ -1280,6 +1537,112 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       }
 
       console.log("Quotation saved successfully:", result);
+
+      // Update merged data with newly submitted customer/consignee for immediate use
+      if (basicInfo.customerNameAndAddress) {
+        const customerExists = mergedCustomerData.some((c) => {
+          const fullCustomer = `${c.name}\n${c.address}`.toLowerCase();
+          return fullCustomer === basicInfo.customerNameAndAddress.toLowerCase();
+        });
+        
+        if (!customerExists) {
+          const lines = basicInfo.customerNameAndAddress.split('\n');
+          const customerName = lines[0]?.trim() || '';
+          const customerAddress = lines.slice(1).join('\n').trim() || '';
+          
+          if (customerName) {
+            setMergedCustomerData((prev) => [...prev, { name: customerName, address: customerAddress }]);
+          }
+        }
+      }
+
+      // Update merged consignee data for immediate use
+      if (basicInfo.consigneeAddress) {
+        const consigneeExists = mergedConsigneeData.some((c) => {
+          const fullConsignee = `${c.name}\n${c.address}`.toLowerCase();
+          return fullConsignee === basicInfo.consigneeAddress.toLowerCase();
+        });
+        
+        if (!consigneeExists) {
+          const lines = basicInfo.consigneeAddress.split('\n');
+          const consigneeName = lines[0]?.trim() || '';
+          const consigneeAddr = lines.slice(1).join('\n').trim() || '';
+          
+          if (consigneeName) {
+            setMergedConsigneeData((prev) => [...prev, { name: consigneeName, address: consigneeAddr }]);
+          }
+        }
+      }
+
+      // Update merged POR data for immediate use
+      if (basicInfo.por && basicInfo.por.trim()) {
+        const porExists = mergedPorData.some(
+          (p) => p.toLowerCase() === basicInfo.por.toLowerCase()
+        );
+        if (!porExists) {
+          setMergedPorData((prev) => [...prev, basicInfo.por.trim()]);
+        }
+      }
+
+      // Update merged POL data for immediate use
+      if (basicInfo.pol && basicInfo.pol.trim()) {
+        const polExists = mergedPolData.some(
+          (p) => p.toLowerCase() === basicInfo.pol.toLowerCase()
+        );
+        if (!polExists) {
+          setMergedPolData((prev) => [...prev, basicInfo.pol.trim()]);
+        }
+      }
+
+      // Update merged POD data for immediate use
+      if (basicInfo.pod && basicInfo.pod.trim()) {
+        const podExists = mergedPodData.some(
+          (p) => p.toLowerCase() === basicInfo.pod.toLowerCase()
+        );
+        if (!podExists) {
+          setMergedPodData((prev) => [...prev, basicInfo.pod.trim()]);
+        }
+      }
+
+      // Update merged Commodity data for immediate use
+      if (basicInfo.commodity && basicInfo.commodity.trim()) {
+        const commodityExists = mergedCommodityData.some(
+          (c) => c.toLowerCase() === basicInfo.commodity.toLowerCase()
+        );
+        if (!commodityExists) {
+          setMergedCommodityData((prev) => [...prev, basicInfo.commodity.trim()]);
+        }
+      }
+
+      // Update merged Final Destination data for immediate use
+      if (basicInfo.finalDestination && basicInfo.finalDestination.trim()) {
+        const finalDestExists = mergedFinalDestData.some(
+          (d) => d.toLowerCase() === basicInfo.finalDestination.toLowerCase()
+        );
+        if (!finalDestExists) {
+          setMergedFinalDestData((prev) => [...prev, basicInfo.finalDestination.trim()]);
+        }
+      }
+
+      // Update merged Airport of Departure data for immediate use
+      if (basicInfo.airPortOfDeparture && basicInfo.airPortOfDeparture.trim()) {
+        const airportDepExists = mergedAirportDepartureData.some(
+          (a) => a.toLowerCase() === basicInfo.airPortOfDeparture.toLowerCase()
+        );
+        if (!airportDepExists) {
+          setMergedAirportDepartureData((prev) => [...prev, basicInfo.airPortOfDeparture.trim()]);
+        }
+      }
+
+      // Update merged Airport of Destination data for immediate use
+      if (basicInfo.airPortOfDestination && basicInfo.airPortOfDestination.trim()) {
+        const airportDestExists = mergedAirportDestinationData.some(
+          (a) => a.toLowerCase() === basicInfo.airPortOfDestination.toLowerCase()
+        );
+        if (!airportDestExists) {
+          setMergedAirportDestinationData((prev) => [...prev, basicInfo.airPortOfDestination.trim()]);
+        }
+      }
     } catch (error) {
       console.error("Error saving quotation:", error);
       alert("Failed to connect to server. Please try again later.");
@@ -1785,7 +2148,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
               </div>
               )}
               {getVisibleFields().includes("commodity") && (
-              <div>
+              <div className="relative">
                 <label className="block font-medium text-gray-700 mb-0.5">
                   Commodity <span className="text-red-500">*</span>
                 </label>
@@ -1794,9 +2157,34 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                   name="commodity"
                   value={basicInfo.commodity}
                   onChange={handleBasicInfoChange}
+                  onFocus={() => {
+                    if (mergedCommodityData.length > 0) {
+                      const filtered = mergedCommodityData
+                        .filter((c) => c.toLowerCase().includes((basicInfo.commodity || '').toLowerCase()))
+                        .sort();
+                      setFilteredCommodities(filtered);
+                      setShowCommodityDropdown(filtered.length > 0);
+                    }
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowCommodityDropdown(false), 200);
+                  }}
                   placeholder="Electronics, etc."
                   className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
                 />
+                {showCommodityDropdown && filteredCommodities.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredCommodities.map((commodity, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleCommoditySelect(commodity)}
+                        className="px-3 py-2 text-xs cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
+                      >
+                        {commodity}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               )}
               {getVisibleFields().includes("terms") && (

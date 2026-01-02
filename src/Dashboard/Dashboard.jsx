@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   FileText,
   CheckCircle,
@@ -22,7 +22,19 @@ import HarmeetImg from "../assets/harmeet.jpg";
 
 const API_BASE_URL = "https://omtrans-efreight-backend.onrender.com/api";
 
+// Cache for quotations data
+const quotationsCache = {
+  data: null,
+  timestamp: null,
+  CACHE_DURATION: 30000, // 30 seconds cache
+};
+
 const Dashboard = () => {
+  // Loading state for better UX
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const abortControllerRef = useRef(null);
+  
   // Helper function to get user image based on username 
   const getUserImage = (username) => {
     if (!username) return OmTransLogo;
@@ -69,18 +81,8 @@ const Dashboard = () => {
     "July", "August", "September", "October", "November", "December"
   ];
 
-  // Load quotations from API
-  useEffect(() => {
-    loadQuotations();
-    
-    // Set up interval to refresh data every 5 seconds
-    const interval = setInterval(() => {
-      loadQuotations();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadStatistics = (quotationsData = []) => {
+  // Optimized loadStatistics with useCallback
+  const loadStatistics = useCallback((quotationsData = []) => {
     // Calculate statistics from quotations data
     const totalQuotations = quotationsData.length;
     const businessNotConverted = 0;
@@ -96,62 +98,141 @@ const Dashboard = () => {
       jobsCreated,
       totalBookings,
     });
-  };
+  }, []);
 
-  const loadQuotations = async () => {
+  // Optimized loadQuotations with caching and abort controller
+  const loadQuotations = useCallback(async (forceRefresh = false) => {
+    // Check cache first (unless force refresh)
+    const now = Date.now();
+    if (
+      !forceRefresh &&
+      quotationsCache.data &&
+      quotationsCache.timestamp &&
+      now - quotationsCache.timestamp < quotationsCache.CACHE_DURATION
+    ) {
+      setQuotations(quotationsCache.data);
+      loadStatistics(quotationsCache.data);
+      setIsLoading(false);
+      return;
+    }
+
+    // Cancel any pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     try {
-      const response = await fetch(`${API_BASE_URL}/quotations`);
+      // Set refreshing state (not loading for subsequent fetches)
+      if (quotationsCache.data) {
+        setIsRefreshing(true);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/quotations`, {
+        signal: abortControllerRef.current.signal,
+      });
       const data = await response.json();
       
       if (response.ok && data.success) {
         const quotationsData = data.data || [];
+        
+        // Update cache
+        quotationsCache.data = quotationsData;
+        quotationsCache.timestamp = Date.now();
+        
         setQuotations(quotationsData);
         loadStatistics(quotationsData);
       } else {
         console.error("Failed to load quotations:", data.message);
+        // Use cached data if available
+        if (quotationsCache.data) {
+          setQuotations(quotationsCache.data);
+          loadStatistics(quotationsCache.data);
+        } else {
+          setQuotations([]);
+          loadStatistics([]);
+        }
+      }
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        return; // Request was cancelled, ignore
+      }
+      console.error("Error fetching quotations:", error);
+      // Use cached data if available
+      if (quotationsCache.data) {
+        setQuotations(quotationsCache.data);
+        loadStatistics(quotationsCache.data);
+      } else {
         setQuotations([]);
         loadStatistics([]);
       }
-    } catch (error) {
-      console.error("Error fetching quotations:", error);
-      setQuotations([]);
-      loadStatistics([]);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
-  };
+  }, [loadStatistics]);
+
+  // Load quotations on mount with preload from cache
+  useEffect(() => {
+    // Immediately show cached data if available
+    if (quotationsCache.data) {
+      setQuotations(quotationsCache.data);
+      loadStatistics(quotationsCache.data);
+      setIsLoading(false);
+    }
+    
+    // Then fetch fresh data
+    loadQuotations();
+    
+    // Set up interval to refresh data every 30 seconds (reduced from 5s)
+    const interval = setInterval(() => {
+      loadQuotations(true); // Force refresh on interval
+    }, 30000);
+    
+    return () => {
+      clearInterval(interval);
+      // Cancel any pending request on unmount
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [loadQuotations, loadStatistics]);
 
   // Handle card click to filter quotations
   const handleCardClick = (status) => {
     setFilterStatus(status);
   };
 
-  // Filter quotations based on selected filters and sort by date (most recent first)
-  const filteredQuotations = quotations
-    .filter((quote) => {
-      // Location filter
-      if (filterLocation !== "All" && quote.createdByLocation !== filterLocation) {
-        return false;
-      }
-      
-      // Year filter
-      if (filterYear !== "All") {
-        const quoteYear = new Date(quote.createdDate).getFullYear();
-        if (quoteYear !== parseInt(filterYear)) {
+  // Memoized filtered quotations for better performance
+  const filteredQuotations = useMemo(() => {
+    return quotations
+      .filter((quote) => {
+        // Location filter
+        if (filterLocation !== "All" && quote.createdByLocation !== filterLocation) {
           return false;
         }
-      }
-      
-      // Month filter
-      if (filterMonth !== "All") {
-        const quoteMonth = new Date(quote.createdDate).getMonth();
-        const selectedMonthIndex = months.indexOf(filterMonth);
-        if (quoteMonth !== selectedMonthIndex) {
-          return false;
+        
+        // Year filter
+        if (filterYear !== "All") {
+          const quoteYear = new Date(quote.createdDate).getFullYear();
+          if (quoteYear !== parseInt(filterYear)) {
+            return false;
+          }
         }
-      }
-      
-      return true;
-    })
-    .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+        
+        // Month filter
+        if (filterMonth !== "All") {
+          const quoteMonth = new Date(quote.createdDate).getMonth();
+          const selectedMonthIndex = months.indexOf(filterMonth);
+          if (quoteMonth !== selectedMonthIndex) {
+            return false;
+          }
+        }
+        
+        return true;
+      })
+      .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+  }, [quotations, filterLocation, filterYear, filterMonth, months]);
 
   // View quotation details
   const viewDetails = (quotation) => {
@@ -348,15 +429,31 @@ const Dashboard = () => {
         {/* Quotations Table */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <FileText size={24} />
-              {filterStatus === "All" ? "All Quotations" : `${filterStatus} Quotations`}
-            </h2>
-            <p className="text-sm text-blue-100 mt-1">
-              {filteredQuotations.length} {filteredQuotations.length === 1 ? "quotation" : "quotations"} found
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <FileText size={24} />
+                  {filterStatus === "All" ? "All Quotations" : `${filterStatus} Quotations`}
+                </h2>
+                <p className="text-sm text-blue-100 mt-1">
+                  {filteredQuotations.length} {filteredQuotations.length === 1 ? "quotation" : "quotations"} found
+                </p>
+              </div>
+              {isRefreshing && (
+                <div className="flex items-center gap-2 text-blue-100">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <span className="text-sm">Refreshing...</span>
+                </div>
+              )}
+            </div>
           </div>
 
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
+              <p className="text-gray-500 text-lg">Loading quotations...</p>
+            </div>
+          ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse border border-gray-200">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -500,6 +597,7 @@ const Dashboard = () => {
               </tbody>
             </table>
           </div>
+          )}
         </div>
 
         {/* Quick Access Section */}

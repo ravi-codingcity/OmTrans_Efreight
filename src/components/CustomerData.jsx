@@ -45,7 +45,7 @@ export const customerData = [
       "5101 Boone AVE N NEW HOPE MN 55428 USA Phone: 1-763-536-9080 FAX: 1-763-536-9102, India",
   },
   {
-    name: "Importadora Golden BOY S.a..s Mumbai",
+    name: "Importadora Golden BOY S.a.s Mumbai",
     address:
       "Calle 98 SUR NRO. 48 - 225 LA Estrella Colombia TEL (574) 444 20 25 CTC: Andres Velez -Augusto Velezemail: Jefeimportaciones@igbco.lombia.co.mco.mercioexteri, Colombia",
   },
@@ -106,12 +106,12 @@ export const customerData = [
       'C-78/2 ADDL MIDC Jejuri TAL Purandar DIST PUNE Maharashtra Â€" 412303 India, India',
   },
   {
-    name: "YANG MING LINE (india) Pvtltd. [mum]",
+    name: "YANG MING LINE (india) Pvtltd. Mumbai",
     address:
       "Centre-1 13 Floor World Trade Centre Cuffe Parade Mumbai-400005, India",
   },
   {
-    name: "YANG MING LINE (india) Pvtltd. [mum]",
+    name: "YANG MING LINE (india) Pvtltd. Mumbai",
     address:
       "2ND Floor 7C Hasting Chember Kiron Shankar ROY ROAD Kolkata Kolkata WEST Bengal 700001, India",
   },
@@ -146,17 +146,17 @@ export const customerData = [
       "Caratal Rd Gasparillo Trinidad Port of Spainpos 321122trinidad Tobago, Port of Spain",
   },
   {
-    name: "Faze Three Ltd [mumbai ]",
+    name: "Faze Three Ltd Mumbai",
     address:
       "1/2 Shiv Smriti Chambers 49-a Dr. Annie Besant Road Worli Mumbai -400018 India, Worli",
   },
   {
-    name: "Faze Three Ltd [mumbai ]",
+    name: "Faze Three Ltd Mumbai",
     address:
       "Office No 63-c 64-c 6th Floor Wing C Mittal Court Premises Chs Ltd 224 Nariman Point Mumbai - 400021 India, Mumbai",
   },
   {
-    name: "Faze Three Ltd [mumbai ]",
+    name: "Faze Three Ltd Mumbai",
     address: "Survey No 356/1 2 Village Dadra, Dadra",
   },
   {
@@ -328,7 +328,7 @@ export const customerData = [
       "Village Gumthala National Highway No 6 Bhandara Road Tal Kamptee Tal. Kamptee Dist Nagpur - 441104, Nagpur",
   },
   {
-    name: "Aakash Global Foods Pvt. Ltd [mum]",
+    name: "Aakash Global Foods Pvt. Ltd Mumbai",
     address:
       '13/1/5 16/2 17/4 Mr 10 Village Â€" Kumedi Indore Madhya Pradesh 453551, Indore',
   },
@@ -475,7 +475,7 @@ export const customerData = [
       "Rue Barbancourt #10 Port Au Prince Haiti Tel No: +509-250-4302 Fax No: +1-305-716-9210, India",
   },
   {
-    name: "Bhargava & Co. [Mum]",
+    name: "Bhargava & Co. Mumbai",
     address:
       "101 Raj Ratna Industrial Estate Liberty Garden Road Malad (W) Mumbai-400 064 India, India",
   },
@@ -737,7 +737,7 @@ export const customerData = [
     address: "1412 R. N. Tagore Road, India",
   },
   {
-    name: "North Pole Star S De.R. [BNG]",
+    name: "North Pole Star S De.R. Bangalore",
     address:
       "C/O Jamco International 8405 Milo Road (FM3464) Laredo 78045 USA, United States Of America",
   },
@@ -1725,7 +1725,7 @@ export const customerData = [
       "Nit 10.532.119-7 Cra 17 No. 7A-35 Popayan - Cauca - Colombia Tel: 8213064/8226835, Colombia",
   },
   {
-    name: "Manaksia Limited [Mumbai}",
+    name: "Manaksia Limited Mumbai",
     address:
       "Bikaner Building 3rd Floor 8/1 Lal Bazar Street Kolkata - 700 001 India, India",
   },
@@ -5651,7 +5651,7 @@ export const customerData = [
       "607 6th Floor Town Centre-2 Andheri-Kurla Rd Andheri (East), India",
   },
   {
-    name: "Freightbridge Logistics Pvt Ltd [Mum]",
+    name: "Freight bridge Logistics Pvt Ltd Mumbai",
     address:
       "37/39 Kantol Niwas R.No:20 3rd Floor Modi Street Mumbai - 400 001 Tel.(Direct):022-67226759 E-Mail:Si1@Fblindia.In, India",
   },
@@ -5661,7 +5661,7 @@ export const customerData = [
       "2/10 Melnikova Str 04050 Kiev Ukraine Tel. No. : 044 3601553, Ukraine",
   },
   {
-    name: "Gc3srl [ Mumbai ]",
+    name: "Gc3srl Mumbai",
     address: "Gc3srl Italy, Italy",
   },
   {
@@ -7709,7 +7709,7 @@ export const customerData = [
       "Merve Mah Uzungol Cad No: 7 Yenidogan - Sancaktepe Istanbul Turkey Tel: +90 (216) 564 08 00, Turkey",
   },
   {
-    name: "Raj Overseas [Mum]",
+    name: "Raj Overseas Mumbai",
     address:
       "Plot # 150 Sector 25 Industrial Estate Huda Panipat - 132103, India",
   },
@@ -11689,7 +11689,7 @@ export const customerData = [
       "Kasturi Nagar Building Bearing No 3 Srinidhienvoy Banaswadi Bangalore Bengaluru (bangalore)urban Karnataka 560043, India",
   },
   {
-    name: "Om Trans Logistics Ltd [chennai]",
+    name: "Om Trans Logistics Ltd Chennai",
     address:
       "No-17 New No.10 Next to Engines Valves Noble 1st Street Alandur, India",
   },
@@ -15804,7 +15804,7 @@ export const customerData = [
     address: "Ralph Pauly E.k.krablerstrabe 127 Essenessen 45326, Germany",
   },
   {
-    name: "Om Trans Logistics Ltd. [chennai]",
+    name: "Om Trans Logistics Ltd. Chennai",
     address: "Chennai, India",
   },
   {
@@ -16276,7 +16276,7 @@ export const customerData = [
       "28/2 Shakespeare Sarani Centre Point Blgd6th Floor Flat No 604kolkata-700017, India",
   },
   {
-    name: "Students Agencies (i) Pvt. Ltd. [mum]",
+    name: "Students Agencies (i) Pvt. Ltd. Mumbai",
     address:
       "102 Konark Shram Behind Everest Bldg 156 Tardeo Road Mumbai - 400034, India",
   },
@@ -16739,7 +16739,7 @@ export const customerData = [
     address: "Ankara Asfalti Uzeri 20. Km Denizli/ Turkey, Turkey",
   },
   {
-    name: "Noble Logistics [mum]",
+    name: "Noble Logistics Mumbai",
     address:
       "Plot No.07 Udhwani Company Compound Trimurti Lane Opp Raheja Garden L.b.s.marg Thane (w) - 400 604, India",
   },
@@ -18756,12 +18756,12 @@ export const customerData = [
     address: "Delhi, Nan",
   },
   {
-    name: "Jindal Pipes Ltd [mum]",
+    name: "Jindal Pipes Ltd Mumbai",
     address:
       "22nd Mile Stone Delhi-hapur Road P.o Jindal Nagar Ghaziabad Uttar Pradesh 201302, India",
   },
   {
-    name: "Jindal Pipes Ltd [mum]",
+    name: "Jindal Pipes Ltd Mumbai",
     address:
       "002 Grd. Floor Balarama Bdg. Next to Damily Court Bandra (e) Mumbai 400051 India, India",
   },
@@ -18968,7 +18968,7 @@ export const customerData = [
       "Airlines House Near Roopalee Cinema Lal Darwaza Ahmedabad Gujarat 380001, India",
   },
   {
-    name: "Four Star Enterprises [mum]",
+    name: "Four Star Enterprises Mumbai",
     address:
       "196/198 R. No 26 New Bhagwan Bhuvan Masjid Bunder (w) Mumbai - 400009, India",
   },
@@ -19314,7 +19314,7 @@ export const customerData = [
     address: "103/105 Modi Street Anand Mansion 2nd Floor Fort Mumbai, India",
   },
   {
-    name: "Sany Heavy Industry India Pvt Ltd. [mum]",
+    name: "Sany Heavy Industry India Pvt Ltd. Mumbai",
     address:
       "E-4 Chakan Industrial Area Kuruli Taluka Khed Pune-410501., India",
   },
@@ -20407,7 +20407,7 @@ export const customerData = [
     address: "Grosse Eibstrasse 277 A D - 22767 Hamburg, India",
   },
   {
-    name: "Professional Engineers [Bng]",
+    name: "Professional Engineers Bangalore",
     address: "B-63 3Rd Stagepeenya Industrial Estate Bangalore - 560058, India",
   },
   {
@@ -21328,7 +21328,7 @@ export const customerData = [
     address: "729 Pittsford - Palmyra Road Macedonny- 14502 USA, USA",
   },
   {
-    name: "Menzel Engg. India Pvt Ltd [Mum]",
+    name: "Menzel Engg. India Pvt Ltd Mumbai",
     address:
       "Agarwal Udyog Nagar Gala No.9 Building No 2 Village Waliv Vasai (East) Dist. Thane-401208, India",
   },
@@ -21513,12 +21513,12 @@ export const customerData = [
       "Gut No.927 And 928 Sompuri Road Vill.Bidkin Tq.Paithan Dist. Aurangabad 431001., India",
   },
   {
-    name: "Man Trucs India Pvt Ltd [Mum]",
+    name: "Man Trucs India Pvt Ltd Mumbai",
     address:
       "Plot No: 3B-1 Sector 1 Pithampur Industrial Estate Pithampur-454775 India., India",
   },
   {
-    name: "Man Trucs India Pvt Ltd [Mum]",
+    name: "Man Trucs India Pvt Ltd Mumbai",
     address:
       "Survey No. 66/2 69 Bommanahalli Village Near Kbd Tumkur Road Nelamangala 562123, India",
   },
@@ -23211,7 +23211,7 @@ export const customerData = [
     address: "514 West Lyon Farm Drivegreenwichconnecticutu.S.A., USA",
   },
   {
-    name: "Piaggio Vehicles Pvt Ltd [Mubai]",
+    name: "Piaggio Vehicles Pvt Ltd Mumbai",
     address:
       "F-3 Kathfal Road Midc Area Baramati - 413133Dist: Pune (Maharashtra) Indiaon Behalf Of Piaggio C Spa -Pontedera -Italy, India",
   },
@@ -23235,12 +23235,12 @@ export const customerData = [
       "No.116 Spyros Kyprianoustrindustrial Area Ipsonas Ayios Silas-4193.P.O.Box-701584161 Limassol-Cyprus, Cyprus",
   },
   {
-    name: "Yamato Scale India Pvt Ltd [Mum]",
+    name: "Yamato Scale India Pvt Ltd Mumbai",
     address:
       "Plot No. 33/3 33/2/3 Hajimalangwadiustane Vill Tal:- Ambernath Dist:- Thanemaharashtra 421501, India",
   },
   {
-    name: "Yamato Scale India Pvt Ltd [Mum]",
+    name: "Yamato Scale India Pvt Ltd Mumbai",
     address:
       "C/O Yusen Logistics India Pvt Ltd Survey No 31/2 31/3 31/4 31/5A 31/7B 44 45 Village Vahuli Mumbai Highwat Nashik Ustane Vill Tal:- Ambernath Dist:- Thanemaharashtra 421501, India",
   },
@@ -23786,7 +23786,7 @@ export const customerData = [
       "202 Rajkamal 1 Plot No 348 Ward 12-B Gandhidham 370201Kutch Gujaratmob: +919825263154, India",
   },
   {
-    name: "Nihal International [Chennai]",
+    name: "Nihal International Chennai",
     address:
       "No.7 Vavoor Madar Streetambur - 635802 Vellore Disttamilandu India, India",
   },
@@ -23951,7 +23951,7 @@ export const customerData = [
       "0084 Setareh Market Qeshm Island Irantel : +989177683047National Id Code : 3450059327, Iran",
   },
   {
-    name: "Piaggio C.S.P.A[Bng]",
+    name: "Piaggio C.S.P.A Bangalore",
     address:
       "Lit - 31-918 -137-000 1.V Sede Legale -Viale Rinaldo Italy Piaggio Pontedera (Pi)25 56025 Italy, Italy",
   },
@@ -24026,7 +24026,7 @@ export const customerData = [
       "Boulevard Suyapa Kilometro 5 Contiguo A Bodegas De Bayertegucigalpa Honduras, Honduras",
   },
   {
-    name: "Surface Protection Technology[Bng]",
+    name: "Surface Protection Technology Bangalore",
     address:
       "Vondellaan 2 2394 Ea Hazerswoude Rijndijk The Netherlands, Netherlands",
   },
@@ -24035,7 +24035,7 @@ export const customerData = [
     address: "Po Box 450397 1510 The Metropolisbusiness Baydubai., Jordan",
   },
   {
-    name: "Mettis Aerospace Limited[Bng]",
+    name: "Mettis Aerospace Limited Bangalore",
     address: "Windsor Road Redditch Worcestershire B97 6Ef, UAE",
   },
   {
@@ -24077,7 +24077,7 @@ export const customerData = [
     address: "Toronto, Canada",
   },
   {
-    name: "Denso Kirloskar Industries Pvt Ltd [Bng]",
+    name: "Denso Kirloskar Industries Pvt Ltd Bangalore",
     address:
       "30 Th K.M Stone Tumkur Road Nh4 Vishveswarapura Nelamangala Bangalore Rural Dt:562123, India",
   },
@@ -24279,7 +24279,7 @@ export const customerData = [
     address: "Madhav Shrishti, India",
   },
   {
-    name: "Fuji Boeki Co..Ltd[Bng]",
+    name: "Fuji Boeki Co..Ltd Bangalore",
     address:
       "9-17 3-Chrome Hamamachi Wakamatsu Kitakyushu -City 808 Japan, Japan",
   },
@@ -24635,12 +24635,12 @@ export const customerData = [
     address: "Avenue Jose Andraus Gassani \\Geraisbrazil, India",
   },
   {
-    name: "Bando (India) Pvt Ltd [Bng]",
+    name: "Bando (India) Pvt Ltd Bangalore",
     address:
       "Plot No: 275 To 279 Narasapura Industrial Area Appasandra Village Kolar Taluk Kolar - 563 133 Karnataka India, India",
   },
   {
-    name: "Bando (Singapore) Pte.Ltd. [Bng]",
+    name: "Bando (Singapore) Pte.Ltd. Bangalore",
     address:
       "3C Toh Guan Road East #05-01 Tye Soon Building Singapore-608832.Tele: +65 6475 2233 Fax: +65 6479 6261, Singapore",
   },
@@ -24980,11 +24980,11 @@ export const customerData = [
     address: "China, ",
   },
   {
-    name: "Vital Healthcare Pvt Ltd [Mum]",
+    name: "Vital Healthcare Pvt Ltd Mumbai",
     address: "Plot No H-10 And H 10/1 Midc Satpur Nashik - 422 007, India",
   },
   {
-    name: "Vital Healthcare Pvt Ltd [Mum]",
+    name: "Vital Healthcare Pvt Ltd Mumbai",
     address: "5/6 Shreyas 2Nd Hasnabad Linesantacruz (W), India",
   },
   {
@@ -25113,11 +25113,11 @@ export const customerData = [
       "Room No. 51 5Th Floor Building No. 2 Laxmi Nagar Pant Nagar Ghatkopar East, India",
   },
   {
-    name: "Fontana Luigi Spa[Bng]",
+    name: "Fontana Luigi Spa Bangalore",
     address: "Via Fontana 9 20837 Veduggio Con Colzano Mb It, Italy",
   },
   {
-    name: "R P Technologies[Bng]",
+    name: "R P Technologies Bangalore",
     address:
       "A-6 3 Rd Cross Anubhava Nagar Nagarabhavi Main Road Bangalore-560072.Karnataka.India, India",
   },
@@ -25126,7 +25126,7 @@ export const customerData = [
     address: "C/O Sea Cargo Agencies Bodo Docks Norway, Norway",
   },
   {
-    name: "Doherty Engineered Attachments Ltd[Bng]",
+    name: "Doherty Engineered Attachments Ltd Bangalore",
     address:
       "12 Cherokee Place Mount Maunganui Bay Of Plenty-New Zealand, New Zealand",
   },
@@ -25199,7 +25199,7 @@ export const customerData = [
       "M M Transport Logistics Services Pvt Ltd No 19 Devos Avenue Colombo 4 Sri Lanka D : +94115747747 / F: +94115288888, Sri Lanka",
   },
   {
-    name: "Four Square Multi Logistics Pvt Ltd [Bng]",
+    name: "Four Square Multi Logistics Pvt Ltd Bangalore",
     address:
       "76/153 Iii Floor Thambu Chetty Street Mannadi Chennai-600001, India",
   },
@@ -25226,12 +25226,12 @@ export const customerData = [
       "Sonari Near Dipesh Hotel Post Jnpt Tal: Uran Dist: Raigad Navi Mumbai, ",
   },
   {
-    name: "Verga Attachments Pvt Ltd [Bng]",
+    name: "Verga Attachments Pvt Ltd Bangalore",
     address:
       "No.28B Phase-1 Kiadb Industrial Area Malur-Kolar-563130 Karnataka.India, India",
   },
   {
-    name: "Henle Baumaschinentecnik Gmbh [Bng]",
+    name: "Henle Baumaschinentecnik Gmbh Bangalore",
     address: "Ringstrabe-9 D-89192 Ramminge-Germany, India",
   },
   {
@@ -25318,7 +25318,7 @@ export const customerData = [
     address: "Postfach 16 6497866 Wertheimgermany, Germany",
   },
   {
-    name: "Ech Australia Pty Ltd [Bng]",
+    name: "Ech Australia Pty Ltd Bangalore",
     address:
       "Factory 2 581-593 Chandler Road Keysborough - Australi, Australia",
   },
@@ -25328,12 +25328,12 @@ export const customerData = [
       "Pilgrim House Packhorse Road Gerrards Cross Buckinghamshire Sl 97Qe. U.K, UK",
   },
   {
-    name: "Trishul Engineers[Bng]",
+    name: "Trishul Engineers Bangalore",
     address:
       "Khata No.376 Konanakunte Cross Next To Rms International School Kanakapura Main Road Bangalore-560062 India, India",
   },
   {
-    name: "Industria Andina De Transformadores S.A[Bng]",
+    name: "Industria Andina De Transformadores S.A Bangalore",
     address:
       "Km.10 1/2 Via Daule Urbanization Los Vergeles Guayaquil-Ecuador, Ecuador",
   },
@@ -25378,12 +25378,12 @@ export const customerData = [
       "5 Ruchir Bunglows -1 B/H Pushparaj Flats Judges Bunglows Road Bodakdev Ahmedabad, ",
   },
   {
-    name: "Kisco Trading India Pvt Ltd [ Mumbai ]",
+    name: "Kisco Trading India Pvt Ltd Mumbai",
     address:
       "Khasra No 17/1/118/57/25/1 Village Dhorka Pataudi Road Near Wazirpur Mor, India",
   },
   {
-    name: "Kisco Trading India Pvt Ltd [ Mumbai ]",
+    name: "Kisco Trading India Pvt Ltd Mumbai",
     address:
       "Khasara No.22//12/2/2:30//2/2 3 4 7 8 Village -Khentawas Wazirpur-Farrukh Nagar Gurgaon Pin No. 122506 Haryana, India",
   },
@@ -25571,7 +25571,7 @@ export const customerData = [
       "12-19 Kitahorie 1-Chome Nishi-Ku Osaka Japan 5508580 Japan, Japan",
   },
   {
-    name: "Sealed Air India Pvt Ltd[Bng]",
+    name: "Sealed Air India Pvt Ltd Bangalore",
     address:
       "245 8Th Main 3Rd Phase Peenya Industrial Area 560058 Bangalore India, India",
   },
@@ -25598,7 +25598,7 @@ export const customerData = [
     address: "Heinrichstrasse 8640239Dusseldorfgermany, Germany",
   },
   {
-    name: "Pt. Mod Indo [Bng]",
+    name: "Pt. Mod Indo Bangalore",
     address:
       "Tepz Lamicitrajl Coaster 8 Block B 23-24 Tanjung Emasseamarang 50174 Indonesia, Indonesia",
   },
@@ -25608,7 +25608,7 @@ export const customerData = [
       "105 106 Udyog Vihar Phase-1 Gurgaon-122 016 (Haryana)Kind Attn: Mr. R.K.Sunnymobile: +91 9818899217, Indonesia",
   },
   {
-    name: "Poundworld Retail Ltd [Bng]",
+    name: "Poundworld Retail Ltd Bangalore",
     address: "Foxbridge Waynormantonwest Yorkshire Wf6 1Tn, Ukraine",
   },
   {
@@ -25770,12 +25770,12 @@ export const customerData = [
       "Head Office Burgan Tower Al Sharaq Abdullah Al Ahmed St. P.O.Box 5389 Saft Kuwait Phone +965 2288000 Fax : 22 988204, Kuwait",
   },
   {
-    name: "Royal Impex [ Mumbai ]",
+    name: "Royal Impex Mumbai",
     address:
       "2C3 Vijay Vihar Co. . Op Society S.T. Road Chembur Naka Mumbai - 400071, India",
   },
   {
-    name: "Lava International Ltd [ Mumbai ]",
+    name: "Lava International Ltd Mumbai",
     address: "A-56 Sector-64 Nodia - 201301 India, India",
   },
   {
@@ -25789,11 +25789,11 @@ export const customerData = [
       "450 Ladprao Wang - Hin Rd Ladprao Bangkok 10230Thailandtel Ph: +66 -2-931 7700Kind Attn: Tanasak Lasua, Thailand",
   },
   {
-    name: "Araya G/Michael G/Amlak [Bng]",
+    name: "Araya G/Michael G/Amlak Bangalore",
     address: "Tel:251911514528Addis Ababa Ethiopia, Ethiopia",
   },
   {
-    name: "Des General Trading Plc [Bng]",
+    name: "Des General Trading Plc Bangalore",
     address: "P.O.Box 8797Addis Ababa Ethiopia, Ethiopia",
   },
   {
@@ -25821,7 +25821,7 @@ export const customerData = [
     address: "458/11 Rampura Tri Nagar New Delhi, India",
   },
   {
-    name: "La Freightlift Pvt Ltd[Bng]",
+    name: "La Freightlift Pvt Ltd Bangalore",
     address:
       "935/786 M.R.Mansion B.B .Road Kempegowda Circle Yelahanka Bangalore-560064 Karnataka India, India",
   },
@@ -25841,7 +25841,7 @@ export const customerData = [
       "Lines Constructions Projectmy Loc Commune Thai Thuy District Thai Binh Province Vietnam, Vietnam",
   },
   {
-    name: "S.Manikandan Tex[Bng]",
+    name: "S.Manikandan Tex Bangalore",
     address:
       "Add:1/14 Parakadu Perumagoundampatty Elampillai-637502 Salem Dt.India, India",
   },
@@ -26056,7 +26056,7 @@ export const customerData = [
     address: "1 Westmount Square Suit 1450, Canada",
   },
   {
-    name: "Highland [Bng]",
+    name: "Highland Bangalore",
     address: "1350 Bridgeport Drive Kernersville Nc27284, USA",
   },
   {
@@ -26088,7 +26088,7 @@ export const customerData = [
     address: "Plot No. 4-B Kiadb Ind. Area Nanjangud, India",
   },
   {
-    name: "V.V.Minerals - [Chennai]",
+    name: "V.V.Minerals - Chennai",
     address: "17-C Keeraikaranthattutisaiyanvilai -627 657, India",
   },
   {
@@ -26160,12 +26160,12 @@ export const customerData = [
       "Power Tools Industrial Park Of Tianfen Qidong City Jiangsu Province China, China",
   },
   {
-    name: "Vnm Tools Pvt Ltd. [ Mumbai ]",
+    name: "Vnm Tools Pvt Ltd. Mumbai",
     address:
       "Shree Hari Mansion Building No -19 Shop -2 Navjivan Wadi ( Hamalwadi ) Dhobi Talao Mumbai -400002 ( India ), India",
   },
   {
-    name: "Digisha Impex [ Mumbai ]",
+    name: "Digisha Impex Mumbai",
     address:
       "1305 Kent Garden Tps Road Factory Lane Near M.K. High School Borivali (W) Mumbai - 400092, India",
   },
@@ -26256,12 +26256,12 @@ export const customerData = [
       "Formerly Known As: Indo Japan Pen Mfg.Co..Pvt.Ltdsurvey No. 270 / 1 Paikee At Post - Abrama Taluka Dist. - Valsad Valsad - 396 001 Gujarat. India., India",
   },
   {
-    name: "Avk Valves India Pvt Ltd [Bng]",
+    name: "Avk Valves India Pvt Ltd Bangalore",
     address:
       "Plot #179 3Rd Phase Malur Industrial Area Malur - 563130 Kolar Dist. Karnataka. India, India",
   },
   {
-    name: "Avk Valves (Anhul) Co.. Ltd [Bng]",
+    name: "Avk Valves (Anhul) Co.. Ltd Bangalore",
     address:
       "Wujiang Industry Park Hexian Anhui Province P.R. China - 238251, China",
   },
@@ -26367,7 +26367,7 @@ export const customerData = [
   },
 
   {
-    name: "Accutech Enterprises[Bng]",
+    name: "Accutech Enterprises Bangalore",
     address:
       "No.480/A-2 1 St Cross 3 Rd Stage 4 Th Phase Peenya Industrial Area Bangalore-560058 India, India",
   },
@@ -26479,12 +26479,12 @@ export const customerData = [
       "Office - 201-205 Bansi Trade Center 581/5 M.G Road Indore -452001 (M.P ) India, India",
   },
   {
-    name: "Runwal Projects Pvt.Ltd [ Mumbai ]",
+    name: "Runwal Projects Pvt.Ltd Mumbai",
     address:
       "Runwal And Omkar Esquare 5Th Floor Opp Sion Chunabhatti Signal Sion (E) Mumbai-400022, India",
   },
   {
-    name: "Schindler India Pvt.Ltd [ Mumbai ]",
+    name: "Schindler India Pvt.Ltd Mumbai",
     address:
       "401/B Wing Delphi Building Hiranadani Business Park Powai 400076 Mumbai Maharashtra India, India",
   },
@@ -26554,7 +26554,7 @@ export const customerData = [
       "Takebashi Yasuda Bldg.13 Kanda-Nishikicho 3-Chome Chiyoda-Ku Tokyo 101-0054 Japan, Japan",
   },
   {
-    name: "Aec Offshore Trading Pvt Ltd [Bng]",
+    name: "Aec Offshore Trading Pvt Ltd Bangalore",
     address:
       "No 21/5 Kanakapura Road Vasanthapura Cross Opp. Manasa Theatre Bangalore 560062 India, India",
   },
@@ -26573,12 +26573,12 @@ export const customerData = [
       "3801 Ne 207Th Street One Island Place Suit 1102 Aventura:33180 Florida USA, USA",
   },
   {
-    name: "Piaggio Vietnam Co..Ltd [Bng]",
+    name: "Piaggio Vietnam Co..Ltd Bangalore",
     address:
       "Lot M Binh Xuyen Industrial Zone Vietnam Vinh Phuc Province 00211 Vietnam, Vietnam",
   },
   {
-    name: "Ftz Polaris Industries Inc [Bng]",
+    name: "Ftz Polaris Industries Inc Bangalore",
     address:
       "C/O Supperior Brokerage Services 1700 Wynne Avenue Dock Doors A-G St.Paul 55108 USA, USA",
   },
@@ -26593,7 +26593,7 @@ export const customerData = [
       "Jl.Permata Raya Lot B-6B Kawasan Industri Kiic Jawa Barat 41361 Indonesia, Indonesia",
   },
   {
-    name: "Lnv Technology Pvt Ltd [Mum]",
+    name: "Lnv Technology Pvt Ltd Mumbai",
     address:
       "5Th Floor 18/3 Sigapi Achi Building Rukmanilakshmipathi Road Egmore Chennai Tamil Nadu, India",
   },
@@ -26608,7 +26608,7 @@ export const customerData = [
       "P.O. Box 26022 Sharjah U.A.E.Tel +9716 5733900 And Fax +9716 9733137, UAE",
   },
   {
-    name: "Hg Group Ltd[Bng]",
+    name: "Hg Group Ltd Bangalore",
     address:
       "Attach2 Equipment 1 Po Box 905 Norman Ave Masterton 5791-New Zealand, New Zealand",
   },
@@ -26617,12 +26617,12 @@ export const customerData = [
     address: "46/16 Ramsey Road Shieleyny 11967Usa, USA",
   },
   {
-    name: "Exedy Clutch India Pvt Ltd[Bng]",
+    name: "Exedy Clutch India Pvt Ltd Bangalore",
     address:
       "Plot No:5-P.9-18 19P 32-38 Narasapura Industrial Area Kolar-563133 Karnataka.India, India",
   },
   {
-    name: "Exedy Corporation[Bng]",
+    name: "Exedy Corporation Bangalore",
     address: "E000 1-1-1 Kidamotomiya Neyagawa-City Osaka Japan 5728570, Japan",
   },
   {
@@ -26729,12 +26729,12 @@ export const customerData = [
       "Plo 63 Jalan Keluli 2 Po Box 63 81750 Pasir Gudang Johor Malaysia, Malaysia",
   },
   {
-    name: "Itsy Bitsy Pvt Ltd[Bng]",
+    name: "Itsy Bitsy Pvt Ltd Bangalore",
     address:
       "No.77 21 St Main Rd Near Bda Complex Bsk 2Nd Stage Banashankari Bangalore India, India",
   },
   {
-    name: "Royal Jet Enterprise Corp[Bng]",
+    name: "Royal Jet Enterprise Corp Bangalore",
     address:
       "No.95 Dingping Rd Ruifang Dist New Taipei City 224 Taiwan, Taiwan",
   },
@@ -26744,11 +26744,11 @@ export const customerData = [
       "19Th Floor Q House Lumpini Bldg 1 Southsathornroad Tungmahamek Sathorn Bangkok 10120, Thailand",
   },
   {
-    name: "Maruichi Kuma Steel Tube Pvt Ltd. [Bng]",
+    name: "Maruichi Kuma Steel Tube Pvt Ltd. Bangalore",
     address: "Bangalore, India",
   },
   {
-    name: "Simply Traders [Mum]",
+    name: "Simply Traders Mumbai",
     address:
       "H.No.621 621A Adavali Taloja Sector Taluka - Panvel Dist - Raigarh Maharashtra India, India",
   },
@@ -26804,22 +26804,22 @@ export const customerData = [
     address: "Corso Europa 49-24020, Italy",
   },
   {
-    name: "Bando(India)Pvt Ltd[Bng]",
+    name: "Bando(India)Pvt Ltd Bangalore",
     address:
       "Plot No.275 To 279 Narasapura Industrial Area Appasandra Village Kolar Taluk Kolar-563133 Karnataka India, India",
   },
   {
-    name: "Bando(Singapore)Pte.Ltd[Bng]",
+    name: "Bando(Singapore)Pte.Ltd Bangalore",
     address:
       "3C Toh Guan Road East 05-01 Tye Soon Building Singapore-608832, Singapore",
   },
   {
-    name: "Bangalore Sales Corporation[Bng]",
+    name: "Bangalore Sales Corporation Bangalore",
     address:
       "Plot No.175 To 176 Bommasandra-Jigani Link Road Jigani Industrial Area Hennagara Post Anekal Taluk Bangalore South-562 106 India, India",
   },
   {
-    name: "Palmer Ltee[Bng]",
+    name: "Palmer Ltee Bangalore",
     address: "Mon Loisir Ind Zone Riviere Du Rempart Mauritius, Mauritius",
   },
   {
@@ -26978,7 +26978,7 @@ export const customerData = [
       "No.1 Golbarg 8 Narenjestan Ave Shamsabad Ind. Zone Tehran-Qom Freeway Tehran Iran Postal Code: 1834175141, Iran",
   },
   {
-    name: "Wilsons [Bng]",
+    name: "Wilsons Bangalore",
     address:
       "Nordic House Old North Road Sawtry Huntington Cambs Pe28 5Xn, Ukraine",
   },
@@ -26987,11 +26987,11 @@ export const customerData = [
     address: "Derschlagerstr 26 58540 Meinerzhagen, Germany",
   },
   {
-    name: "Vaessen Creative[Bng]",
+    name: "Vaessen Creative Bangalore",
     address: "Themiekstraat 25 6361 Hb Nuth The Netherlands, Netherlands",
   },
   {
-    name: "Roverco Hk Ltd[Bng]",
+    name: "Roverco Hk Ltd Bangalore",
     address:
       "Suite 605 6/F 141 Des Voeux Rd C Central China Insurance Group Building Hong Kong, Hong Kong",
   },
@@ -27113,17 +27113,17 @@ export const customerData = [
       "Scheepmakerij 3503331 Mc Zwijndrechtthe Netherlandst: +31-88-3500052F: +31-88-3500090, Netherlands",
   },
   {
-    name: "Smcc Construction India Ltd [Chennai]",
+    name: "Smcc Construction India Ltd Chennai",
     address:
       "Ab Block Ground Floor Baid Mehta Complex No.183 Anna Salai Saidapet Chennai- 600015 India, India",
   },
   {
-    name: "Smcc Construction India Ltd [Chennai]",
+    name: "Smcc Construction India Ltd Chennai",
     address:
       "No. 27/7/695 New 27/3/829 Old 2Nd Floor A C Nagar Nellorenellore 524 002 (A.P), India",
   },
   {
-    name: "Smcc Construction India Ltd [Chennai]",
+    name: "Smcc Construction India Ltd Chennai",
     address:
       "201 2Nd Floor Plot No : D1 Ras Vilas Saket District Center New Delhi 110017, India",
   },
@@ -27180,48 +27180,48 @@ export const customerData = [
     address: "Estuary Buisness Parkliverpoolm L24U.K, UK",
   },
   {
-    name: "Jindal Aluminium Ltd. [Bng]",
+    name: "Jindal Aluminium Ltd. Bangalore",
     address:
       "Rolling Mill Division Kiadb Industrial Area Yedahall Village Tumkur Road Dabaspel Bangalore 562111, India",
   },
   {
-    name: "Jindal Aluminium Ltd. [Bng]",
+    name: "Jindal Aluminium Ltd. Bangalore",
     address:
       "Jindal Nagar Tumkur Roadbangalore-560073 Indiacinno:U203Ka1970Plc002805, India",
   },
   {
-    name: "Marana Manufacturing Plc [Bng]",
+    name: "Marana Manufacturing Plc Bangalore",
     address:
       "Marna Manufacturing Plctel:2510911210049Addis Ababa Ethiopia, Ethiopia",
   },
   {
-    name: "Marna Manufacturing Plc [Bng]",
+    name: "Marna Manufacturing Plc Bangalore",
     address: "Tel:2510911210049Addis Ababa Ethiopia, Ethiopia",
   },
   {
-    name: "Beritrade Pvt Ltd Company [Bng]",
+    name: "Beritrade Pvt Ltd Company Bangalore",
     address: "P.O.Box:41822 Addis Ababa Ethiopia, Ethiopia",
   },
   {
-    name: "Fengchuan Tooling(Dongguan)Co..Ltd.[Bng]",
+    name: "Fengchuan Tooling(Dongguan)Co..Ltd. Bangalore",
     address:
       "103 Sun Industry Lincun.Tangxia Town.Dongguan City Guangdong Province.China, China",
   },
   {
-    name: "Sai India Limited[Bng]",
+    name: "Sai India Limited Bangalore",
     address:
       "26C Phase-1 Doddanekundi Indl.Area Mahadevapura P.O Bangalore 560048.India, India",
   },
   {
-    name: "Polaris Industries Inc[Bng]",
+    name: "Polaris Industries Inc Bangalore",
     address: "Vermillon Dc 1997 Polaris Parkway Vermillion 57069 USA, India",
   },
   {
-    name: "Polaris Industries Inc[Bng]",
+    name: "Polaris Industries Inc Bangalore",
     address: "Attn: Accounts Payablep.O.Box 47200 Hamel Mn55340 USA, India",
   },
   {
-    name: "Logistic Integrators (I) Pvt. Ltd. [Mum]",
+    name: "Logistic Integrators (I) Pvt. Ltd. Mumbai",
     address:
       "2Nd Floor Mowbrays Towersno. 61 Ttk Rd Alwarpet Chennai 600018, India",
   },
@@ -27352,42 +27352,42 @@ export const customerData = [
     address: "1250 Zhenjin Road Shanghai China, India",
   },
   {
-    name: "Vibco A/S [Bng]",
+    name: "Vibco A/S Bangalore",
     address: "Smedevangen 1-3 3540 Lynge - Denmark, Denmark",
   },
   {
-    name: "Mont Marte International Pty Ltd[Bng]",
+    name: "Mont Marte International Pty Ltd Bangalore",
     address:
       "Mail-Po Box 303 Salisbury 4107 Showroom-27 Pentex Street Salisbury Qld Australia 4107, Australia",
   },
   {
-    name: "Molly Trading Corporation[Bng]",
+    name: "Molly Trading Corporation Bangalore",
     address: "247/2 Nawabpur Road 1St Floor Dhaka-1100 Bangladesh, Bangladesh",
   },
   {
-    name: "Shadeed Iron Steel LLC [Bng]",
+    name: "Shadeed Iron Steel LLC Bangalore",
     address: "Po Box.312 A Tareef P.C-321 Sohar Oman, Oman",
   },
   {
-    name: "Shadeed Iron Steel LLC [Bng]",
+    name: "Shadeed Iron Steel LLC Bangalore",
     address:
       "Sohar Port Plot-12 P.O. Box-404 P.C. 322Falaj Alqabail Sohar Sultanate Of Oman., Oman",
   },
   {
-    name: "Power Plant Epc Limited[Bng]",
+    name: "Power Plant Epc Limited Bangalore",
     address:
       "Suite 1003 Khalid Al Attar Tower Sheikh Zayed Road P.O Box No.71241 Dubai U.A.E, UAE",
   },
   {
-    name: "Voith Turbo H-L Hydraulic Gmbh Co. [Bng]",
+    name: "Voith Turbo H-L Hydraulic Gmbh Co. Bangalore",
     address: "Branch O C-O Imtex Forming 201610Th Mile Tumkur Road Biec, India",
   },
   {
-    name: "Btg Internationale Spedition Gmbh [Bng]",
+    name: "Btg Internationale Spedition Gmbh Bangalore",
     address: "28197 Bremen Franz-Stickan Str.2 Germany, Germany",
   },
   {
-    name: "Jiangsu Zeen Auto Parts [Bng]",
+    name: "Jiangsu Zeen Auto Parts Bangalore",
     address:
       "Manufacturing Co. Ltd No.318 Dongsheng Road Hongyang Road Kunshan Jiiangsu China Zip Code-215300 China, China",
   },
@@ -27402,7 +27402,7 @@ export const customerData = [
       "Room 209 - 210 Shang Kai Business Building. No. 988 Jiangpu Rd. Shanghai China 200082, China",
   },
   {
-    name: "Yurim Tech [Bng]",
+    name: "Yurim Tech Bangalore",
     address:
       "41-10 Wonmi-Dong Wonmi-Gu Bucheon-Si Gyeonggi-Do Zip Code-420-837 Soth Korea, Korea (North)",
   },
@@ -27523,7 +27523,7 @@ export const customerData = [
     address: "8005 Bourgas, Bulgaria",
   },
   {
-    name: "Ashraf Leathers [Chennai]",
+    name: "Ashraf Leathers Chennai",
     address: "15/273A Meen Peer Roadkadapa Andhra Pradesh, India",
   },
   {
@@ -27720,7 +27720,7 @@ export const customerData = [
     address: "India, India",
   },
   {
-    name: "Gjerstad Products As[Bng]",
+    name: "Gjerstad Products As Bangalore",
     address: "Gjerstadveien 373 No-4993 Sundebru-Norway, Norway",
   },
   {
@@ -27829,7 +27829,7 @@ export const customerData = [
     address: "Po Box. 124333M3-03 Saif Zonesharjah, UAE",
   },
   {
-    name: "Spintop Machinery Co..Ltd[Bng]",
+    name: "Spintop Machinery Co..Ltd Bangalore",
     address: "No.220 Shen Lin S.Rd.Daya Dist Taichung 42859 Taiwan., Taiwan",
   },
   {
@@ -27883,7 +27883,7 @@ export const customerData = [
       "206 2Nd Floor Gauri Commercial Complex Plot No:19 Sector-11 Cbd Belapur Navi Mumbai - 400 614., India",
   },
   {
-    name: "Mithra Kyokuto Spv Co. Pvt Ltd [Chennai]",
+    name: "Mithra Kyokuto Spv Co. Pvt Ltd Chennai",
     address:
       "Rs No 192/7B Veerapaneni Gudem Village Gannavaram Mandal Krishna Dist, India",
   },
@@ -27917,7 +27917,7 @@ export const customerData = [
     address: "404 Raheja Chambers Nariman Point Mumbai- 400 021 India, India",
   },
   {
-    name: "S.V.E.Engineers Pvt Ltd [Chennai]",
+    name: "S.V.E.Engineers Pvt Ltd Chennai",
     address:
       "Shree Soundryam Enclave No.12/1 4Th Cross Street United India Colony Kodambakkam, India",
   },
@@ -27927,7 +27927,7 @@ export const customerData = [
       "Dbs Bank Tower Lt. 18 Ciputra World 1 Jakarta Jl. Prof. Dr Satrio Kav 3-5 Karet Kuningan Jakarta Selatan Dki Jakarta 12940, Indonesia",
   },
   {
-    name: "Hyagreeva Line Pvt Ltd [Chennai]",
+    name: "Hyagreeva Line Pvt Ltd Chennai",
     address: "Chennai, India",
   },
   {
@@ -27996,11 +27996,11 @@ export const customerData = [
       "Sejin Building 2F 15-13 Ls-Ro 166Beon-Gil Gunpo-Si Gyeonggi-Do Korea, Korea (North)",
   },
   {
-    name: "Powerflow Engineers Pvt Ltd [Chennai]",
+    name: "Powerflow Engineers Pvt Ltd Chennai",
     address: "No. 5 41St Street 6Th Avenue Ashok Nagar, India",
   },
   {
-    name: "Electrosteel Castings Limited [Chennai]",
+    name: "Electrosteel Castings Limited Chennai",
     address: "Elavur Worksgummidipoondi Taluk, India",
   },
   {
@@ -28009,7 +28009,7 @@ export const customerData = [
       "Thai Binh Site My Loc Communethai Thuy Districtthai Binh Province, Vietnam",
   },
   {
-    name: "Ford India Private Ltd [Chennai]",
+    name: "Ford India Private Ltd Chennai",
     address: "Parts Distribution Centres.P.Koil Postchengalpattu, India",
   },
   {
@@ -28036,11 +28036,11 @@ export const customerData = [
       "Puchstrasse 76 8020 Graz Austriatel: +43(0)316 273490 - 28Fax: +43 (0)316 273490 - 20, Austria",
   },
   {
-    name: "International Warehousing Services [Bng]",
+    name: "International Warehousing Services Bangalore",
     address: "15355 Oak Wood Drive Romulas Michigan 484174 USA, India",
   },
   {
-    name: "Harley Davidson Motor Company [Bng]",
+    name: "Harley Davidson Motor Company Bangalore",
     address: "Po Box 493 Milwaukee USA Wi53201 USA, India",
   },
   {
@@ -28282,11 +28282,11 @@ export const customerData = [
     address: "Nilgiris, India",
   },
   {
-    name: "Neha Internaional [Chennai]",
+    name: "Neha Internaional Chennai",
     address: "7 - 8 Bangi Khan Saheb Street, India",
   },
   {
-    name: "Ntn Nei Mfg India Pvt Ltd - [Chennai]",
+    name: "Ntn Nei Mfg India Pvt Ltd - Chennai",
     address:
       "Plot P-48/1 8Th Avenue Dta Mahindra World City Chengalpattu Taluk, India",
   },
@@ -28386,7 +28386,7 @@ export const customerData = [
       "5B The Courtyard Reddicap Trading Estate Sutton Coldfield B75 7Bu United Kingdom, ",
   },
   {
-    name: "Shree Mahalaxmi Traders [Mum]",
+    name: "Shree Mahalaxmi Traders Mumbai",
     address:
       "110/12 Shivdas Champshi Marg Thavar Mansion No. 4 Mumbai - 400009. India.Ph: 91 22 23719034 Fax: 91 22 23791774Email: Shreemahalaxmitraders@Hotmail.Com, India",
   },
@@ -28395,7 +28395,7 @@ export const customerData = [
     address: "3-13 Konan 2-Chome Minato Ku Tokyo 108-8216 Japan, Japan",
   },
   {
-    name: "Hydreco Hydraulics Pty Ltd [Bng]",
+    name: "Hydreco Hydraulics Pty Ltd Bangalore",
     address:
       "Unit 12 167 Prospect Highway Seven Hills Nsw 2147 Australia, Australia",
   },
@@ -28527,7 +28527,7 @@ export const customerData = [
     address: "1-17 Nohin- Bashi 2 Chome Chou-Kuosaka Japan, Japan",
   },
   {
-    name: "Shivani Nagra Palace [Mum]",
+    name: "Shivani Nagra Palace Mumbai",
     address: "206 Vinoba Vihar Malviya Nagar Jaipur India, India",
   },
   {
@@ -28564,16 +28564,16 @@ export const customerData = [
       "Farola - P2 Plot No. Ii Gut No. 102 Farola Paithan Road Aurangabad - 431107 Maharashtra India, India",
   },
   {
-    name: "Carsons Automobile Mechanical Engineers[Bng]",
+    name: "Carsons Automobile Mechanical Engineers Bangalore",
     address: "13 George E De Silva Mawathe Kandy Sri Lanka, India",
   },
 
   {
-    name: "Kyokuto Kaihatsu Kogyo Co. Ltd[Bng]",
+    name: "Kyokuto Kaihatsu Kogyo Co. Ltd Bangalore",
     address: "2 Bessho-Cho Miki Hyogo 673-0443 Japan, Japan",
   },
   {
-    name: "Scrap House[Bng]",
+    name: "Scrap House Bangalore",
     address: "Reus 21 08022 Barcelona Spain +34932 546 858, Spain",
   },
   {
@@ -28627,7 +28627,7 @@ export const customerData = [
       "157/3/9 Near Sector-A Pocket B Cvasant Kunj New Delhi-110070, India",
   },
   {
-    name: "Shubhalakshmi Polyesters Ltd [Mum]",
+    name: "Shubhalakshmi Polyesters Ltd Mumbai",
     address: "Survey No 126 Village Bhensali Dahej Pcpir Tal Vagra, India",
   },
   {
@@ -28922,16 +28922,16 @@ export const customerData = [
       "No.58 1St Floor 15Th Cross 2Nd Phase J.P. Nagar Bangalore 560078, India",
   },
   {
-    name: "Pounland Ltd[Bng]",
+    name: "Pounland Ltd Bangalore",
     address: "Wellmans Road Willenhall Wv 13 2Qt United Kingdom, UAE",
   },
   {
-    name: "Tokai Rubber Auto Parts India Pvt Ltd[Bng]",
+    name: "Tokai Rubber Auto Parts India Pvt Ltd Bangalore",
     address:
       "Plot No.337 Harohalli Industrial Area Phase-2 Kanakapura Taluk Ramanagara District-562112 Karnataka.India, India",
   },
   {
-    name: "Tokai Rubber Auto Parts India Pvt Ltd[Bng]",
+    name: "Tokai Rubber Auto Parts India Pvt Ltd Bangalore",
     address:
       "Sp2 60-64 New Industrial Complex (Majrakath) Japanese Zone Neemrana 301705 Alwar Rajasthan India, India",
   },
@@ -28967,17 +28967,17 @@ export const customerData = [
     address: "Jeddah, Saudi Arabia",
   },
   {
-    name: "The Wholesaler[Bng]",
+    name: "The Wholesaler Bangalore",
     address:
       "Unit 14 N12 Office Park Dr.Vosloo Road-Bartlett Booksburg 1460 South Africa, South Africa",
   },
   {
-    name: "Design Objectives Ltd[Bng]",
+    name: "Design Objectives Ltd Bangalore",
     address:
       "Unit 90 Old Barn Farm Road Woolsbridge Industrial Park Three Legged Cross Dorset Bh21 6Sp United Kingdom, UAE",
   },
   {
-    name: "Laurels Industrial Center[Bng]",
+    name: "Laurels Industrial Center Bangalore",
     address:
       "Unit 10 10/F 32 Tai Yau Street San Po Kong Kowloon Hong Kong, Hong Kong",
   },
@@ -29377,7 +29377,7 @@ export const customerData = [
       "Manufactures And Exporters Reg No.Off.#Mr53 Nandini Layout Bangalore-560096, India",
   },
   {
-    name: "Jindal Poly Films Ltd. - Reimbursement Import [Mum]",
+    name: "Jindal Poly Films Ltd. - Reimbursement Import Mumbai",
     address:
       "28Km Stone Nashik- Igatpuri Nh-3 Vill Mundhegaon Tal.- Igatpuri Dist.-Nashik, India",
   },
@@ -29401,7 +29401,7 @@ export const customerData = [
       "Lg Twin Tower 128 Yeoui-Daeroyeomgdeungpo-Guseoul-Korea, Korea (North)",
   },
   {
-    name: "Hitachi Astemo Haryana Pvt Ltd [Mum]",
+    name: "Hitachi Astemo Haryana Pvt Ltd Mumbai",
     address: "Plot No.23-32 Sector 58 Faridabad Haryana India, India",
   },
   {
@@ -29463,12 +29463,12 @@ export const customerData = [
       "102 Mutton Street 1St Flr Room No 108 Mohammedi Manzil Mumbai, India",
   },
   {
-    name: "Adani Developers Pravite Ltd [ Mumbai ]",
+    name: "Adani Developers Pravite Ltd Mumbai",
     address:
       "Adani House Nr Mithakhali Circle Navrangpura Ahmedabad -380009 Gujrat India, India",
   },
   {
-    name: "Star Seiki India Pvt Ltd [ Mumbai ]",
+    name: "Star Seiki India Pvt Ltd Mumbai",
     address:
       "204 2Nd Floor Ninex Time City Center Golf Course Road Sectoe - 54 Gurgaon Haryana 122002, India",
   },
@@ -29554,7 +29554,7 @@ export const customerData = [
       "130 Transport Center Near Punjabi Bagh Flyover New Delhi- 110035, India",
   },
   {
-    name: "Zenith Precision Pvt Ltd [Bng]",
+    name: "Zenith Precision Pvt Ltd Bangalore",
     address:
       "Unit2 #86/G 2Nd Stage Industrial Suburb Gg Palya Yashwanthpur Bangalore 560022 India, India",
   },
@@ -29745,7 +29745,7 @@ export const customerData = [
       "P.O.Box # 124743 Sharjah Airportinst Free (Saif)Zone Sharjah .U.A.E, Dubai",
   },
   {
-    name: "Alankar Shipping Clearing Private Ltd [Mum]",
+    name: "Alankar Shipping Clearing Private Ltd Mumbai",
     address:
       "C-704 Neelkanth Business Park Nathani Road Next To Vidyavihar Station Vidyavihar West Mumbai-400086, India",
   },
@@ -29758,11 +29758,6 @@ export const customerData = [
     name: "Mutha Engineering Pvt Ltd",
     address:
       "Plot No H-21 Old M.I.D.C Area Satara 415004 Maharashtra India, India",
-  },
-  {
-    name: "Jindal Films India Limited [Reimbursement]",
-    address:
-      "28Km Stone Nashik - Igatpuri Nh-3 Vill Mundhegaon Tal - Igatpuri Dist. Nashik, India",
   },
   {
     name: "Polyol International Trading Co.. Ltd",
@@ -29871,11 +29866,6 @@ export const customerData = [
   {
     name: "Welding Solution Company (Wsco)",
     address: "Po Box 2473 Al Khobar 31952 Saudi Arabia, Saudi Arabia",
-  },
-  {
-    name: "Ravi Company [Reimbursement]",
-    address:
-      "Shop No.31 Ramanuj Dayal Market Ramteram Road Ghaziabad-201001, India",
   },
   {
     name: "Line G C Co.. Ltd",
@@ -30106,17 +30096,12 @@ export const customerData = [
     address: "Room No 12 Godown Village: Sarde Tal - Uran- Dist- Raigad, India",
   },
   {
-    name: "Focus Marine Agencies (Nsa)",
-    address:
-      "C/O Sparxx Maritime Logistics Pvt Ltd. #617 6Th Floor Ecstasy City Of Joy J.S.D. Road Mulund (W) Mumbai 400080, India",
-  },
-  {
     name: "Taj Chappals And Co. [Kolkata]",
     address:
       "No 34 Kattur Sadayappan Street1St Floor Periamet Chennai 600003 India, India",
   },
   {
-    name: "Samputensili Equipment And Tools Pvt Ltd [Mum]",
+    name: "Samputensili Equipment And Tools Pvt Ltd Mumbai",
     address:
       "Cts No 770/5 Alankar Ground Floor Bhandarkar Road Lane 7 Shivajinag Pune, India",
   },
@@ -30141,7 +30126,7 @@ export const customerData = [
       "Floor 8 Renhe Mansion No. 399 Xuanwu Street Economic Developing Zone Weifang Shandong China, China",
   },
   {
-    name: "M/S. Lara Eximp Pvt. Ltd. [Mum]",
+    name: "M/S. Lara Eximp Pvt. Ltd. Mumbai",
     address:
       "59 1St Floor 34/A K. J. Trust Bldg Khadak Street Near Satkar Hotel Masjid Bunder ( W ) Mumbai - 400009 Tel. No. 022 23472590/40235722, India",
   },
@@ -30172,7 +30157,7 @@ export const customerData = [
       "Jalan Pelabuhan Benoa Zona Marina Office Indonusa No .1 Benoa Bali 80222, Indonesia",
   },
   {
-    name: "Prime Progression Export Services Pvt. Ltd [Bng]",
+    name: "Prime Progression Export Services Pvt. Ltd Bangalore",
     address:
       "100% Eouno.Sw-36 Sw-37 Apparel Park 2Nd Phase Kiadb Industrial Area Kasaba Hobli Doddaballapul Bangalore-561203 India, India",
   },
@@ -30207,17 +30192,17 @@ export const customerData = [
       "43 Thai Cc Tower 26Th Floorsouth Sathorn Road Yannawasathorn Bangkok 10120 Thailand, Thailand",
   },
   {
-    name: "Buddha Global Pvt.Ltd. [Mum]",
+    name: "Buddha Global Pvt.Ltd. Mumbai",
     address:
       "S-402 Ground Floor Greater Kailash - 1 New Delhi -110048 India, India",
   },
   {
-    name: "Lintec India Pvt Ltd [Mum]",
+    name: "Lintec India Pvt Ltd Mumbai",
     address:
       "Renaissance Industrial And Werehouse Park Warehouse Wb .11 Unit 1 2 Nad 3 Renaissance Infrastructure Vashere Village Post Padgha Bhiwandi Thane -421101 India, India",
   },
   {
-    name: "Vodafone India Limited [Mum]",
+    name: "Vodafone India Limited Mumbai",
     address:
       "7Th Floor India Bulls Finance Center Tower 2 And 3 Senapati Bapat Marg Elphisten Road Mumbai India -400013, India",
   },
@@ -30227,7 +30212,7 @@ export const customerData = [
       "Avenida Chena Poniente 12830San Bernardo(Parque Industrial Jardines Del Sur)Chile 8050000, Chile",
   },
   {
-    name: "Yuken India Ltd. [Bng]",
+    name: "Yuken India Ltd. Bangalore",
     address:
       "Sy.No.11 12 16 17 18 Koppathimanahalli Village Malur Hosur Road Malur Taluk Kolar-563130, India",
   },
@@ -30469,7 +30454,7 @@ export const customerData = [
     address: "Ziegekstrasse 6585276 Pfaffenhofengermeny, Germany",
   },
   {
-    name: "Hardik Dye-Chem Industries [Mum]",
+    name: "Hardik Dye-Chem Industries Mumbai",
     address:
       "Unit No 212 Bldg No 9 Jagoni Industrial Complex Chunabhatti ( East ) Sion Mumbai - 400022 India, India",
   },
@@ -30488,7 +30473,7 @@ export const customerData = [
       "Baba Industrial Complex 175 Rolfe Street Smethwick West Midlands B66 2As Ukphone : 0121-5653144Fax : 0121-5556111, Ukraine",
   },
   {
-    name: "Lion Tapes Pvt. Ltd. [Mum]",
+    name: "Lion Tapes Pvt. Ltd. Mumbai",
     address:
       "283/B G.I.D.C. Chitra Estatebhavnagar 364 004Gujarat India, India",
   },
@@ -30577,7 +30562,7 @@ export const customerData = [
     address: "54/57 Nyerere Road Po Box 4162 Dar Es Salaam Tanzania, Tanzania",
   },
   {
-    name: "Bhalla International [Mum]",
+    name: "Bhalla International Mumbai",
     address:
       "A-1/1 Udyogpuram Industrial Estate Partapur Meerut 250103 (U.P.)- Indiatel No : +91-121-2441111(4 Lines)Fax No : +91-121-2441000 / 2440291Email : Shipment@Vinex.Co..Ingstin No. : 09Aadfb2378P1Zypan No. : Aadfb2378Pstate Code: 09, India",
   },
@@ -30827,12 +30812,12 @@ export const customerData = [
       "Dubai Invetment Park Plot Number 598-1157Po Box 282 777Dubai, UAE",
   },
   {
-    name: "Milan Laboratories (India) Pvt. Ltd. [Mum]",
+    name: "Milan Laboratories (India) Pvt. Ltd. Mumbai",
     address:
       "303-304 Odyssey It Park Wagle Estate Roadno.9 Thane(W)400604 India, India",
   },
   {
-    name: "M/S Decofloor India [Mum]",
+    name: "M/S Decofloor India Mumbai",
     address:
       "Adjoining. Sector 29 Huda Panipat-132 103 (India) Ph: + 91 180 2660494 Fax: + 91 180 2664594 Tax Id: Abhpr2210B, India",
   },
@@ -30866,20 +30851,20 @@ export const customerData = [
       "4Th Floor Logix Technopark Tower C Plot No 5 Sectro 127 Noida 201313 Uttar Pradesh India, India",
   },
   {
-    name: "Chiripal Industries Ltd. [ Reimbusment ]",
+    name: "Chiripal Industries Ltd.",
     address: "Chiripal House Shivranjani Char Rasta Satellite Ahmedabad, India",
   },
   {
-    name: "Coromandel Agrico Pvt Ltd [Mum]",
+    name: "Coromandel Agrico Pvt Ltd Mumbai",
     address:
       "D-2 Midc Lote Parshuram Tal-Khed Ratnagiri 415722 - Maharashtra India, India",
   },
   {
-    name: "Coromandel Agrico Pvt Ltd [Mum]",
+    name: "Coromandel Agrico Pvt Ltd Mumbai",
     address: "A-1/96 94B Gidc Nandesari Vadodara Gujarat 111111, India",
   },
   {
-    name: "Coromandel Agrico Pvt Ltd [Mum]",
+    name: "Coromandel Agrico Pvt Ltd Mumbai",
     address:
       "A - 73 Industrial Area Sikandrabad Bulandshahr Sikandrabad - 203205 Uttar Pradesh India, India",
   },
@@ -30894,7 +30879,7 @@ export const customerData = [
       "12 Marina View Asia Square Tower 2 31-01 Singapore 018961, Singapore",
   },
   {
-    name: "Orient Allways [Mum]",
+    name: "Orient Allways Mumbai",
     address:
       "Add. 7/10 Botawala Bldg..... 3Rd Floor. Opp. Harniman Circle Fort Mumbai. 400 001. Maharashtra., India",
   },
@@ -30932,11 +30917,11 @@ export const customerData = [
       "Hamburgo 206 101 Col. Juarez Cuauhtemocdistrito Federal 06600 Mexico D.F.Pic: Mr. Raul Alfaro, Mexico",
   },
   {
-    name: "Sopariwala Export Pvt Ltd [Mum]",
+    name: "Sopariwala Export Pvt Ltd Mumbai",
     address: "Nirmai 21St Floor Nariman Point Mumbai, India",
   },
   {
-    name: "Sopariwala Export Pvt Ltd [Mum]",
+    name: "Sopariwala Export Pvt Ltd Mumbai",
     address:
       "Survey No. 451/1 Part Opp. Railway Station Borsad - 388550Dist. Anand Gujarat (India), India",
   },
@@ -30991,7 +30976,7 @@ export const customerData = [
     address: "Via Dei Roveri 2836011 Arsiero (Vi) Italy, Italy",
   },
   {
-    name: "Mahindra Sanyo Specail Steel Pvt Ltd [ Mumbai]",
+    name: "Mahindra Sanyo Specail Steel Pvt Ltd [Mumbai]",
     address: "Jagdish Nagar Khopoli Dist Raigad 410216 India, India",
   },
   {
@@ -31072,7 +31057,7 @@ export const customerData = [
       "5 Th Floor 513-515 Swastik Disa Corp Park Lbs Marg Opp Shreyas Cinema Ghatkopar West, India",
   },
   {
-    name: "Tokai Imperial Hydraulics India Pvt. Ltd. [Mum]",
+    name: "Tokai Imperial Hydraulics India Pvt. Ltd. Mumbai",
     address:
       "Sp2 Plot No.93-95 Riico New Industrial Complex ( Majrakath) Japnese Zone Neemrana Alwar Rajasthan 301705, India",
   },
@@ -31085,30 +31070,30 @@ export const customerData = [
     address: "Gyunggai, Korea (South)",
   },
   {
-    name: "Sansera Engineering Ltd [Bng]",
+    name: "Sansera Engineering Ltd Bangalore",
     address: "1 Bommasandra Jigani Link Road Bangalore - 560099 India, India",
   },
   {
-    name: "Sansera Engineering Ltd [Bng]",
+    name: "Sansera Engineering Ltd Bangalore",
     address:
       "Aerospace Division Plot # 125 126 4Th Phase Bommasandra Jigani Link Road Indl Area Anekal Taluk Bangalore Karnataka 560099, India",
   },
   {
-    name: "Sansera Engineering Ltd [Bng]",
+    name: "Sansera Engineering Ltd Bangalore",
     address:
       "Plant 3 Plot No.1 Bommasandra Jigani Link Road Industrial Areabangalore 560099, India",
   },
   {
-    name: "Sansera Engineering Ltd [Bng]",
+    name: "Sansera Engineering Ltd Bangalore",
     address:
       "Plant 10 No.102 Jigani Link Roadbommasandra Industrial Areabangalore 5600105, India",
   },
   {
-    name: "Sansera Engineering Ltd [Bng]",
+    name: "Sansera Engineering Ltd Bangalore",
     address: "143A Bommasandra Jigani Link Road Bangalore - 560099, India",
   },
   {
-    name: "Sansera Engineering Ltd [Bng]",
+    name: "Sansera Engineering Ltd Bangalore",
     address:
       "261/C Bommasandra Jigani Link Road Bangalore - 560099 India, India",
   },
@@ -31133,17 +31118,17 @@ export const customerData = [
       "Material Technology Research And Development Laboratories Nv.H Material Laboratory Office 1 Higashi 3-Chome Komaki City Aichi 485 8550 Japan, Japan",
   },
   {
-    name: "Tokai Rubber (Jiaxing)Co..Ltd[Bng]",
+    name: "Tokai Rubber (Jiaxing)Co..Ltd Bangalore",
     address:
       "No.500 Gangshan Road Economic Development Zone Jiaxing China 314003, China",
   },
   {
-    name: "Psb Corporation[Bng]",
+    name: "Psb Corporation Bangalore",
     address:
       "B-509 Galleria Hiranandani Gardens Powal Mumbai-400076 India, India",
   },
   {
-    name: "Dtr Industries Inc[Bng]",
+    name: "Dtr Industries Inc Bangalore",
     address: "199 Pottertown Road Midway Tennessee 37809 USA, USA",
   },
   {
@@ -31156,7 +31141,7 @@ export const customerData = [
     address: "Infinity Bldg 5Th Floor Block Gp Sector V Salt Lake City, India",
   },
   {
-    name: "Sun Enterprises [ Mumbai ]",
+    name: "Sun Enterprises [Mumbai]",
     address:
       "Plot No 7 Industrial Area Yamuna Nagar 135001 Haryana India, India",
   },
@@ -31240,7 +31225,7 @@ export const customerData = [
     address: "1649 1St Floor Paharganj Main Bazar New Delhi 110055, India",
   },
   {
-    name: "Quantum Coal Pvt Ltd [Chennai]",
+    name: "Quantum Coal Pvt Ltd Chennai",
     address:
       "T-F1-No.3 The Blessed Abbode Marvarijawahar Road Chokkikulam Madurai - 625002Tamilnadu India, India",
   },
@@ -31279,7 +31264,7 @@ export const customerData = [
     address: "Ell Fostat Streetold Cairoegypt, Egypt",
   },
   {
-    name: "Excel Tech [Bng]",
+    name: "Excel Tech Bangalore",
     address:
       "123/1 Plo No.28 Kachanayakan Halli Bammasandra Industrial Area Bangalore-560099, India",
   },
@@ -31344,7 +31329,7 @@ export const customerData = [
       "Unit 2 158-168 Browns Roadnoble Park Vic 3174Australia, Australia",
   },
   {
-    name: "Akson International [Chennai]",
+    name: "Akson International Chennai",
     address:
       "Vii / 532 D-33 Vegitable Market Shopping Complexperumbavoor Ernakulamkerala India, India",
   },
@@ -31359,7 +31344,7 @@ export const customerData = [
       "Jiva Vadi : Survey No. 270 Mithi Rohar Gandhidham Kutch Gujrat India, India",
   },
   {
-    name: "Solace Systems Inc [Bng]",
+    name: "Solace Systems Inc Bangalore",
     address: "535 Legget Drive 3Rd Floor Ottawa On K2K 3B8 Canada, Canada",
   },
   {
@@ -31448,7 +31433,7 @@ export const customerData = [
     address: "401 Sakar V Near Mithakhali Railway Crosing Ashram Road., India",
   },
   {
-    name: "Sangeeta Pharma [Mum]",
+    name: "Sangeeta Pharma Mumbai",
     address:
       "Nandu Smruti Bldg G.No.07 Opp-Purneshwar Mandir Purnavillage Thane 421 302 Maharashtra India.Tel.:+91 9167041905, India",
   },
@@ -31466,7 +31451,7 @@ export const customerData = [
     address: "Mumbai, India",
   },
   {
-    name: "A.P.D Exports [Mum]",
+    name: "A.P.D Exports Mumbai",
     address:
       "Oberoi Garden Estates 1St Floor 1105/1106 C Wing Off Sakivihar Road Chandivali Andheri ( E )Mumbai - 400 072 India, India",
   },
@@ -31580,7 +31565,7 @@ export const customerData = [
       "5800Ambler Drive Unit 210-24 Mississauga Onl4W 4J4 Canadacontact: Aditya Agarwal, Canada",
   },
   {
-    name: "Dresmen [Bng]",
+    name: "Dresmen Bangalore",
     address:
       "18 Kamal Ataturk Avenue Banani C/A Dhaka - 1213Bangladeshph: (880)-2-8815863 8826820, Bangladesh",
   },
@@ -31644,7 +31629,7 @@ export const customerData = [
       "Khasra No. 177 Chudiala Road Village Sahapur Bhagwanpur Zilla Haridwar Roorkee -247667Uttarakhand India, India",
   },
   {
-    name: "Vakharia Aluminium Industries Pvt Ltd [ Mumbai ]",
+    name: "Vakharia Aluminium Industries Pvt Ltd Mumbai",
     address:
       "Shatrnjay Giriraj Complex New Mills Road Tanaji Chowk Kurla West Mumbai Maharashtra 400070 India, India",
   },
@@ -31826,7 +31811,7 @@ export const customerData = [
       "Engineering Pvt Ltd122 Dawson Street Colombo 02Srilanka, Sri Lanka",
   },
   {
-    name: "Prk Sales Corporation [Mum]",
+    name: "Prk Sales Corporation Mumbai",
     address:
       "H.No 9/1 Near Usha Company Rasoolpura Secunderabad-500003 ( Telangana ), India",
   },
@@ -31853,12 +31838,12 @@ export const customerData = [
       "Rua Pedro Ripoli 2380 City: Ribeirao Pires State Sao Paulo Country Brazil Cnpj: 49.934.250/0013-21, Brazil",
   },
   {
-    name: "Idt Clothing Pvt. Ltd [Mum]",
+    name: "Idt Clothing Pvt. Ltd Mumbai",
     address:
       "216 A A To Z Industrial Estate Ganpatrao Kadam Marg Lower Parel Mumbai 400013 India, India",
   },
   {
-    name: "M/S Sterling Textiles [Mum]",
+    name: "M/S Sterling Textiles Mumbai",
     address:
       "108 Shiv Krupa Ind Estate L.B.S. Marg Vikhroli ( W )Mumbai 400083 India, India",
   },
@@ -31908,7 +31893,7 @@ export const customerData = [
       "Zum Gewerbegebiet 5 09557 Floha Ot Falkenau Germanyvat No. : De178449373, Germany",
   },
   {
-    name: "Sg Equipments Machines Pvt Ltd [Bng]",
+    name: "Sg Equipments Machines Pvt Ltd Bangalore",
     address: "Plot No M 87Th Cross 1St Stage560058 Peenya Bangalore, India",
   },
   {
@@ -31958,7 +31943,7 @@ export const customerData = [
     address: "B-124 Karampura Near Milan Cinema, India",
   },
   {
-    name: "Rhk Shipping Agency [Mum]",
+    name: "Rhk Shipping Agency Mumbai",
     address:
       "58 Goa Street Goa Mansion Fort Mumbai 400 001.Tel: 91-22-2265 2669/8190/6301, India",
   },
@@ -32005,7 +31990,7 @@ export const customerData = [
     address: "12 Dumbarton Avenue Kingston 10 Jamaica, Jamaica",
   },
   {
-    name: "Descon Engineering [Mum]",
+    name: "Descon Engineering Mumbai",
     address:
       "P O Box 46821 Abu Dhabi UAE(For Adco) Attn: Mr. Girkumar Mob: +971-50-7944629), India",
   },
@@ -32027,7 +32012,7 @@ export const customerData = [
     address: "Om Trax Packaging Solutions Pvt Ltd Alandur, India",
   },
   {
-    name: "Kongovi Electronics Pvt. Ltd. [Bng]",
+    name: "Kongovi Electronics Pvt. Ltd. Bangalore",
     address:
       "Sy No.87 Kukkanahalli Gollahalli Post Dasanapura Bangalore North Taluk-562123, India",
   },
@@ -32125,7 +32110,7 @@ export const customerData = [
     address: "Bulowstrasse 56-57 New Delhi 11003510783 Berlin Germany, Germany",
   },
   {
-    name: "Blooming Flowers And Follage [Bng]",
+    name: "Blooming Flowers And Follage Bangalore",
     address: "12 21 St Cross Kankanagar Bangalore, India",
   },
   {
@@ -32290,7 +32275,7 @@ export const customerData = [
       "138 Zhonghuaxi Road Ganjingzi District Dalian China 116091, China",
   },
   {
-    name: "Foundation Engineering Co. [ Mumbai ]",
+    name: "Foundation Engineering Co. Mumbai",
     address: "G-6 Tulsiani Chambers Nariman Point 400021 Mumbai - India, India",
   },
   {
@@ -32336,7 +32321,7 @@ export const customerData = [
       "209 Monarch Plaza Plot No 56 Sector 11 Cbd Beladur Navi Mumbai 400614, India",
   },
   {
-    name: "Asia View Enterprises Ltd. [Mum]",
+    name: "Asia View Enterprises Ltd. Mumbai",
     address:
       "806 Tower B New Mandarin Plazatst East Kowloon Hong Kong., Hong Kong",
   },
@@ -32345,7 +32330,7 @@ export const customerData = [
     address: "Riemstraat 10 2000 Antwerpen Belgie, Belgium",
   },
   {
-    name: "Trw Sun Steering Wheels Pvt Ltd [Mum]",
+    name: "Trw Sun Steering Wheels Pvt Ltd Mumbai",
     address:
       "Gat No 262-263 Pirangut Lavale Road Pirangut -411042 Tal- Mulshi Pune Maharashtra India, India",
   },
@@ -32410,17 +32395,17 @@ export const customerData = [
       "Room D103 Wanshilong Customs Supervision Warehouse Tianjin Air Port Logistics Area China 3 Tel: (86-22)84888373 Mail: Kinki@Bondex.Com.Cn, China",
   },
   {
-    name: "M.O.C.Dies And Moulds [Chennai]",
+    name: "M.O.C.Dies And Moulds Chennai",
     address:
       "Sp-93 Old Sp-13 Na Industrial Estate Ambattur Chennai Tamil Nadu 600058, India",
   },
   {
-    name: "Kosei Minda Aluminum Company Pvt Ltd [Chennai]",
+    name: "Kosei Minda Aluminum Company Pvt Ltd Chennai",
     address:
       "Rns 20A B Sipcot Industrial Growth Centre Renault Nissansuppliers Park Vadakkupattu Villagesriperambudur Taluk Kanchepuram Disttamilnadu 603204 - India, India",
   },
   {
-    name: "Tkm Global Logistics Limited [Mum]",
+    name: "Tkm Global Logistics Limited Mumbai",
     address:
       "Unit No842 Solitaire Corporate Park167 Guru Hargovindji Marg Chakala Andheri(E) Mumbai -400 093Tel.:+91 22 61464900 Fax.:+91 2261464999, India",
   },
@@ -32474,7 +32459,7 @@ export const customerData = [
     address: "Technologiepark 4A-4851 Gampern Austria, Austria",
   },
   {
-    name: "Reliant Packaging Films Ltd. [Mum]",
+    name: "Reliant Packaging Films Ltd. Mumbai",
     address:
       "4866/24 1St Floor Sheeltara House Ansari Road Daryaganj New Delhi, India",
   },
@@ -32487,12 +32472,12 @@ export const customerData = [
     address: "P.O.Box 1602P.C. 130Azaibha Sultanate Of Oman, Oman",
   },
   {
-    name: "Godrej Astrovet Ltd [Chennai]",
+    name: "Godrej Astrovet Ltd Chennai",
     address:
       "F802-Hanuman Junction (Aqua)Vill-Kanumolu Mandal-Bapulappadunear Hanuman Junction Kanumolu Distkrishna - 521105 - Andhrapradeshindia, India",
   },
   {
-    name: "Hbl Power Systems Ltd [Chennai]",
+    name: "Hbl Power Systems Ltd Chennai",
     address: "8-2-601 Road No. 10 Banjara Hillshyderabad-500 034India, India",
   },
   {
@@ -32582,7 +32567,7 @@ export const customerData = [
     address: "Frankfurt, Germany",
   },
   {
-    name: "Anan Drug Chem Ltd. [Mum]",
+    name: "Anan Drug Chem Ltd. Mumbai",
     address:
       "Survey No . 331/2 Kardeg ( Navagam ) Dist. Bhavnagar Gujrat-364060, India",
   },
@@ -32612,7 +32597,7 @@ export const customerData = [
       "6 Ahbab Alrasol St. Alshams Building-Alsefaratnasr City Cairo Egypt, Egypt",
   },
   {
-    name: "Ultra Instrument India [Bng]",
+    name: "Ultra Instrument India Bangalore",
     address:
       "Ultra Manor No39/1-9Krishna Extension Hulimavu 560076 Bangalore, India",
   },
@@ -32650,26 +32635,26 @@ export const customerData = [
       "Activia Park Germiston North Reef Roadelandsfontein South Africa027 11 8288882, South Africa",
   },
   {
-    name: "Flowwell Precision Products Pvt Ltd[Chennai]",
+    name: "Flowwell Precision Products Pvt LtdChennai",
     address:
       "43A Sidco Industrial Estatethirumudaivakkam Chennai - 600 044Tamilnadu India, India",
   },
   {
-    name: "Western Leather Company[Chennai]",
+    name: "Western Leather CompanyChennai",
     address:
       "No.1 Sathy Bhavani Connection Roadperiya Agraharam Erodetamilnadu India, India",
   },
   {
-    name: "Y And I Foot Crafts[Chennai]",
+    name: "Y And I Foot CraftsChennai",
     address:
       "No.34 Kattur Sadyappan Street1 Floor Periamet Chennai - 600 003Tamilnadu India, India",
   },
   {
-    name: "Nitin Castings Limited [Mum]",
+    name: "Nitin Castings Limited Mumbai",
     address: "Plot No. 183/1 Village - Surangi Silvassa - 396230., India",
   },
   {
-    name: "Nitin Castings Limited [Mum]",
+    name: "Nitin Castings Limited Mumbai",
     address:
       "Nitin Castings Limited(Formerly Known As Nitin Alloys Global Limited)Plot No. 410 Almeida Road Panchpakhadi Thane (West)Thane 400 601, India",
   },
@@ -32775,7 +32760,7 @@ export const customerData = [
     address: "Via Degil Agresti Nr. 640123 Bologna Bo Italy, Italy",
   },
   {
-    name: "Global Trade Links [Mum]",
+    name: "Global Trade Links Mumbai",
     address:
       "B/115 Andheri Indl. Estate 1St. Floor Opp. Yash Raj Studio Near Janki Center Veer Desai Road Andheri ( W ) Mumbai 400 058, India",
   },
@@ -32784,7 +32769,7 @@ export const customerData = [
     address: "522-56 Hirano - Cho Nishiwaki-Cityhyogo Pref Japan, Japan",
   },
   {
-    name: "Odex India Solutions Pvt Ltd [Mum]",
+    name: "Odex India Solutions Pvt Ltd Mumbai",
     address: "Mumbai, India",
   },
   {
@@ -32797,7 +32782,7 @@ export const customerData = [
     address: "C1 115 Janakpuri 110058 Delhi India, India",
   },
   {
-    name: "Bird Worldwide Flight Services Mumbai Pvt Ltd [Mum]",
+    name: "Bird Worldwide Flight Services Mumbai Pvt Ltd Mumbai",
     address: "Mumbai, India",
   },
   {
@@ -32859,7 +32844,7 @@ export const customerData = [
     address: "Shop No. 467/468/469 Inside Crawford Market, India",
   },
   {
-    name: "Mtr Foods Private Ltd. [Bng]",
+    name: "Mtr Foods Private Ltd. Bangalore",
     address:
       "No.1 3Nd And 3Rd Floor 100 Feet Inner Ring Road Ejipura Bangalore-560047 India, India",
   },
@@ -33076,7 +33061,7 @@ export const customerData = [
       "Jl. Raya Meruya Ilir No. 2-2Art. 001/006 Meruya Utara Kembanganjakarta Barat 11620 Indonesia, Indonesia",
   },
   {
-    name: "Soltri Corporation[Bng]",
+    name: "Soltri Corporation Bangalore",
     address: "133Bl-1L 704 Gojan-Dong Namdong-Ku Incheon Korea, Korea (South)",
   },
   {
@@ -33093,7 +33078,7 @@ export const customerData = [
     address: "15 Second Street Newport West Kingston 13 Jamaica W.I., Jamaica",
   },
   {
-    name: "Super Steel Al Taiyab Building Material Company [Bng]",
+    name: "Super Steel Al Taiyab Building Material Company Bangalore",
     address:
       "Al Rai St.No.24/27 Kuwait Agtelefax No: 0096524715371Mobile No: 00965 99537297, Kuwait",
   },
@@ -33278,17 +33263,17 @@ export const customerData = [
       "K-183 Dlf Park Placesector-54. Golf Course Roadgurgaon Haryana India, India",
   },
   {
-    name: "Anchor Electricals Pvt.Ltd [Mum]",
+    name: "Anchor Electricals Pvt.Ltd Mumbai",
     address:
       "Unit V Block No.32/1 32/2 32/3 34 Near Silver Industrial Estate Patalia Road Village Bhimpore Nani Daman Daman-396 210, India",
   },
   {
-    name: "Anchor Electricals Pvt.Ltd [Mum]",
+    name: "Anchor Electricals Pvt.Ltd Mumbai",
     address:
       "Plot No.1A/1B Sector 8B Iie Bhel Sidcul Haridwar - 249 403.(U.K) India., India",
   },
   {
-    name: "Anchor Electricals Pvt.Ltd [Mum]",
+    name: "Anchor Electricals Pvt.Ltd Mumbai",
     address:
       "3Rd Floor B-Wing I Think Techno Campus Pokharan Road No.02 Thane (West)400 607 India, India",
   },
@@ -33401,7 +33386,7 @@ export const customerData = [
       "2F No.26 Zhongshan Road. Benfu Village Liuqiu Township Pingtung County, Taiwan",
   },
   {
-    name: "Rgca-Aquatic Quarantine Facility [Chennai]",
+    name: "Rgca-Aquatic Quarantine Facility Chennai",
     address:
       "Tnfdc Hatchery Complex Kapaleeswarar Nagar Bech Road Neelankarai, India",
   },
@@ -33615,7 +33600,7 @@ export const customerData = [
       "19-2-239/1/3/B Chandualal Baradari Industrial Estate Bhadurpura Hyderabad A.P-500064, India",
   },
   {
-    name: "M S Logistics [Mum]",
+    name: "M S Logistics Mumbai",
     address:
       "Office No. C-501-507 C Wing 5Th Floor Bhaveshwar Plaza Co.-Op. Society Ltd Lbs Marg Ghatkopar West Mumbai 400086., India",
   },
@@ -33663,12 +33648,12 @@ export const customerData = [
       "Unit8 Stretton Business Parkbrunel Drive Strettonburton On Trent De13 0Byunited Kingdom, UK",
   },
   {
-    name: "Jai Matadi Marketing [Bng]",
+    name: "Jai Matadi Marketing Bangalore",
     address:
       "Choudhary Bazar Keut Sahicuttak-1 Odisha India562107 Bangalore, India",
   },
   {
-    name: "Regal Plywood Industries (P) Ltd [Bng]",
+    name: "Regal Plywood Industries (P) Ltd Bangalore",
     address:
       "Vellanki Villageanandapuram Mandalamvishakhapatnam District, India",
   },
@@ -33700,7 +33685,7 @@ export const customerData = [
       "Village Alipur Khalsa Khot Pura Roadkarnal - 132114 Haryana Indiaph.+91-01748-202147E: Javi@Javihome.Com, India",
   },
   {
-    name: "Sharlock Metal Works [Mum]",
+    name: "Sharlock Metal Works Mumbai",
     address:
       "A/604 Savera Parkalmas Colony Road Near Wafa Parkmaharashtra - 400 612 India, India",
   },
@@ -33784,7 +33769,7 @@ export const customerData = [
       "No.77 High Street 05-14 High Street Plazasingapore - 179433, Singapore",
   },
   {
-    name: "Tek India [Mum]",
+    name: "Tek India Mumbai",
     address:
       "No 24A At Apatavane Post Siddeshwar Tal Sudhagad Dist Raigad Maharashtra 410205, India",
   },
@@ -33808,12 +33793,12 @@ export const customerData = [
       "Ruc. 20527826358Avenida Tambopata No. 854 Madre De Diosperu, Peru",
   },
   {
-    name: "Indorama Synthetics India Ltd [Mum]",
+    name: "Indorama Synthetics India Ltd Mumbai",
     address:
       "20Th Floor Dlf Square Dlf Fhase 11 Nh -8 Gurgaon -122002 Haryan India, India",
   },
   {
-    name: "Indorama Synthetics India Ltd [Mum]",
+    name: "Indorama Synthetics India Ltd Mumbai",
     address: "A-31 Midc Industrial Area Butibori Nagpur Maharashtra, India",
   },
   {
@@ -33822,7 +33807,7 @@ export const customerData = [
       "Shop No: B-17 Ashoka Complex Plot No 7 Sector No -18 Sanpada Thurbhe -400705Tel No : 022 27801055, India",
   },
   {
-    name: "Kemox Corporation [Mum]",
+    name: "Kemox Corporation Mumbai",
     address:
       "Dodhia House New Mauji Compound Behind Ratan Talkies Narpoli Bhiwandi -421302 Thane India, India",
   },
@@ -33859,7 +33844,7 @@ export const customerData = [
       "Room 1908 Sunny World 2Nd B Block Hexi Cbd Jianyedisrict Nanjing 210000China, China",
   },
   {
-    name: "Reine Life Science [Mum]",
+    name: "Reine Life Science Mumbai",
     address:
       "Plot No 5901 Kanoria Chemicals Road Near Par Drug Gidc Industrial Estate Ankleshwar -393002 Dist - Bharuch ( Gujrat ) India, India",
   },
@@ -34059,7 +34044,7 @@ export const customerData = [
     address: "Delhi, ",
   },
   {
-    name: "Nagesh Karuturi [Bng]",
+    name: "Nagesh Karuturi Bangalore",
     address:
       "The Retreat Villa 123 Sy No 117/6Tarabanahalli Village Jala Hoblibehind Itc Factorybangalore-562157, India",
   },
@@ -34106,7 +34091,7 @@ export const customerData = [
       "Xv 370 C Ponthabillychellamattom Village Kunnathunad Talukokkal Po Ernakulam - 683550Kerala India, India",
   },
   {
-    name: "Rane Nsk Steering Systems Pvt. Ltd. [Mum]",
+    name: "Rane Nsk Steering Systems Pvt. Ltd. Mumbai",
     address:
       "Bawal Plot No. 28A Sector 06 Hsiidc Growth Center Bawal Distt - Rewari ( Haryana ) India, India",
   },
@@ -34170,7 +34155,7 @@ export const customerData = [
       "Avenida Petapa Bodega 6 25-25 Zona 12 Complejo Industrial Liluca Guatemala.Nit: 814792-2Contact: Jorge Domingueze-Mail: Jdominguez@Eleffantecargo.Comphone: +502 2318 8393, Guatemala",
   },
   {
-    name: "Epe Process Filters And Accumulators Pvt. Ltd. [Bng]",
+    name: "Epe Process Filters And Accumulators Pvt. Ltd. Bangalore",
     address:
       "59A Cie (Expn.) Gandhinagar Balanagar Hyderabad Telangana India-500037, India",
   },
@@ -34185,7 +34170,7 @@ export const customerData = [
       "No . 111/54 2Nd Floor Linghi Chetty Street Chennai - 600001, India",
   },
   {
-    name: "Niko Steel Centre [Mum]",
+    name: "Niko Steel Centre Mumbai",
     address:
       "24/26 Shop No-6B Sindhi Lane Near N.D.Road Mumbai - 400 004 Indiaph.:+91-22-23867225 Fax.:+91-22-23800765, India",
   },
@@ -34195,7 +34180,7 @@ export const customerData = [
       "10A Truong Cong Dinh Street Ward 14 Tan Binh District Ho Chi Minh City Vietnamkind Attn: - Mr. Dang Hoang Huyph: - +84- 8- 62677308 Fax: - +84- 8 62677309, Vietnam",
   },
   {
-    name: "Jmp Industries [Mum]",
+    name: "Jmp Industries Mumbai",
     address: "A-5 Focal Point Jalandhar Punjab India, India",
   },
   {
@@ -34288,15 +34273,15 @@ export const customerData = [
     address: "Bab Sharif P.O Box:- 18290Jeddah-21415Saudi Arabia, Saudi Arabia",
   },
   {
-    name: "Kerala Nut Food Co.[Bng]",
+    name: "Kerala Nut Food Co. Bangalore",
     address: "P.B.No.80 Parameswar Nagar Kollam 691001 Kerala India, India",
   },
   {
-    name: "Kerala Nut Food Co.[Bng]",
+    name: "Kerala Nut Food Co. Bangalore",
     address: "26/130 Kuzhivilai S.T.Mangadu Postkanyakumari Tamilnadu, India",
   },
   {
-    name: "Daebong Food Corporation[Bng]",
+    name: "Daebong Food Corporation Bangalore",
     address:
       "77-16 Yangbeol-Ri Opo-Eup Kwangju-Si Kyungki-Do Korea, Korea (South)",
   },
@@ -34305,26 +34290,26 @@ export const customerData = [
     address: "Korea, Korea (South)",
   },
   {
-    name: "Hardlife(UK)Ltd[Bng]-1",
+    name: "Hardlife(UK)Ltd Bangalore-1",
     address:
       "Unit 7 Collec Depot Billington Road Leighton Buzzard Bedfordshire Lu7 9Hh, Norway",
   },
   {
-    name: "Alfateks Testil Urunleri.Stl[Bng]",
+    name: "Alfateks Testil Urunleri.Stl Bangalore",
     address:
       "Kestel 2 Sanayi Bolgesi Ahmet Ve Fik Pasa Mah Hasan Kestelli Cadde No.13 Keestel Bursa Turkey, Turkey",
   },
   {
-    name: "Super Groups[Bng]",
+    name: "Super Groups Bangalore",
     address: "30-32 Abbott Road Vic 3803-Australia, Australia",
   },
   {
-    name: "Samm Technologies[Bng]",
+    name: "Samm Technologies Bangalore",
     address:
       "198/A 2Nd Cross 11Th Main 3Rd Phase Peenya Industrial Area Bangalore, India",
   },
   {
-    name: "Palipana Hydraulic Engineering Pvt Ltd[Bng]",
+    name: "Palipana Hydraulic Engineering Pvt Ltd Bangalore",
     address:
       "No.38/1/5 Wekada Road Malapalla Homagama 10200 Sri Lanka, Sri Lanka",
   },
@@ -34334,12 +34319,12 @@ export const customerData = [
       "C/O.E.Vesteraas Sagstugrenda 34 2822 Bybrua Oslo Docks-Norway, Norway",
   },
   {
-    name: "Hmg Logistics Co. Ltd[Bng]",
+    name: "Hmg Logistics Co. Ltd Bangalore",
     address:
       "Rm C607/608 Pudong Intl Airport No.1333 Wenju Rd Pudong Shanghai 1201202 China, China",
   },
   {
-    name: "Hmg Logistics Co. Ltd[Bng]",
+    name: "Hmg Logistics Co. Ltd Bangalore",
     address:
       "Rm.219 Building 3 No.699 Zhupan Rd. Jiarong Business Center Zhuqiao Town Pudong New Area Sganghai China 201323., China",
   },
@@ -34424,7 +34409,7 @@ export const customerData = [
       "13838 S. Figueroa St. Los Angeles Ca. 90061-1026 Ph. 310-217-2400 Fx. 310-527-7933, USA",
   },
   {
-    name: "Apt Laminates [Mum]",
+    name: "Apt Laminates Mumbai",
     address:
       "Room Nop 17 2Nd Floor Kanbai Bhuvan Khadilakar Road C.P. Tank Mumbai 400004, India",
   },
@@ -34434,17 +34419,17 @@ export const customerData = [
       "16901 Keegan Ave. Carson Ca 90746Tel: 310-328-0700Fax: 310-328-0707, USA",
   },
   {
-    name: "Satish .Kk. Enterprises [Mum]",
+    name: "Satish .Kk. Enterprises Mumbai",
     address:
       "Shop No D/1/4 5 Mezzanine Floor Panchratna Apartments 18/2 Sholapur Road Pune Maharashtra - 411013 India, India",
   },
   {
-    name: "Reliance Industries Ltd [Mum]",
+    name: "Reliance Industries Ltd Mumbai",
     address:
       "Reliance Corporate It Park Ws 121 7 B First Floor Thane Belapur Road Ghansoli Navi Mumbai 400701 India, India",
   },
   {
-    name: "Reliance Industries Ltd [Mum]",
+    name: "Reliance Industries Ltd Mumbai",
     address:
       "Village Mora Bhatha P.O.Surat -Hazira Rd.Surat Gujarat Pin-394510, India",
   },
@@ -34537,9 +34522,9 @@ export const customerData = [
       "Unit 1205-1208 Windfall Building 12Th Floor Sahar Plaza Complex Sir. M V Road. Andheri (E) Mumbai : 400059, India",
   },
   {
-    name: "Global Nonwovens Ltd [ Reimbursement ]",
+    name: "Global Nonwovens Ltd ",
     address:
-      "28 Km Stone Nashik- Igatpuri Road Mundegaon Nashikmaharashtra - 422403, India",
+      "28 Km Stone Nashik- Igatpuri Road Mundegaon Nashik Maharashtra - 422403, India",
   },
   {
     name: "Interasia Lines Singapore Pte Ltd",
@@ -34760,7 +34745,7 @@ export const customerData = [
     address: "Ernst-Leitz-Strabe 17-3735578 Wetzlar Germany, Germany",
   },
   {
-    name: "Kbe Elektrotechnik Gmbh [Bng]",
+    name: "Kbe Elektrotechnik Gmbh Bangalore",
     address: "Symeonstr 812279 Berulingermany, Germany",
   },
   {
@@ -34827,7 +34812,7 @@ export const customerData = [
       "Nit:900.706.581-3 Telefono 57-1-8759251Imequipos Imetan S.A.S.Nit: 830.060.602-1Punto 5 Bodega 2 Via Cota D.T.A. Columbia Km 2 Vereda Vuelta Grande Pd San Rafaelzona Franca Metropolitana De Bogota, Cuba",
   },
   {
-    name: "Pointec Pens Energy Pvt Ltd [Chennai]",
+    name: "Pointec Pens Energy Pvt Ltd Chennai",
     address:
       "(Formely Know As Pointec Pens Pvt Ltd)26A Attibele Industrial Areaattibele Bangalore - 562 107Karnataka India, India",
   },
@@ -34875,7 +34860,7 @@ export const customerData = [
     address: "Unit No. 04 7/F Bright Way Tower No. Mong Kokrd Kl Hk, India",
   },
   {
-    name: "Turbova Tools Company [ Mumbai ]",
+    name: "Turbova Tools Company Mumbai",
     address:
       "Kukreja Center A-105 Plot No 13 Sector 11 Cbd Belapur Navi Mumbai- 400614, India",
   },
@@ -35183,7 +35168,7 @@ export const customerData = [
   },
 
   {
-    name: "Pursuit Technologies Ltd[Bng]",
+    name: "Pursuit Technologies Ltd Bangalore",
     address:
       "Jaganatha Arcade 2Nd Floor No.37 50 Feet Road Sbm Colony Bangalore India, India",
   },
@@ -35205,7 +35190,7 @@ export const customerData = [
     address: "Room 302 No. 309 Fushan Road Pudong Shanghai China 200122, China",
   },
   {
-    name: "Ideal International Power Tools Pvt.Ltd [ Mumbai ]",
+    name: "Ideal International Power Tools Pvt.Ltd Mumbai",
     address:
       "E/11 Sitaram Building ( Shalimar Estate ) 1St Floor Market Road Mumbai 400001 India, India",
   },
@@ -35280,7 +35265,7 @@ export const customerData = [
     address: "8-1 Higashinagasaki Fuji-Cho Anjo Aichi Japan 4441195, Japan",
   },
   {
-    name: "Jindal Films India Limited [Mum]",
+    name: "Jindal Films India Limited Mumbai",
     address:
       "28Km Stone Nashik - Igatpuri Nh-3 Vill Mundhegaon Tal - Igatpuri Dist. Nashik, India",
   },
@@ -35407,7 +35392,7 @@ export const customerData = [
       "Shop No. 6 Keshri Market M.B. Road Lal Kuan Badarpur New Delhi-110044, India",
   },
   {
-    name: "V. V. Eco Gum Mfg. Pvt. Ltd. [Mum]",
+    name: "V. V. Eco Gum Mfg. Pvt. Ltd. Mumbai",
     address:
       "117 G.V.M.M Industrial Estate Odhav Ahmedabad - 382 415.India.Tel: 91-9726789999. Tel. +91 0250 6053559, India",
   },
@@ -35797,7 +35782,7 @@ export const customerData = [
       "Room 121 No.7 Building Jinlang Rodno.41 Langxia Town Jinshan Dist. Shanghai China, China",
   },
   {
-    name: "Baroda Packaging [Mum]",
+    name: "Baroda Packaging Mumbai",
     address:
       "Survey No. 24/1 Demni Road Village Demni Dadra Dadra N. H. 396 230, India",
   },
@@ -35930,12 +35915,12 @@ export const customerData = [
       "Ishwar Bhuvan Somlalit School Opp. Dr.Jaju Hospital Stadium, India",
   },
   {
-    name: "Jbc Plywood Limited (Ahm) [ Reimburesment ]",
+    name: "Jbc Plywood Limited (Ahm) ",
     address:
       "74/11/1 Rajdhani Park Main Rohtak Road Nangloi New Delhi 110041, India",
   },
   {
-    name: "Polyplastics Industries (I) Pvt. Ltd [Ahm] [ Reimbursment ]",
+    name: "Polyplastics Industries (I) Pvt. Ltd [Ahm]",
     address: "0-15 Industrial Ariea Yamuna Nagar Haryana, India",
   },
   {
@@ -35976,11 +35961,11 @@ export const customerData = [
       "No. 188 Linchang Road Baima Town Neijiang Sichuan P.R. China, China",
   },
   {
-    name: "Maral Overseas Ltd [Mum]",
+    name: "Maral Overseas Ltd Mumbai",
     address: "A-12 Sector 1 Noida India, India",
   },
   {
-    name: "Maral Overseas Ltd [Mum]",
+    name: "Maral Overseas Ltd Mumbai",
     address: "Khalbujurg Tehsil Khasrawad Dist Khargone 451660 ( Mp ), India",
   },
   {
@@ -36006,7 +35991,7 @@ export const customerData = [
     address: "Via Caboto 19/234141 Trieste Italy, Italy",
   },
   {
-    name: "Arunkumar Uttamchand Modi [Mum]",
+    name: "Arunkumar Uttamchand Modi Mumbai",
     address: "Surat, India",
   },
   {
@@ -36024,7 +36009,7 @@ export const customerData = [
       "618 Gongren West Road 318000 Jiaojiang Area Zhejiang China, China",
   },
   {
-    name: "Ibm India Pvt Ltd [Bng]",
+    name: "Ibm India Pvt Ltd Bangalore",
     address:
       "Subramanya Arcade Level 3 12 Bannerghatta Road Bangalore 560029 India, India",
   },
@@ -36139,11 +36124,11 @@ export const customerData = [
     address: "706 Saffron Tower Ambawadi, India",
   },
   {
-    name: "Karuturi Global Limited [Bng]",
+    name: "Karuturi Global Limited Bangalore",
     address: "Bangalore, India",
   },
   {
-    name: "Manikandan Tex [Bng]",
+    name: "Manikandan Tex Bangalore",
     address: "Karnataka, India",
   },
   {
@@ -36264,7 +36249,7 @@ export const customerData = [
     address: "132 Roopsagar Walkeshwar Rd, India",
   },
   {
-    name: "Gyaneshwar Saran Sudeshwar Saran Co. [Mum]",
+    name: "Gyaneshwar Saran Sudeshwar Saran Co. Mumbai",
     address:
       "Karanpur Road Delhi Road Chaudharpuramroha Up- 244222 Indiatel : 91-591-2481174/2483430, India",
   },
@@ -36273,7 +36258,7 @@ export const customerData = [
     address: "5475 Airport Roadboulder Co. 80301Usa, USA",
   },
   {
-    name: "Tokyo Zairyo (India) Pvt. Ltd. [ Reimbursment ]",
+    name: "Tokyo Zairyo (India) Pvt. Ltd.",
     address:
       "Time Tower Unit No. 507 5Th Floor Sector-28 M.G. Road Gurgaon Haryana India., India",
   },
@@ -36508,7 +36493,7 @@ export const customerData = [
       "2/122 Dayal Valji Building New Prabha Devi Road Near Prabhadevi Temple Prabhadevi Mumbai-400 025, India",
   },
   {
-    name: "S K Bio Extracts And Applications Pvt Ltd [Mum]",
+    name: "S K Bio Extracts And Applications Pvt Ltd Mumbai",
     address: "B-12 Industrial Estate Moula Ali Hyderabad, India",
   },
   {
@@ -36606,7 +36591,7 @@ export const customerData = [
       "Plot No.D/27/3/1-Midc Lote Parshuram Industrial Area Tal.: Khed Dist.Ratnagiri, India",
   },
   {
-    name: "Shreeji Marketing Corporation[Ahm]",
+    name: "Shreeji Marketing Corporation [Ahm]",
     address:
       "7 United House Nr. Sanskrut Bldg Old Highcourt Lane Navrangura, India",
   },
@@ -36634,7 +36619,7 @@ export const customerData = [
       "Plot No. D2 Tata Vendor Park Revenue Surveynumber 1 Northkotpura Taluka Sanand Ahmedabad Gujarat 382170, India",
   },
   {
-    name: "Maurya Motors Pvt Ltd [Bng]",
+    name: "Maurya Motors Pvt Ltd Bangalore",
     address: "C-1 Industrial Area Patliputra800013 Patna Bihar In, India",
   },
   {
@@ -36651,7 +36636,7 @@ export const customerData = [
       "Lingang Industry Zone Guali Xiaoshan Hagzhou 311243 Zhejiang P.R. China, China",
   },
   {
-    name: "Jindal Poly Films Ltd. - Reimbursement Export [Mum]",
+    name: "Jindal Poly Films Ltd. - Reimbursement Export Mumbai",
     address:
       "28Km Stone Nashik- Igatpuri Nh-3 Vill Mundhegaon Tal.- Igatpuri Dist.-Nashik, India",
   },
@@ -36770,7 +36755,7 @@ export const customerData = [
       "Plot No 339 Nasale Nagar Kondi Near Solapur Vidyapeeth Solapur, India",
   },
   {
-    name: "Decor India [Mum]",
+    name: "Decor India Mumbai",
     address: "E-22 Greater Kailash-1 New Delhi-110048 India, India",
   },
   {
@@ -36798,7 +36783,7 @@ export const customerData = [
       "324 3Rd Floor Platinum Techno Park Behind Raghuleela Sector-30A Near Vashi Station Navi Mumbai- 4007003, India",
   },
   {
-    name: "Jai Industries [Mum]",
+    name: "Jai Industries Mumbai",
     address:
       "Shital Apt Gr. Flr. J. C. Road. Bamanwada Vile Parle East Mumbai, India",
   },
@@ -36869,7 +36854,7 @@ export const customerData = [
       "901 Peninsula Towers Ganpatrao Kadam Marg Lower Parel West Maumbai --400013, India",
   },
   {
-    name: "Bharti Airtel Ltd - New Delhi [Chennai]",
+    name: "Bharti Airtel Ltd - New Delhi Chennai",
     address: "No.:224 Okhla Industrial Estatephase Iii, India",
   },
   {
@@ -36878,7 +36863,7 @@ export const customerData = [
       "3-C Yuzana Street Aye Yeik Monhilaing Township Yangon Myanmar(On Account Of Export Trading Comodities Pte Ltd Singapore), Myanmar",
   },
   {
-    name: "Sri Krishna General Trading Company [Chennai]",
+    name: "Sri Krishna General Trading Company Chennai",
     address:
       "No.17/4/6/1 Subbaraya Nagar 3Rd Line Ponnur Post And Mandal Guntur Distandhra Pradesh - 522124India, India",
   },
@@ -36895,11 +36880,11 @@ export const customerData = [
     address: "Argentina, Argentina",
   },
   {
-    name: "Adithya Auto Products Engg (I) Pvt Ltd [Bng]",
+    name: "Adithya Auto Products Engg (I) Pvt Ltd Bangalore",
     address: "India, India",
   },
   {
-    name: "Bvc Logistics Pvt Ltd [Bng]",
+    name: "Bvc Logistics Pvt Ltd Bangalore",
     address: "India, India",
   },
   {
@@ -36912,17 +36897,17 @@ export const customerData = [
       "Flat/Rm A30 9F Silvercorp Intl Tower 707-713 Na Than Rd Mongkok Kln Hongkong, Hong Kong",
   },
   {
-    name: "Tokyo Zairyo (India) Pvt Ltd [Chennai]",
+    name: "Tokyo Zairyo (India) Pvt Ltd Chennai",
     address:
       "Sy.No.66 M Minnapura Villagetryamagondlu Road Nelamangalabangaluru - 562 123 - India, India",
   },
   {
-    name: "Tokyo Zairyo (India) Pvt Ltd [Chennai]",
+    name: "Tokyo Zairyo (India) Pvt Ltd Chennai",
     address:
       "Time Tower Unit No.507 5Th Floor Sector-28 M.G. Road Gurgaon Haryana-122002, India",
   },
   {
-    name: "Tokyo Zairyo (India) Pvt Ltd [Chennai]",
+    name: "Tokyo Zairyo (India) Pvt Ltd Chennai",
     address:
       "Kerry Indev Survey No. 144/1/57 Irrungattukottai B-Block Sriperumbudur Sumanthirampedu Village Kanchipuram Tamil Nadu 602105, India",
   },
@@ -36955,7 +36940,7 @@ export const customerData = [
       "G-1 74 Bhlmashanka Chs Sector 19-A Neral Navi Mumbai- 400706, India",
   },
   {
-    name: "Ck Airtech India Pvt Ltd [Chennai]",
+    name: "Ck Airtech India Pvt Ltd Chennai",
     address: "Plot No 129-Pt Sipcot Phase-Ikrishnagiri Dist, India",
   },
   {
@@ -37031,7 +37016,7 @@ export const customerData = [
     address: "Ul. Zwirki I Wigury 1 00-906 Warsaw Poland, Poland",
   },
   {
-    name: "Pan Gulf International Trading Co.. [Bng]",
+    name: "Pan Gulf International Trading Co.. Bangalore",
     address:
       "Flat No.33 Building No. 937 Road 3620 Al Saif City Bahrain, Bahrain",
   },
@@ -37088,7 +37073,7 @@ export const customerData = [
     address: "20Th Flr 175 South Sathorn Rd10120 Bangkokthailand, Thailand",
   },
   {
-    name: "Jindal Saw Limited [ Mumbai ]",
+    name: "Jindal Saw Limited Mumbai",
     address: "Branch Sno.7 Pan: A 59-60 Midc Malegaon Sinnar Nashik, India",
   },
   {
@@ -37102,7 +37087,7 @@ export const customerData = [
       "804 Yaran Tower Ayatollah Kashani Blvd Tehran - Iranphone No:-982144077151Fax:982144077471, Iran",
   },
   {
-    name: "Pan Asia Logistics India Pvt Ltd [Chennai]",
+    name: "Pan Asia Logistics India Pvt Ltd Chennai",
     address: "46 48 Masilamani Roadroyapettah, India",
   },
   {
@@ -37198,7 +37183,7 @@ export const customerData = [
       "1 Rose Cottage Church Pakhadi Road No. 1 Sahar Village Andheri East Mumbai-400099, India",
   },
   {
-    name: "Majestic Maritime Pvt Ltd [Chennai]",
+    name: "Majestic Maritime Pvt Ltd Chennai",
     address:
       "397/281 2Nd Floor Precision Plaza Jeyammal Street Teynampet, India",
   },
@@ -37439,12 +37424,12 @@ export const customerData = [
       "St No 7. 8. Bhai Himmat Singh Nagar Village Dugri Ludhiana India Iec. No. 3004014831, India",
   },
   {
-    name: "Acetron Trade Llp [Mum]",
+    name: "Acetron Trade Llp Mumbai",
     address:
       "B402 36 Turner Road Near Tava Arestaurant Bandra (West) Mumbai 400050, India",
   },
   {
-    name: "Acetron Trade Llp [Mum]",
+    name: "Acetron Trade Llp Mumbai",
     address:
       "Bflat No: 5 Plot No: 31-32Meghdoot Building Juhu Tara Roadmumbai Mh 400049India In, India",
   },
@@ -37459,7 +37444,7 @@ export const customerData = [
       "Survey No. 211/1 Opp Sector C Metalman Indore 452015 India, India",
   },
   {
-    name: "Gayathri Exports [Bng]",
+    name: "Gayathri Exports Bangalore",
     address: "Attur North Karkala-576117.Karnataka India., India",
   },
   {
@@ -37488,7 +37473,7 @@ export const customerData = [
       "Plot No.1 Gat No.3363 3364 3365/Part 3366/Part 3367 Talegaon Dhamdhere S.O.Tal. Shirur Dist.Pune - 412208, India",
   },
   {
-    name: "Hira Traders [Chennai]",
+    name: "Hira Traders Chennai",
     address:
       "New No.89/2 Old No.44/2Varadha Muthiappan Streetchennai - 600 001 India, India",
   },
@@ -37732,7 +37717,7 @@ export const customerData = [
       "A 3010 Bima Complex Steeel Market Kalamboli Navi Mumbai 410218., India",
   },
   {
-    name: "Coim India Pvt Ltd [Bng]",
+    name: "Coim India Pvt Ltd Bangalore",
     address: "Plot No. 25-26 Sector-17 Hsiidc Footwear Park Bahadurgarh, India",
   },
   {
@@ -37920,7 +37905,7 @@ export const customerData = [
       "Survey No.126 Village Bhensali Dahej Pcpir Tal Vagara Dist. Bharuch Gujrat India, India",
   },
   {
-    name: "International Exports Chamber [Mum]",
+    name: "International Exports Chamber Mumbai",
     address:
       "D/9 Kisrol Chowraha P.S.Nagphani Moradabad 244001 (U.P.) India, India",
   },
@@ -38108,12 +38093,12 @@ export const customerData = [
       "Survey No 96 1 87/3 87/4 87/5 87/6 M Mumbai Goa Hig+Palaspa Village Tal Panvel Raigad, India",
   },
   {
-    name: "Weir Minerals (India) Pvt Ltd [Mum]",
+    name: "Weir Minerals (India) Pvt Ltd Mumbai",
     address:
       "471/D-1 3Rd Mian 4Th Phase Peenya Industrial Area Bangalore - 560 058India, India",
   },
   {
-    name: "Kakati Karshak Industries Pvt Ltd [Mum]",
+    name: "Kakati Karshak Industries Pvt Ltd Mumbai",
     address:
       "Plot No.P-4/1 Road No.1 Nacharamindustrial Area Hyderabad - 500 076 T.G.India, India",
   },
@@ -38179,7 +38164,7 @@ export const customerData = [
     address: "I 1 Block Koramangalabangalore 560034, India",
   },
   {
-    name: "Alfa Chem [Mum]",
+    name: "Alfa Chem Mumbai",
     address:
       "104 First Floor Ndm-1 Netaji Subhash Place Pitampura Delhi- 110034, India",
   },
@@ -38282,7 +38267,7 @@ export const customerData = [
       "P.O.. Box 719 Postal Code 116 Mina Al Fahal Omantele: +968-94049966Email Id Mahesharora@Icloud.Com, Oman",
   },
   {
-    name: "Fouress Enggineering (India ) Limited [Bng]",
+    name: "Fouress Enggineering (India ) Limited Bangalore",
     address:
       "Plot No 2 Phaseii Peenya Indl Estate Bangalore Bangalore-560058, India",
   },
@@ -38346,7 +38331,7 @@ export const customerData = [
     address: "Boven Oosterdiep 969641 Jt Veendam The Netherlands., Netherlands",
   },
   {
-    name: "Greaves Cotton Limited [Mum]",
+    name: "Greaves Cotton Limited Mumbai",
     address:
       "Gate No 448/9 Nighoje Khed Rajhuru Nagar Pune Maharashtra -410501, India",
   },
@@ -38487,7 +38472,7 @@ export const customerData = [
     address: "74/11/1 Rajdhani Park Main Rohtak Road Nangloi, India",
   },
   {
-    name: "Sharadha Terry Products Limited[Chennai]",
+    name: "Sharadha Terry Products LimitedChennai",
     address:
       "Badrakaliamman Koil Roadmettupalayam - 641305Coimbatore District - Tamilnaduindia, India",
   },
@@ -38631,7 +38616,7 @@ export const customerData = [
       "Blvd. Suyapa Contiguo A Torres Metropolistegucigalpa M.D.C.Contacto: Irini Dicoulistel. (504) 2235-3477Rtn: 08019008185410, Honduras",
   },
   {
-    name: "Vani Impex [Mum]",
+    name: "Vani Impex Mumbai",
     address:
       "413 Reena Complex Ramdev Nagar Lane Opp Nathani Steel Vidyavihar West Mumbai-400086. India, India",
   },
@@ -38703,7 +38688,7 @@ export const customerData = [
       "De Vos Van Steenwijklaan 75 7402 Np Hoogeween Netherlands, Netherlands",
   },
   {
-    name: "Mitter Fasteners [Mum]",
+    name: "Mitter Fasteners Mumbai",
     address:
       "Plot No. 218 Ward No. 13 G.T Road Vpo Doraha Email Id: Info@Mitterfasteners.Comphone No: +91-161-2494953 2493954Gst No: 03Alaps4639Q1Zmpunjab Indiatehsil Payal Distt Ludhiana-141421, India",
   },
@@ -38793,7 +38778,7 @@ export const customerData = [
       "Room 1601 Harcourt House 39 Gloucester Road Wanchai Hong Kong, Hong Kong",
   },
   {
-    name: "Tt Bharat Integrated Logistics Pvt Ltd [Bng]",
+    name: "Tt Bharat Integrated Logistics Pvt Ltd Bangalore",
     address:
       "Plot No.33 34 Bidadi Industrial Area Ramanagara Taluk District Bidadi-562109, India",
   },
@@ -39016,17 +39001,17 @@ export const customerData = [
       "Unit 1913 19/F Chevalier Commercial Centre 8 Wang Hoi Road Kowloon Bay Hong Kong, Hong Kong",
   },
   {
-    name: "Bharti Airtel Limited [Bng]",
+    name: "Bharti Airtel Limited Bangalore",
     address:
       "42/1 Nh4 Budihal Village Kasaba Hoblinelamangala Taluk Bangalore Rural 562123Karnataka India, India",
   },
   {
-    name: "Bharti Airtel Limited [Bng]",
+    name: "Bharti Airtel Limited Bangalore",
     address:
       "Survey 190. Beside South Indian Bankkandlakovi Village Medchal Raod Â€˜Mandalâ€™Hyderabad Rangareddy Telengana 501401, India",
   },
   {
-    name: "Bharti Airtel Limited [Bng]",
+    name: "Bharti Airtel Limited Bangalore",
     address:
       "No55Divyasree Towersbannergatta Main Road560029 Bagalore Karnataka India, India",
   },
@@ -39041,7 +39026,7 @@ export const customerData = [
       "32 3Rd Cross 1St Main Road Someshwarnagar Opp. 10Th Cross Wilson Garden Bangalore -560027, India",
   },
   {
-    name: "Krishna Ishizaki Auto Ltd [Mum]",
+    name: "Krishna Ishizaki Auto Ltd Mumbai",
     address:
       "58.K.M Mills Stone N.H - 08 Binola Gurgaon ( Haryana ) 122413 India, India",
   },
@@ -39176,7 +39161,7 @@ export const customerData = [
     address: "Boghdana Khmelnitskogo Ave. 12249033 Ukraine, Ukraine",
   },
   {
-    name: "Mondelez India Foods Pvt. Ltd. [Mum]",
+    name: "Mondelez India Foods Pvt. Ltd. Mumbai",
     address:
       "India Bull Finance Centre Unit No. 2001 20Th Floor Tower 3 Wing C Lower Parel, India",
   },
@@ -39210,7 +39195,7 @@ export const customerData = [
       "Lotus Society A Wing. 106 Dawdi Village Road Near Prt School Dombivli East, India",
   },
   {
-    name: "Jay Precision Products India Pvt.Ltd [Mum]",
+    name: "Jay Precision Products India Pvt.Ltd Mumbai",
     address:
       "Plot No - Is-Midc Patal Ganga Vill-Mojhopada Adjacent To Sebi Taluka -Khalapur Dist Raigad, India",
   },
@@ -39232,7 +39217,7 @@ export const customerData = [
     address: "Igi Cargo Complex, India",
   },
   {
-    name: "Ntl Nei Manufacturing India Pvt Ltd [ Mumbai ]",
+    name: "Ntl Nei Manufacturing India Pvt Ltd Mumbai",
     address:
       "Plot No 131 Sector 7 Hsidc Growthh Centre Bawal Rewari Haryana 123401, India",
   },
@@ -39299,7 +39284,7 @@ export const customerData = [
       "No. 1278-1308 Wanxiang Road Wanquan Town Wenzhou City Zhejiang Province China, China",
   },
   {
-    name: "Etg Agri India Pvt Ltd [Mum]",
+    name: "Etg Agri India Pvt Ltd Mumbai",
     address:
       "No. 1904 19 Th Floor Ambience Court Sector 19 D Navi Mumbai 400703 India, India",
   },
@@ -39387,7 +39372,7 @@ export const customerData = [
       "7 Normandy Road Alexander Park Harare Zimbabwe Zip Code 00263, Zimbabwe",
   },
   {
-    name: "Samsung India Electronics Pvt Ltd[]",
+    name: "Samsung India Electronics Pvt Ltd",
     address:
       "A-25 Ground Floor Front Tower Mohan Co.-Operative Indl Estate, India",
   },
@@ -39478,7 +39463,7 @@ export const customerData = [
       "No.589 Yuandian Road Xinzhuang Industry Park Minhang District Shanghai P.R. China 201108, China",
   },
   {
-    name: "Hisar Metal Industries Limited [Mum]",
+    name: "Hisar Metal Industries Limited Mumbai",
     address:
       "Near Industrial Development Colony Hisar - 125 005 Haryana, India",
   },
@@ -39660,7 +39645,7 @@ export const customerData = [
     address: "863-B G.T. Road Shahdara 110032 Delhi, India",
   },
   {
-    name: "Yara Industries Pvt Ltd [Mum]",
+    name: "Yara Industries Pvt Ltd Mumbai",
     address: "9/106/A Jankipuram Extension Lucknow (U.P) India, India",
   },
   {
@@ -39672,7 +39657,7 @@ export const customerData = [
     address: "1861/48 Basement Naiwalakarol Bagh New Delhi - 5India., India",
   },
   {
-    name: "Dodhia Chem-Tex Pvt.Limited [Mum]",
+    name: "Dodhia Chem-Tex Pvt.Limited Mumbai",
     address:
       "Gut No - 130/1 2 3 Behind Essel Propack Opp Ever Shine Hotel Village-Kudus Wada Maharashtra India, India",
   },
@@ -39722,7 +39707,7 @@ export const customerData = [
     address: "19803 Brookway Cedar Ctspring Tx 77379Usa, USA",
   },
   {
-    name: "Kirloskar Toyota Textile Machinery Pvt Ltd [Bng]",
+    name: "Kirloskar Toyota Textile Machinery Pvt Ltd Bangalore",
     address:
       "Plotno:10-13 Phase-11Hgani Industrial Area Jiganibangalore-560105 Karanataka India, India",
   },
@@ -39753,7 +39738,7 @@ export const customerData = [
       "Jl. Ubrug Desa Kembang Kuning Po Box:08 Jatiluhur Purwakartaindonesia-411452 Jawa Barat Indonesia, Indonesia",
   },
   {
-    name: "Kowa India Pvt Ltd [Mum]",
+    name: "Kowa India Pvt Ltd Mumbai",
     address:
       "08 Town Centre -1 Andheri Kurla Road Maroi Andheri ( East ) Mumbai 400059, India",
   },
@@ -39763,7 +39748,7 @@ export const customerData = [
       "The Gateway Resort Damdama Lake Gurgaon Po Damdama Off Gurgaon Sohna Road, ",
   },
   {
-    name: "Gizmojo [Bng]",
+    name: "Gizmojo Bangalore",
     address:
       "#12 12/1 1St Cross 2Nd Main Chandi Nagar K.G Halli Bangalore-560045 Karnataka, India",
   },
@@ -39873,7 +39858,7 @@ export const customerData = [
       "S. No.75-1 A 3 B Rajaji Roadhiriadka-576113Udupi District Karnataka India, India",
   },
   {
-    name: "Cap Industries [Bng]",
+    name: "Cap Industries Bangalore",
     address:
       "Cap Industriesle Bailliage Du Roi3 Rue Du Bailliage78000 Versailles, France",
   },
@@ -39883,7 +39868,7 @@ export const customerData = [
       "Room 1005 Blue Mark Mansion 136 Jiefang West Road Changsha 410005 Hunan China, China",
   },
   {
-    name: "Miracle Healthcare Pvt Ltd [Mum]",
+    name: "Miracle Healthcare Pvt Ltd Mumbai",
     address: "Add-1-C Gokhale Marg Lucknow (U.P) India, India",
   },
   {
@@ -40012,7 +39997,7 @@ export const customerData = [
       "Longxi Industrial Zone Yuhuan Countrt Zhejiang Province 317609 China, China",
   },
   {
-    name: "M/S. Fantasy Exports [Mum]",
+    name: "M/S. Fantasy Exports Mumbai",
     address: "Delhi Road Moradabad- 244 001 Uttar Pradesh (020)India, India",
   },
   {
@@ -40041,7 +40026,7 @@ export const customerData = [
     address: "Shop No 68/2 Sangamwadi Near Ram Mandir Khadki, India",
   },
   {
-    name: "Bosch Limited [Mum]",
+    name: "Bosch Limited Mumbai",
     address: "N-4A Verna Industrial Estate Verna - Salcete Goa-403722, India",
   },
   {
@@ -40049,12 +40034,12 @@ export const customerData = [
     address: "Nelickal Avthala Rannikerala - India, India",
   },
   {
-    name: "Korea Marine Transport Co.. Ltd [Bng]",
+    name: "Korea Marine Transport Co.. Ltd Bangalore",
     address:
       "Plot No. 2B Seahorse House World Tradeavenue Harbour Estate Tuticorin - 628004Tuticorin, India",
   },
   {
-    name: "Korea Marine Transport Co.. Ltd [Bng]",
+    name: "Korea Marine Transport Co.. Ltd Bangalore",
     address:
       "302 Raheja Chambers No.12 Museum Road Bengaluru Karnataka-560001, India",
   },
@@ -40092,7 +40077,7 @@ export const customerData = [
       "Hengyi Road North Industry Park Jinan Zone Luan Anhui Province China, China",
   },
   {
-    name: "Cargo Care Logistics India Pvt.Ltd [Mum]",
+    name: "Cargo Care Logistics India Pvt.Ltd Mumbai",
     address: "Chandivli Andheri Mumbai 400072, India",
   },
   {
@@ -40246,7 +40231,7 @@ export const customerData = [
       "No.34 Kattur Sadayappan Street 1 Floor Periament Chennai 600003, India",
   },
   {
-    name: "Hitachi Home Life Solutions ( India ) Ltd [Mum]",
+    name: "Hitachi Home Life Solutions ( India ) Ltd Mumbai",
     address:
       "Hitachi Complex Villeage Karannagar Ta : Kadi Distict : Mehsana State : Gujrat Pin Code - 382727 India, India",
   },
@@ -40317,7 +40302,7 @@ export const customerData = [
       "Plot No C-1 Unit No 1012 Opal Square Thane Thane Thane Maharashtra 400604, India",
   },
   {
-    name: "Om Beads Pvt Ltd [Bng]",
+    name: "Om Beads Pvt Ltd Bangalore",
     address:
       "No:130/4 Ground Floor 4Th Manin Roda Rajajinagar Industrial Town Bangalore-560044 Karnataka India, India",
   },
@@ -40382,7 +40367,7 @@ export const customerData = [
       "521 Yongsan-Dong. Yuseong-Gu Daejeon City 305500 Korea, Korea (South)",
   },
   {
-    name: "The Designers [Mum]",
+    name: "The Designers Mumbai",
     address:
       "147 Ganga Roadjalandhar Cantt 144005 Punjab Indiatel.:91 1812260157 Fax.:91 1812261312Tel.:, India",
   },
@@ -40484,7 +40469,7 @@ export const customerData = [
       "Dhz 2254 Unit S2 Lg 1 Mirror Tower 61 Mody Road Tsim Sha Tsui Kowloon Hongkong, China",
   },
   {
-    name: "Rashtriya Ispat Nigam Ltd [Bng]",
+    name: "Rashtriya Ispat Nigam Ltd Bangalore",
     address: "Steel Plant Andhra Pradesh530031 Vishakhapatnam 50 India, India",
   },
   {
@@ -40520,7 +40505,7 @@ export const customerData = [
     address: "Al Habtoor Building Dubai U.A.E., UAE",
   },
   {
-    name: "Lion Dates Impex Pvt Ltd [Mum]",
+    name: "Lion Dates Impex Pvt Ltd Mumbai",
     address:
       "27/3 Cauvery Road Thichy Tiruchirappalli Tamil Nadu 620002, India",
   },
@@ -40649,7 +40634,7 @@ export const customerData = [
     address: "Accil House Plot No. 26P Sector-33 Gurgoan 122004, India",
   },
   {
-    name: "Transglobal Logistics [Mum]",
+    name: "Transglobal Logistics Mumbai",
     address:
       "208-210 Mayuresh Cosmos Plot No-37 Sector-11 Cbd Belapur Navi Mumbai - 400614 Maharashtra India., India",
   },
@@ -40755,7 +40740,7 @@ export const customerData = [
     address: "Legacy Tower Circular Road Faisalabad Pakistan, Pakistan",
   },
   {
-    name: "Aftab Sons [Mum]",
+    name: "Aftab Sons Mumbai",
     address:
       "Mughal Pura 1St Tile Wali Masjidmoradabad 244001Uttar Pradesh India, India",
   },
@@ -40787,7 +40772,7 @@ export const customerData = [
       "No.2 Building No. 18 Wanghai Road Doumen Town Paojiang Industrial Zone. Shoxing Zhejiang China, China",
   },
   {
-    name: "Harison Pumps Pvt Ltd [Mum]",
+    name: "Harison Pumps Pvt Ltd Mumbai",
     address: "C-95 Midc Industrial Estate Hingna Nagpur, India",
   },
   {
@@ -40796,7 +40781,7 @@ export const customerData = [
       "6 Km Bahalgarh-Sonipat Road Distt Sonepat 131001 (Haryana), India",
   },
   {
-    name: "Auro Spinning Miills (A Unit Of Vardhman Textiles Limited) [Mum]",
+    name: "Auro Spinning Miills (A Unit Of Vardhman Textiles Limited) Mumbai",
     address:
       "Sai Road Baddi Tehsil Nalagarh Districtsolan Himachal Pradesh -173205 India, India",
   },
@@ -40880,7 +40865,7 @@ export const customerData = [
       "Cve Dept. Keulsebaan 507 6045 Ggroermond Netherlands, Netherlands",
   },
   {
-    name: "Inventive Polymers [Bng]",
+    name: "Inventive Polymers Bangalore",
     address:
       "No.A-5 1St Main 2Nd Stage Andhrallipeenya Industrial Area Bangalore 560058, India",
   },
@@ -41014,7 +40999,7 @@ export const customerData = [
       "Via Como .720020 Solaro Mi Italy Phone No : 00393420806931Fax : 0039029691773, Italy",
   },
   {
-    name: "Flair Pen Plastic Industries Pvt Ltd [Mum]",
+    name: "Flair Pen Plastic Industries Pvt Ltd Mumbai",
     address:
       "63 B/C Kandivali Co.-Op Industrial Estate Charkop Kandivali ( W ) Mumbai-400067, India",
   },
@@ -41246,7 +41231,7 @@ export const customerData = [
       "The White Group Building 2 14-15 Th Floor 75 Soi Rubia Sukhumvit 42 Road Prakanong, Thailand",
   },
   {
-    name: "Sun Maxx Solar Industry [Bng]",
+    name: "Sun Maxx Solar Industry Bangalore",
     address: "Bangalore, India",
   },
   {
@@ -41298,7 +41283,7 @@ export const customerData = [
     address: "7 Route De Crassier 1262 Eysins Switzerland, Switzerland",
   },
   {
-    name: "Navneet Education Limited [Mum]",
+    name: "Navneet Education Limited Mumbai",
     address:
       "Navneet Bhavan Bhavani Shankar Road Dadar(W) Mumbai 400028 India, India",
   },
@@ -41613,7 +41598,7 @@ export const customerData = [
       "Noah Klein106 Murnane Street Weserville Oh 43081United States, USA",
   },
   {
-    name: "Dr.Reddys Laboratories Ltd [Bng]",
+    name: "Dr.Reddys Laboratories Ltd Bangalore",
     address:
       "8-2-337 Road No.3 Banjara Hills Hyderabad-500034Telangana India, India",
   },
@@ -41844,7 +41829,7 @@ export const customerData = [
       "Ukraine 39630Poltava Reg Krememchungyarmarochnaya Str.5D Ukraine, Ukraine",
   },
   {
-    name: "Rahul Enterprises [Mum]",
+    name: "Rahul Enterprises Mumbai",
     address:
       "Rm No - 302 E Wing Lodha Regency Park Sandeep Gaon Rd Jain Temple Dombivali West Kalyan Thane Maharashtra 421, India",
   },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import ImportExportQuotationForm from './components/ImportExportQuotationForm.jsx'
+import ImportExportQuotationForm, { prefetchSuggestionData } from './components/ImportExportQuotationForm.jsx'
 import Dashboard from './Dashboard/Dashboard.jsx'
 import Login from './Login/Login.jsx'
 import Signup from './Signup/Signup.jsx'
@@ -35,6 +35,9 @@ function App() {
       location: user.location,
     })
     setIsAuthenticated(true)
+    
+    // Prefetch suggestion data immediately after login for faster form loading
+    prefetchSuggestionData()
   }
 
   // Handle logout
@@ -47,6 +50,10 @@ function App() {
 
   // Handle navigation
   const handleNavigate = (view) => {
+    // Prefetch suggestion data when navigating to form
+    if (view === 'form') {
+      prefetchSuggestionData()
+    }
     setCurrentView(view)
   }
 
