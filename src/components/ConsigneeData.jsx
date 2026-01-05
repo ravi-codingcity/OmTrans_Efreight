@@ -5,7 +5,7 @@ export const consigneeData = [
     address: "UNIT B Groverlands IND. Estate, Great Britain (united Kingdom)",
   },
   {
-    name: "Afglobal Co.rp Mumbai",
+    name: "Afglobal Corp Mumbai",
     address:
       "13770 Industrial RD Attn: Doc-1 Houston Txusa 77015, United States of America",
   },
@@ -285,7 +285,7 @@ export const consigneeData = [
       "Property No 1107 Dlf Tower a Jasola New Delhi South East Delhi Delhi 110025, Delhi",
   },
   {
-    name: "Steelforce N.v.",
+    name: "Steel Force N.v.",
     address: "Lange Klarenstraat 16-20 Antwerpen Belgium., Antwerpen",
   },
   {

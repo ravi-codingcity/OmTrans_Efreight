@@ -5,6 +5,7 @@ export const commonTerms = [
   "Above rates are subject to booking and space confirmation.",
   "OmTrans will not be responsible for any insurance claim.",
   "All receipted and incidental charges will be charged as actuals.",
+  "Given transit time is on approx basis and as per the last shipping line sailing."
 ];
 
 // Terms-based conditions for Sea Export segments (FCL, LCL, Break Bulk)

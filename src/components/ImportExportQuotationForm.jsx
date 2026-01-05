@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { FileText, Send, CheckCircle, X, Plus, Trash2, Search } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import OmTransLogo from "../assets/OmTrans.png";
+import OmTransLogo from "../assets/OmTrans_PDF.jpg"; // Import the logo image
 import { icdLocations } from "./POR";
 import { indianPorts } from "./POL";
 import { foreignDestinations } from "./POD";
@@ -82,6 +82,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     finalDestination: "",
     shippingLine: "",
     etd: "",
+    eta: "",
     totalTransitTime: "",
     remarks: "",
     numberOfPackets: "",
@@ -420,7 +421,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
 
   // Freight Charge Suggestions
   const freightChargeSuggestions = [
-    "Ocean Charges",
+    "Ocean Freight Charges",
     "ISPS Charge",
     "Seal Charge",
     "ACD Charge",
@@ -447,7 +448,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       charges: "",
       currency: "USD",
       amount: "",
-      unit: "per BL",
+      unit: "Per BL",
     },
   ]);
 
@@ -458,7 +459,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       charges: "",
       currency: "USD",
       amount: "",
-      unit: "per BL",
+      unit: "Per BL",
     },
   ]);
 
@@ -469,9 +470,53 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       charges: "",
       currency: "USD",
       amount: "",
-      unit: "per BL",
+      unit: "Per BL",
     },
   ]);
+
+  // Normalized search function for location fields (POR, POL, POD)
+  // Matches words regardless of order, position, or capitalization
+  // e.g., "ICD Palwal" and "Palwal ICD" will both match
+  const normalizedLocationSearch = (searchTerm, locationList) => {
+    if (!searchTerm || !searchTerm.trim()) return [];
+    
+    const searchLower = searchTerm.toLowerCase().trim();
+    // Split search term into individual words
+    const searchWords = searchLower.split(/\s+/).filter(word => word.length > 0);
+    
+    return locationList.filter((location) => {
+      const locationLower = location.toLowerCase();
+      
+      // Check if ALL search words are found in the location (in any order)
+      return searchWords.every(word => locationLower.includes(word));
+    }).sort((a, b) => {
+      const aLower = a.toLowerCase();
+      const bLower = b.toLowerCase();
+      
+      // Prioritize exact matches
+      if (aLower === searchLower) return -1;
+      if (bLower === searchLower) return 1;
+      
+      // Prioritize matches that start with the search term
+      const aStartsWith = aLower.startsWith(searchLower);
+      const bStartsWith = bLower.startsWith(searchLower);
+      if (aStartsWith && !bStartsWith) return -1;
+      if (!aStartsWith && bStartsWith) return 1;
+      
+      // Prioritize matches where first word matches first search word
+      if (searchWords.length > 0) {
+        const aFirstWord = aLower.split(/\s+/)[0];
+        const bFirstWord = bLower.split(/\s+/)[0];
+        const aFirstMatch = aFirstWord.includes(searchWords[0]);
+        const bFirstMatch = bFirstWord.includes(searchWords[0]);
+        if (aFirstMatch && !bFirstMatch) return -1;
+        if (!aFirstMatch && bFirstMatch) return 1;
+      }
+      
+      // Default alphabetical sort
+      return aLower.localeCompare(bLower);
+    });
+  };
 
   // Handle Basic Info Changes
   const handleBasicInfoChange = (e) => {
@@ -524,14 +569,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       }
     }
 
-    // Handle autocomplete for POR
+    // Handle autocomplete for POR (using normalized search)
     if (name === "por") {
       if (value.trim().length > 0) {
-        const filtered = mergedPorData
-          .filter((location) =>
-            location.toLowerCase().includes(value.toLowerCase())
-          )
-          .sort();
+        const filtered = normalizedLocationSearch(value, mergedPorData);
         setFilteredPorLocations(filtered);
         setShowPorDropdown(filtered.length > 0);
       } else {
@@ -539,12 +580,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       }
     }
 
-    // Handle autocomplete for POL
+    // Handle autocomplete for POL (using normalized search)
     if (name === "pol") {
       if (value.trim().length > 0) {
-        const filtered = mergedPolData
-          .filter((port) => port.toLowerCase().includes(value.toLowerCase()))
-          .sort();
+        const filtered = normalizedLocationSearch(value, mergedPolData);
         setFilteredPolPorts(filtered);
         setShowPolDropdown(filtered.length > 0);
       } else {
@@ -552,12 +591,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       }
     }
 
-    // Handle autocomplete for POD
+    // Handle autocomplete for POD (using normalized search)
     if (name === "pod") {
       if (value.trim().length > 0) {
-        const filtered = mergedPodData
-          .filter((dest) => dest.toLowerCase().includes(value.toLowerCase()))
-          .sort();
+        const filtered = normalizedLocationSearch(value, mergedPodData);
         setFilteredPodPorts(filtered);
         setShowPodDropdown(filtered.length > 0);
       } else {
@@ -739,7 +776,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "per BL",
+        unit: "Per BL",
       },
     ]);
   };
@@ -793,7 +830,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "per BL",
+        unit: "Per BL",
       },
     ]);
   };
@@ -847,7 +884,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "per BL",
+        unit: "Per BL",
       },
     ]);
   };
@@ -931,6 +968,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         "shippingLine",
         "totalTransitTime",
         "etd",
+        "eta",
         "remarks",
       ];
     }
@@ -956,6 +994,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         "shippingLine",
         "totalTransitTime",
         "etd",
+        "eta",
         "remarks",
       ];
     }
@@ -1028,48 +1067,13 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
 
     let yPos = 15;
 
-    // Compress and add logo - use canvas to resize and compress image
-    const compressImage = (src, maxWidth, maxHeight, quality) => {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          let width = img.width;
-          let height = img.height;
-          
-          // Calculate new dimensions while maintaining aspect ratio
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          
-          const ctx = canvas.getContext("2d");
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillRect(0, 0, width, height);
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          // Convert to JPEG with compression
-          resolve(canvas.toDataURL("image/jpeg", quality));
-        };
-        img.onerror = () => resolve(null);
-        img.src = src;
-      });
-    };
-
-    // Compress logo to smaller size (150px max width, 60px max height, 70% quality)
-    const compressedLogo = await compressImage(OmTransLogo, 150, 60, 0.7);
-    
-    // Add compressed logo
-    if (compressedLogo) {
-      doc.addImage(compressedLogo, "JPEG", 15, yPos, 40, 15);
+    // Add logo with high quality - use original PNG without any preprocessing
+    // The 'NONE' compression option preserves full image quality in PDF
+    try {
+      doc.addImage(OmTransLogo, "JPEG", 15, yPos, 45, 17, "logo", "NONE");
+    } catch (e) {
+      // Fallback if NONE compression fails
+      doc.addImage(OmTransLogo, "JPEG", 15, yPos, 45, 17);
     }
 
     // Company Info (top right)
@@ -1080,7 +1084,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 100, 100);
-    doc.text("Global Logistics Solutions", 195, yPos + 10, { align: "right" });
+    doc.text("Simplifying Your Business", 195, yPos + 10, { align: "right" });
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 195, yPos + 15, {
       align: "right",
     });
@@ -1173,6 +1177,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       shippingLine: ["Shipping Line", basicInfo.shippingLine || "N/A"],
       totalTransitTime: ["Transit Time", basicInfo.totalTransitTime || "N/A"],
       etd: ["ETD", basicInfo.etd || "N/A"],
+      eta: ["ETA", basicInfo.eta || "N/A"],
       airLines: ["Airlines", basicInfo.airLines || "N/A"],
       airPortOfDeparture: ["Airport of Departure", basicInfo.airPortOfDeparture || "N/A"],
       airPortOfDestination: ["Airport of Destination", basicInfo.airPortOfDestination || "N/A"],
@@ -1458,7 +1463,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       doc.setTextColor(100, 100, 100);
       doc.setFont("helvetica", "normal");
       doc.text(
-        "OmTrans Logistics Ltd. | Global Logistics Solutions",
+        "OmTrans Logistics Ltd. | Simplifying Your Business",
         15,
         290
       );
@@ -1490,6 +1495,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       finalDestination: basicInfo.finalDestination,
       shippingLine: basicInfo.shippingLine,
       etd: basicInfo.etd,
+      eta: basicInfo.eta,
       transitTime: basicInfo.totalTransitTime,
       remarks: basicInfo.remarks,
       // Air-specific fields
@@ -1686,6 +1692,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       finalDestination: "",
       shippingLine: "",
       etd: "",
+      eta: "",
       totalTransitTime: "",
       remarks: "",
       numberOfPackets: "",
@@ -1707,7 +1714,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "per BL",
+        unit: "Per BL",
       },
     ]);
 
@@ -1717,7 +1724,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "per BL",
+        unit: "Per BL",
       },
     ]);
 
@@ -1727,7 +1734,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         charges: "",
         currency: "USD",
         amount: "",
-        unit: "per BL",
+        unit: "Per BL",
       },
     ]);
 
@@ -2418,6 +2425,20 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                 />
               </div>
               )}
+              {getVisibleFields().includes("eta") && (
+              <div>
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  ETA
+                </label>
+                <input
+                  type="date"
+                  name="eta"
+                  value={basicInfo.eta}
+                  onChange={handleBasicInfoChange}
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              )}
               {getVisibleFields().includes("totalTransitTime") && (
               <div className="md:col-span-2">
                 <label className="block font-medium text-gray-700 mb-0.5">
@@ -2433,9 +2454,9 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                   {Array.from({ length: 100 }, (_, i) => i + 1).map((day) => (
                     <option
                       key={day}
-                      value={`${day} ${day === 1 ? "day" : "days"}`}
+                      value={`${day} ${day === 1 ? "day (approx)" : "days (approx)"}`}
                     >
-                      {day} {day === 1 ? "day" : "days"}
+                      {day} {day === 1 ? "day (approx)" : "days (approx)"}
                     </option>
                   ))}
                 </select>

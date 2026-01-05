@@ -101,11 +101,11 @@ const Login = ({ onLoginSuccess }) => {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl shadow-lg mb-4">
               <Ship className="text-white" size={32} />
             </div>
-            <h1 className="text-3xl font-bold text-slate-800 mb-1">
-              OmTrans Freight
+            <h1 className="text-2xl font-bold text-slate-800 mb-1">
+              OmTrans Logistics Ltd.
             </h1>
             <p className="text-slate-600 text-sm font-medium">
-              Global Logistics & Freight Solutions
+              Simplifying Your Business
             </p>
           </div>
 
@@ -211,7 +211,7 @@ const Login = ({ onLoginSuccess }) => {
           {/* Footer */}
           <div className="text-center mt-6">
             <p className="text-slate-500 text-xs">
-              © 2025 OmTrans Freight Services. All rights reserved.
+              © 2026 OmTrans Logistics Ltd. All rights reserved.
             </p>
           </div>
         </div>
