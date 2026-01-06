@@ -17,6 +17,7 @@ import {
   Pencil,
   Save,
   Download,
+  Mail,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -26,7 +27,7 @@ import VikramImg from "../assets/vikram.jpg";
 import TarunImg from "../assets/tarun.jpeg";
 import HarmeetImg from "../assets/harmeet.jpg";
 
-const API_BASE_URL = "https://omtrans-efreight-backend.onrender.com/api";
+const API_BASE_URL = "https://omtransefreight-ss7idyoh.b4a.run/api";
 
 // Cache for quotations data
 const quotationsCache = {
@@ -453,8 +454,8 @@ const Dashboard = ({ currentUser }) => {
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 100, 100);
     doc.text(`Segment: ${quotation.quotationSegment || 'N/A'}`, 105, yPos + 12, { align: "center" });
-
-    yPos += 20;
+   
+    yPos += 24;
     doc.setTextColor(0, 0, 0);
 
     // Customer & Consignee Section
@@ -467,7 +468,7 @@ const Dashboard = ({ currentUser }) => {
     doc.text("CUSTOMER DETAILS", 17, yPos + 5.5);
     doc.text("CONSIGNEE DETAILS", 112, yPos + 5.5);
 
-    yPos += 10;
+    yPos += 12;
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
@@ -486,23 +487,63 @@ const Dashboard = ({ currentUser }) => {
     doc.text("SHIPMENT DETAILS", 15, yPos);
     yPos += 2;
 
-    const isAir = quotation.quotationSegment && quotation.quotationSegment.toLowerCase().includes("air");
+    const segment = (quotation.quotationSegment || "").toLowerCase();
+    const isAir = segment.includes("air");
+    const isServiceJob = segment === "service job";
+    const isFCL = segment.includes("fcl");
+    const isLCLOrBreakBulk = segment.includes("lcl") || segment.includes("break bulk");
     const pdfBody = [];
 
-    if (isAir) {
-      if (quotation.numberOfPackets) pdfBody.push(["Number of Packets", quotation.numberOfPackets, "Weight (kg)", quotation.weight || "N/A"]);
-      if (quotation.volumeWeight) pdfBody.push(["Volume Weight", quotation.volumeWeight, "Chargeable Weight", quotation.chargeableWeight || "N/A"]);
-      if (quotation.commodity) pdfBody.push(["Commodity", quotation.commodity, "Terms", quotation.terms || "N/A"]);
-      if (quotation.airPortOfDeparture) pdfBody.push(["Airport of Departure", quotation.airPortOfDeparture, "Airport of Destination", quotation.airPortOfDestination || "N/A"]);
-      if (quotation.airLines) pdfBody.push(["Airlines", quotation.airLines, "", ""]);
+    // Helper to add a row - always shows field pair if at least one value exists
+    const addRow = (label1, value1, label2, value2) => {
+      const v1 = value1 || "N/A";
+      const v2 = value2 || "N/A";
+      if (v1 !== "N/A" || v2 !== "N/A") {
+        pdfBody.push([label1, v1, label2, v2]);
+      }
+    };
+
+    if (isServiceJob) {
+      // Service Job - show service type and any available details
+      addRow("Service Type", quotation.serviceJobType, "Terms", quotation.terms);
+      addRow("Commodity", quotation.commodity, "Weight (kg)", quotation.weight);
+    } else if (isAir) {
+      // Air Export / Air Import
+      addRow("Number of Packets", quotation.numberOfPackets, "Weight (kg)", quotation.weight);
+      addRow("Cargo Size", quotation.cargoSize || quotation.size, "Volume Weight", quotation.volumeWeight);
+      addRow("Chargeable Weight", quotation.chargeableWeight, "Commodity", quotation.commodity);
+      addRow("Terms", quotation.terms, "Airlines", quotation.airLines);
+      addRow("Airport of Departure", quotation.airPortOfDeparture, "Airport of Destination", quotation.airPortOfDestination);
+    } else if (isFCL) {
+      // Sea FCL (Import/Export)
+      addRow("Equipment", quotation.equipment, "Weight (kg)", quotation.weight);
+      addRow("Commodity", quotation.commodity, "Terms", quotation.terms);
+      addRow("POR", quotation.por, "POL", quotation.pol);
+      addRow("POD", quotation.pod, "Final Destination", quotation.finalDestination);
+      addRow("Shipping Line", quotation.shippingLine, "Transit Time", quotation.transitTime);
+      addRow("ETD", quotation.etd, "ETA", quotation.eta);
+    } else if (isLCLOrBreakBulk) {
+      // Sea LCL or Break Bulk (Import/Export)
+      addRow("Number of Packets", quotation.numberOfPackets, "Weight (kg)", quotation.weight);
+      addRow("Cargo Size", quotation.cargoSize || quotation.size, "CBM (m³)", quotation.cbm);
+      addRow("Commodity", quotation.commodity, "Terms", quotation.terms);
+      addRow("POR", quotation.por, "POL", quotation.pol);
+      addRow("POD", quotation.pod, "Final Destination", quotation.finalDestination);
+      addRow("Shipping Line", quotation.shippingLine, "Transit Time", quotation.transitTime);
+      addRow("ETD", quotation.etd, "ETA", quotation.eta);
     } else {
-      if (quotation.equipment) pdfBody.push(["Equipment", quotation.equipment, "Weight (kg)", quotation.weight || "N/A"]);
-      if (quotation.cbm) pdfBody.push(["CBM (m³)", quotation.cbm, "Number of Packets", quotation.numberOfPackets || "N/A"]);
-      if (quotation.commodity) pdfBody.push(["Commodity", quotation.commodity, "Terms", quotation.terms || "N/A"]);
-      if (quotation.por) pdfBody.push(["POR", quotation.por, "POL", quotation.pol || "N/A"]);
-      if (quotation.pod) pdfBody.push(["POD", quotation.pod, "Final Destination", quotation.finalDestination || "N/A"]);
-      if (quotation.shippingLine) pdfBody.push(["Shipping Line", quotation.shippingLine, "Transit Time", quotation.transitTime || "N/A"]);
-      if (quotation.etd) pdfBody.push(["ETD", quotation.etd, "ETA", quotation.eta || "N/A"]);
+      // Generic fallback - show all available fields
+      addRow("Equipment", quotation.equipment, "Weight (kg)", quotation.weight);
+      addRow("Number of Packets", quotation.numberOfPackets, "CBM (m³)", quotation.cbm);
+      addRow("Cargo Size", quotation.cargoSize || quotation.size, "Volume Weight", quotation.volumeWeight);
+      addRow("Chargeable Weight", quotation.chargeableWeight, "Commodity", quotation.commodity);
+      addRow("Terms", quotation.terms, "Service Type", quotation.serviceJobType);
+      addRow("POR", quotation.por, "POL", quotation.pol);
+      addRow("POD", quotation.pod, "Final Destination", quotation.finalDestination);
+      addRow("Airport of Departure", quotation.airPortOfDeparture, "Airport of Destination", quotation.airPortOfDestination);
+      addRow("Shipping Line", quotation.shippingLine, "Airlines", quotation.airLines);
+      addRow("Transit Time", quotation.transitTime, "", "");
+      addRow("ETD", quotation.etd, "ETA", quotation.eta);
     }
 
     if (pdfBody.length > 0) {
@@ -669,10 +710,163 @@ const Dashboard = ({ currentUser }) => {
     doc.save(pdfFileName);
   };
 
+  // Send quotation via email - copies HTML to clipboard and opens email client
+  const sendQuotationEmail = async (quotation) => {
+    const segment = (quotation.quotationSegment || "").toLowerCase();
+    const isAir = segment.includes("air");
+    const isServiceJob = segment === "service job";
+    const isFCL = segment.includes("fcl");
+    const isLCLOrBreakBulk = segment.includes("lcl") || segment.includes("break bulk");
+
+    // Common styles for email compatibility (same as Copy to Email)
+    const headerStyle = "background-color: #2563eb; color: white; padding: 8px 12px; font-weight: bold; font-size: 13px;";
+    const cellStyle = "border: 1px solid #e5e7eb; padding: 6px 10px; font-size: 12px;";
+    const labelStyle = `${cellStyle} background-color: #f3f4f6; font-weight: 600; color: #374151; width: 140px;`;
+    const valueStyle = `${cellStyle} color: #1f2937;`;
+    const tableStyle = "border-collapse: collapse; width: 100%; margin-bottom: 16px; font-family: Arial, sans-serif;";
+
+    // Build shipment details rows based on segment
+    const getShipmentRows = () => {
+      const rows = [];
+      const addRow = (label1, value1, label2, value2) => {
+        const v1 = value1 || "N/A";
+        const v2 = value2 || "N/A";
+        if (v1 !== "N/A" || v2 !== "N/A") {
+          rows.push(`<tr><td style="${labelStyle}">${label1}</td><td style="${valueStyle}">${v1}</td><td style="${labelStyle}">${label2}</td><td style="${valueStyle}">${v2}</td></tr>`);
+        }
+      };
+
+      if (isServiceJob) {
+        addRow("Service Type", quotation.serviceJobType, "Terms", quotation.terms);
+        addRow("Commodity", quotation.commodity, "Weight (kg)", quotation.weight);
+      } else if (isAir) {
+        addRow("Number of Packets", quotation.numberOfPackets, "Weight (kg)", quotation.weight);
+        addRow("Cargo Size", quotation.cargoSize || quotation.size, "CBM (m³)", quotation.cbm);
+        addRow("Commodity", quotation.commodity, "Terms", quotation.terms);
+        addRow("Volume Weight", quotation.volumeWeight, "Chargeable Weight", quotation.chargeableWeight);
+        addRow("Airport of Departure", quotation.airPortOfDeparture, "Airport of Destination", quotation.airPortOfDestination);
+        addRow("Airlines", quotation.airLines, "", "");
+      } else if (isFCL) {
+        addRow("Equipment", quotation.equipment, "Weight (kg)", quotation.weight);
+        addRow("Commodity", quotation.commodity, "Terms", quotation.terms);
+        addRow("POR", quotation.por, "POL", quotation.pol);
+        addRow("POD", quotation.pod, "Final Destination", quotation.finalDestination);
+        addRow("Shipping Line", quotation.shippingLine, "Transit Time", quotation.transitTime);
+        addRow("ETD", quotation.etd, "ETA", quotation.eta);
+      } else if (isLCLOrBreakBulk) {
+        addRow("Number of Packets", quotation.numberOfPackets, "Weight (kg)", quotation.weight);
+        addRow("Cargo Size", quotation.cargoSize || quotation.size, "CBM (m³)", quotation.cbm);
+        addRow("Commodity", quotation.commodity, "Terms", quotation.terms);
+        addRow("POR", quotation.por, "POL", quotation.pol);
+        addRow("POD", quotation.pod, "Final Destination", quotation.finalDestination);
+        addRow("Shipping Line", quotation.shippingLine, "Transit Time", quotation.transitTime);
+        addRow("ETD", quotation.etd, "ETA", quotation.eta);
+      } else {
+        addRow("Equipment", quotation.equipment, "Weight (kg)", quotation.weight);
+        addRow("Number of Packets", quotation.numberOfPackets, "CBM (m³)", quotation.cbm);
+        addRow("Commodity", quotation.commodity, "Terms", quotation.terms);
+        addRow("POR", quotation.por, "POL", quotation.pol);
+        addRow("POD", quotation.pod, "Final Destination", quotation.finalDestination);
+        addRow("Shipping Line", quotation.shippingLine, "Transit Time", quotation.transitTime);
+        addRow("ETD", quotation.etd, "ETA", quotation.eta);
+      }
+      return rows.join("");
+    };
+
+    // Build charges table HTML
+    const getChargesTable = (title, charges, bgColor) => {
+      if (!charges || charges.length === 0 || !charges.some(c => c.charges || c.amount)) return "";
+      
+      const chargeHeaderStyle = `background-color: ${bgColor}; color: white; padding: 6px 10px; font-weight: bold; font-size: 12px; border: 1px solid ${bgColor};`;
+      const filteredCharges = charges.filter(c => c.charges || c.amount);
+      
+      let html = `<table style="${tableStyle}">`;
+      html += `<tr><td colspan="4" style="${chargeHeaderStyle}">${title}</td></tr>`;
+      html += `<tr style="background-color: #f9fafb;">
+        <td style="${labelStyle}">Charge Description</td>
+        <td style="${labelStyle}">Currency</td>
+        <td style="${labelStyle}">Amount</td>
+        <td style="${labelStyle}">Unit</td>
+      </tr>`;
+      
+      filteredCharges.forEach(charge => {
+        html += `<tr>
+          <td style="${valueStyle}">${charge.charges || "N/A"}</td>
+          <td style="${valueStyle}">${charge.currency || "USD"}</td>
+          <td style="${valueStyle}">${charge.amount || "0"}</td>
+          <td style="${valueStyle}">${charge.unit || "Per Shipment"}</td>
+        </tr>`;
+      });
+      html += `</table>`;
+      return html;
+    };
+
+    // Build complete HTML email body
+    let html = `<div style="font-family: Arial, sans-serif; max-width: 700px;">`;
+    html += `<p style="margin: 0 0 16px 0; font-size: 14px;">Dear Sir/Madam,</p>`;
+    html += `<p style="margin: 0 0 16px 0; font-size: 14px;">Please find below the quotation details:</p>`;
+    
+    // Header info
+    html += `<p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Quotation No:</strong> ${quotation.id}</p>`;
+    html += `<p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Segment:</strong> ${quotation.quotationSegment || "N/A"}</p>`;
+    html += `<p style="margin: 0 0 16px 0; font-size: 14px;"><strong>Date:</strong> ${new Date(quotation.createdDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>`;
+
+    // Customer & Consignee
+    html += `<table style="${tableStyle}">`;
+    html += `<tr><td style="${labelStyle}">Customer</td><td style="${valueStyle}" colspan="3">${(quotation.customerName || "N/A").replace(/\n/g, "<br>")}</td></tr>`;
+    html += `<tr><td style="${labelStyle}">Consignee</td><td style="${valueStyle}" colspan="3">${(quotation.consigneeName || "N/A").replace(/\n/g, "<br>")}</td></tr>`;
+    html += `</table>`;
+
+    // Shipment Details
+    html += `<table style="${tableStyle}">`;
+    html += `<tr><td colspan="4" style="${headerStyle}">SHIPMENT DETAILS</td></tr>`;
+    html += getShipmentRows();
+    html += `</table>`;
+
+    // Charges
+    html += getChargesTable("ORIGIN CHARGES", quotation.originCharges, "#2563eb");
+    html += getChargesTable("FREIGHT CHARGES", quotation.freightCharges, "#7c3aed");
+    html += getChargesTable("DESTINATION CHARGES", quotation.destinationCharges, "#059669");
+
+    // Remarks
+    if (quotation.remarks) {
+      html += `<table style="${tableStyle}">`;
+      html += `<tr><td style="background-color: #fef3c7; padding: 8px 12px; font-weight: bold; font-size: 13px; border: 1px solid #fcd34d;">REMARKS</td></tr>`;
+      html += `<tr><td style="${valueStyle}">${quotation.remarks.replace(/\n/g, "<br>")}</td></tr>`;
+      html += `</table>`;
+    }
+
+    try {
+      // Copy HTML to clipboard (same as Copy to Email feature)
+      const blob = new Blob([html], { type: 'text/html' });
+      const clipboardItem = new ClipboardItem({
+        'text/html': blob,
+        'text/plain': new Blob([`Quotation ${quotation.id} - Please see formatted content when pasted in email`], { type: 'text/plain' })
+      });
+      await navigator.clipboard.write([clipboardItem]);
+
+      // Open email client with subject
+      const subject = `Quotation ${quotation.id} - ${quotation.quotationSegment || 'Quote'}`;
+      const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}`;
+      
+      // Small delay to ensure clipboard operation completes
+      setTimeout(() => {
+        window.location.href = mailtoLink;
+        // Show instruction alert
+      },300);
+
+    } catch (err) {
+      console.error('Failed to prepare email:', err);
+      // Fallback - open email with basic subject
+      const subject = `Quotation ${quotation.id} - ${quotation.quotationSegment || 'Quote'}`;
+      window.location.href = `mailto:?subject=${encodeURIComponent(subject)}`;
+      alert(`Please paste quotation details manually in the email body.`);
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Main Content */}
-      <div className="w-full  sm:px-16 lg:px-40 py-8">
+      <div className="lg:w-5/6 sm:w-6/6 md:w-6/6 m-auto sm:px-6 lg:px-8 py-6">
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -716,7 +910,6 @@ const Dashboard = ({ currentUser }) => {
               </div>
             </div>
           </div>
-
           {/* Business Not Converted */}
           <div 
             onClick={() => handleCardClick("Not Converted")}
@@ -1086,6 +1279,14 @@ const Dashboard = ({ currentUser }) => {
                           >
                             <Download size={15} />
                             <span>PDF</span>
+                          </button>
+                          <button
+                            onClick={() => sendQuotationEmail(quote)}
+                            className="flex items-center gap-1 px-2 py-1 text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-all font-medium text-sm border border-purple-200"
+                            title="Click & Paste on Mail"
+                          >
+                            <Mail size={15} />
+                            <span>Mail</span>
                           </button>
                         </div>
                       </td>

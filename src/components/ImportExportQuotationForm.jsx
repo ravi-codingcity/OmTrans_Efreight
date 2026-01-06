@@ -14,7 +14,7 @@ import { airportsOfDeparture } from "./AirportOfDeparture";
 import { airportsOfDestination } from "./AirportOfDestination";
 import { allAvailableTerms, getTermsForSegment } from "./Terms_and_Conditions";
 
-const API_BASE_URL = "https://omtrans-efreight-backend.onrender.com/api";
+const API_BASE_URL = "https://omtransefreight-ss7idyoh.b4a.run/api";
 
 // Module-level cache for quotations data (shared across component instances)
 const suggestionsCache = {
