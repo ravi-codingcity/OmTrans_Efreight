@@ -836,6 +836,20 @@ const Dashboard = ({ currentUser }) => {
       html += `</table>`;
     }
 
+    // Terms and Conditions
+    if (quotation.termsAndConditions && quotation.termsAndConditions.length > 0) {
+      html += `<table style="${tableStyle}">`;
+      html += `<tr><td style="background-color: #059669; color: white; padding: 8px 12px; font-weight: bold; font-size: 13px; border: 1px solid #059669;">TERMS & CONDITIONS</td></tr>`;
+      html += `<tr><td style="${valueStyle}">`;
+      html += `<ol style="margin: 8px 0; padding-left: 20px;">`;
+      quotation.termsAndConditions.forEach((term) => {
+        html += `<li style="margin-bottom: 6px; font-size: 12px;">${term}</li>`;
+      });
+      html += `</ol>`;
+      html += `</td></tr>`;
+      html += `</table>`;
+    }
+
     try {
       // Copy HTML to clipboard (same as Copy to Email feature)
       const blob = new Blob([html], { type: 'text/html' });
