@@ -52,6 +52,14 @@ const Dashboard = ({ currentUser }) => {
       return null;
     }
   }, [currentUser]);
+
+  // Check if user is Admin (only Vikram has Admin access to view all quotations)
+  const isAdmin = useMemo(() => {
+    if (!loggedInUser) return false;
+    const username = (loggedInUser.username || "").toLowerCase();
+    const role = (loggedInUser.role || "").toLowerCase();
+    return username === "vikram" || role === "admin";
+  }, [loggedInUser]);
   
   // Helper function to get user image based on username 
   const getUserImage = (username) => {
@@ -107,9 +115,28 @@ const Dashboard = ({ currentUser }) => {
   ];
 
   // Optimized loadStatistics with useCallback
-  const loadStatistics = useCallback((quotationsData = []) => {
-    // Calculate statistics from quotations data
-    const totalQuotations = quotationsData.length;
+  const loadStatistics = useCallback((quotationsData = [], userInfo = null, adminStatus = false) => {
+    // Filter quotations based on user role
+    let userQuotations = quotationsData;
+    
+    // Non-admin users only see their own quotations in stats
+    if (!adminStatus && userInfo) {
+      const usernameLower = (userInfo.username || "").toLowerCase();
+      const fullNameLower = (userInfo.fullName || "").toLowerCase();
+      
+      userQuotations = quotationsData.filter(quote => {
+        const createdByLower = (quote.createdBy || "").toLowerCase();
+        return (
+          createdByLower === usernameLower ||
+          createdByLower === fullNameLower ||
+          createdByLower.includes(usernameLower) ||
+          createdByLower.includes(fullNameLower)
+        );
+      });
+    }
+    
+    // Calculate statistics from filtered quotations data
+    const totalQuotations = userQuotations.length;
     const businessNotConverted = 0;
     const jobsCreated = 0;
 
@@ -223,6 +250,14 @@ const Dashboard = ({ currentUser }) => {
     };
   }, [loadQuotations, loadStatistics]);
 
+  // Recalculate statistics when user/admin status changes
+  useEffect(() => {
+    if (quotations.length > 0 || quotationsCache.data) {
+      const dataToUse = quotations.length > 0 ? quotations : (quotationsCache.data || []);
+      loadStatistics(dataToUse, loggedInUser, isAdmin);
+    }
+  }, [quotations, loggedInUser, isAdmin, loadStatistics]);
+
   // Handle card click to filter quotations
   const handleCardClick = (status) => {
     setFilterStatus(status);
@@ -243,8 +278,9 @@ const Dashboard = ({ currentUser }) => {
           }
         }
         
-        // Ownership filter
-        if (filterOwnership === "my" && loggedInUser) {
+        // Ownership filter - Non-admin users can only see their own quotations
+        const shouldFilterByOwnership = !isAdmin || filterOwnership === "my";
+        if (shouldFilterByOwnership && loggedInUser) {
           const createdByLower = (quote.createdBy || "").toLowerCase();
           const usernameLower = (loggedInUser.username || "").toLowerCase();
           const fullNameLower = (loggedInUser.fullName || "").toLowerCase();
@@ -286,7 +322,7 @@ const Dashboard = ({ currentUser }) => {
         return true;
       })
       .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
-  }, [quotations, filterLocation, filterYear, filterMonth, filterToday, filterOwnership, loggedInUser, months]);
+  }, [quotations, filterLocation, filterYear, filterMonth, filterToday, filterOwnership, loggedInUser, isAdmin, months]);
 
   // View quotation details
   const viewDetails = (quotation) => {
@@ -735,10 +771,18 @@ const Dashboard = ({ currentUser }) => {
           rows.push(`<tr><td style="${labelStyle}">${label1}</td><td style="${valueStyle}">${v1}</td><td style="${labelStyle}">${label2}</td><td style="${valueStyle}">${v2}</td></tr>`);
         }
       };
+      
+      // Helper to add optional field row only if value exists
+      const addOptionalRow = (label, value) => {
+        if (value && value.trim()) {
+          rows.push(`<tr><td style="${labelStyle}">${label}</td><td style="${valueStyle}" colspan="3">${value}</td></tr>`);
+        }
+      };
 
       if (isServiceJob) {
         addRow("Service Type", quotation.serviceJobType, "Terms", quotation.terms);
         addRow("Commodity", quotation.commodity, "Weight (kg)", quotation.weight);
+        addOptionalRow("Rail Ramp", quotation.railRamp);
       } else if (isAir) {
         addRow("Number of Packets", quotation.numberOfPackets, "Weight (kg)", quotation.weight);
         addRow("Cargo Size", quotation.cargoSize || quotation.size, "CBM (m³)", quotation.cbm);
@@ -746,11 +790,13 @@ const Dashboard = ({ currentUser }) => {
         addRow("Volume Weight", quotation.volumeWeight, "Chargeable Weight", quotation.chargeableWeight);
         addRow("Airport of Departure", quotation.airPortOfDeparture, "Airport of Destination", quotation.airPortOfDestination);
         addRow("Airlines", quotation.airLines, "", "");
+        addOptionalRow("Rail Ramp", quotation.railRamp);
       } else if (isFCL) {
         addRow("Equipment", quotation.equipment, "Weight (kg)", quotation.weight);
         addRow("Commodity", quotation.commodity, "Terms", quotation.terms);
         addRow("POR", quotation.por, "POL", quotation.pol);
         addRow("POD", quotation.pod, "Final Destination", quotation.finalDestination);
+        addOptionalRow("Rail Ramp", quotation.railRamp);
         addRow("Shipping Line", quotation.shippingLine, "Transit Time", quotation.transitTime);
         addRow("ETD", quotation.etd, "ETA", quotation.eta);
       } else if (isLCLOrBreakBulk) {
@@ -759,6 +805,7 @@ const Dashboard = ({ currentUser }) => {
         addRow("Commodity", quotation.commodity, "Terms", quotation.terms);
         addRow("POR", quotation.por, "POL", quotation.pol);
         addRow("POD", quotation.pod, "Final Destination", quotation.finalDestination);
+        addOptionalRow("Rail Ramp", quotation.railRamp);
         addRow("Shipping Line", quotation.shippingLine, "Transit Time", quotation.transitTime);
         addRow("ETD", quotation.etd, "ETA", quotation.eta);
       } else {
@@ -767,6 +814,7 @@ const Dashboard = ({ currentUser }) => {
         addRow("Commodity", quotation.commodity, "Terms", quotation.terms);
         addRow("POR", quotation.por, "POL", quotation.pol);
         addRow("POD", quotation.pod, "Final Destination", quotation.finalDestination);
+        addOptionalRow("Rail Ramp", quotation.railRamp);
         addRow("Shipping Line", quotation.shippingLine, "Transit Time", quotation.transitTime);
         addRow("ETD", quotation.etd, "ETA", quotation.eta);
       }
@@ -804,7 +852,7 @@ const Dashboard = ({ currentUser }) => {
     // Build complete HTML email body
     let html = `<div style="font-family: Arial, sans-serif; max-width: 700px;">`;
     html += `<p style="margin: 0 0 16px 0; font-size: 14px;">Dear Sir/Madam,</p>`;
-    html += `<p style="margin: 0 0 16px 0; font-size: 14px;">Please find below the quotation details:</p>`;
+    html += `<p style="margin: 0 0 16px 0; font-size: 14px;">Please find the attachment quotation based on your RFQ.</p>`;
     
     // Header info
     html += `<p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Quotation No:</strong> ${quotation.id}</p>`;
@@ -1075,44 +1123,51 @@ const Dashboard = ({ currentUser }) => {
             {/* Spacer to push ownership filter to right */}
             <div className="flex-1"></div>
 
-            {/* Ownership Filter - Radio Buttons */}
-            <div className="flex items-center gap-1 border border-gray-300 rounded-lg overflow-hidden">
-              <label
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm cursor-pointer transition-colors ${
-                  filterOwnership === "all"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="ownership"
-                  value="all"
-                  checked={filterOwnership === "all"}
-                  onChange={(e) => setFilterOwnership(e.target.value)}
-                  className="sr-only"
-                />
-                <span className="font-medium">All Quotations</span>
-              </label>
-              <label
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm cursor-pointer transition-colors ${
-                  filterOwnership === "my"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="ownership"
-                  value="my"
-                  checked={filterOwnership === "my"}
-                  onChange={(e) => setFilterOwnership(e.target.value)}
-                  className="sr-only"
-                />
-                <User size={14} />
-                <span className="font-medium">My Quotations</span>
-              </label>
-            </div>
+            {/* Ownership Filter - Radio Buttons (Only visible for Admin) */}
+            {isAdmin ? (
+              <div className="flex items-center gap-1 border border-gray-300 rounded-lg overflow-hidden">
+                <label
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm cursor-pointer transition-colors ${
+                    filterOwnership === "all"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="ownership"
+                    value="all"
+                    checked={filterOwnership === "all"}
+                    onChange={(e) => setFilterOwnership(e.target.value)}
+                    className="sr-only"
+                  />
+                  <span className="font-medium">All Quotations</span>
+                </label>
+                <label
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm cursor-pointer transition-colors ${
+                    filterOwnership === "my"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="ownership"
+                    value="my"
+                    checked={filterOwnership === "my"}
+                    onChange={(e) => setFilterOwnership(e.target.value)}
+                    className="sr-only"
+                  />
+                  <User size={14} />
+                  <span className="font-medium">My Quotations</span>
+                </label>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+                <User size={14} className="text-blue-600" />
+                <span className="text-sm font-medium text-blue-700">My Quotations</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -1170,7 +1225,7 @@ const Dashboard = ({ currentUser }) => {
                   <th className="px-3 py-3 text-center text-xs font-semibold text-red-600 uppercase tracking-wider">
                     Action
                   </th>
-                  {filterOwnership === "my" && (
+                  {(!isAdmin || filterOwnership === "my") && (
                     <th className="px-3 py-3 text-center text-xs font-semibold text-red-600 uppercase tracking-wider">
                       Edit
                     </th>
@@ -1180,7 +1235,7 @@ const Dashboard = ({ currentUser }) => {
               <tbody className="divide-y divide-gray-200">
                 {filteredQuotations.length === 0 ? (
                   <tr>
-                    <td colSpan={filterOwnership === "my" ? 8 : 7} className="px-6 py-12 text-center">
+                    <td colSpan={(!isAdmin || filterOwnership === "my") ? 8 : 7} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <Package className="text-gray-300" size={48} />
                         <p className="text-gray-500 text-lg">
@@ -1304,7 +1359,7 @@ const Dashboard = ({ currentUser }) => {
                           </button>
                         </div>
                       </td>
-                      {filterOwnership === "my" && (
+                      {(!isAdmin || filterOwnership === "my") && (
                         <td className="px-3 py-3">
                           <button
                             onClick={() => handleEditQuotation(quote)}
@@ -1625,6 +1680,14 @@ const Dashboard = ({ currentUser }) => {
                         {selectedQuotation.airLines || "N/A"}
                       </p>
                     </div>
+                    {selectedQuotation.railRamp && (
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">Rail Ramp</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.railRamp}
+                      </p>
+                    </div>
+                    )}
                   </div>
                 ) : (
                   // Sea/Other Route Information
@@ -1653,6 +1716,14 @@ const Dashboard = ({ currentUser }) => {
                         {selectedQuotation.finalDestination || "N/A"}
                       </p>
                     </div>
+                    {selectedQuotation.railRamp && (
+                    <div>
+                      <p className="text-xs text-gray-600 mb-0.5">Rail Ramp</p>
+                      <p className="text-xs font-medium text-gray-900">
+                        {selectedQuotation.railRamp}
+                      </p>
+                    </div>
+                    )}
                     <div>
                       <p className="text-xs text-gray-600 mb-0.5">Shipping Line</p>
                       <p className="text-xs font-medium text-gray-900">
@@ -1993,6 +2064,15 @@ const Dashboard = ({ currentUser }) => {
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                       />
                     </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Rail Ramp <span className="text-gray-400">(Optional)</span></label>
+                      <input
+                        type="text"
+                        value={editQuotation.railRamp || ''}
+                        onChange={(e) => handleEditChange('railRamp', e.target.value)}
+                        className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                      />
+                    </div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -2029,6 +2109,15 @@ const Dashboard = ({ currentUser }) => {
                         type="text"
                         value={editQuotation.finalDestination || ''}
                         onChange={(e) => handleEditChange('finalDestination', e.target.value)}
+                        className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Rail Ramp <span className="text-gray-400">(Optional)</span></label>
+                      <input
+                        type="text"
+                        value={editQuotation.railRamp || ''}
+                        onChange={(e) => handleEditChange('railRamp', e.target.value)}
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                       />
                     </div>

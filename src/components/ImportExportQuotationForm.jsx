@@ -93,6 +93,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     chargeableWeight: "",
     volumeWeight: "",
     size: "",
+    railRamp: "",
   });
 
   // Popup state
@@ -180,6 +181,11 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
   const [mergedFinalDestData, setMergedFinalDestData] = useState(foreignDestinations);
   const [mergedAirportDepartureData, setMergedAirportDepartureData] = useState(airportsOfDeparture);
   const [mergedAirportDestinationData, setMergedAirportDestinationData] = useState(airportsOfDestination);
+  
+  // State for Rail Ramp suggestions from DB
+  const [mergedRailRampData, setMergedRailRampData] = useState([]);
+  const [filteredRailRampData, setFilteredRailRampData] = useState([]);
+  const [showRailRampDropdown, setShowRailRampDropdown] = useState(false);
 
   // Load previously submitted customer, consignee, POR, POL, POD data from quotations on mount
   useEffect(() => {
@@ -202,6 +208,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       const submittedFinalDest = new Set();
       const submittedAirportDeparture = new Set();
       const submittedAirportDestination = new Set();
+      const submittedRailRamp = new Set();
 
       quotations.forEach((q) => {
         // Process customer data
@@ -259,6 +266,11 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         // Process Airport of Destination data
         if (q.airPortOfDestination && q.airPortOfDestination.trim()) {
           submittedAirportDestination.add(q.airPortOfDestination.trim());
+        }
+
+        // Process Rail Ramp data
+        if (q.railRamp && q.railRamp.trim()) {
+          submittedRailRamp.add(q.railRamp.trim());
         }
       });
 
@@ -323,6 +335,9 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         (p) => !existingAirportDestinationKeys.has(p.toLowerCase())
       );
       setMergedAirportDestinationData([...airportsOfDestination, ...uniqueSubmittedAirportDestination]);
+
+      // Set Rail Ramp data from submitted quotations
+      setMergedRailRampData([...submittedRailRamp]);
       
       setIsDataReady(true);
     };
@@ -439,6 +454,14 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     "Certification Charge",
     "BL Fee Charge",
     "Customs Clearance Charge",
+    "OMT DO",
+    "Terminal Handling Charge",
+    "Container Washing Charge",
+    "CCFEE (2% on Freight MIN USD 10)",
+    "Inland Haulage Charges (Mundra to ICD TKD)",
+    "Container Maintenance Charges",
+    "Carrier DO Fee",
+    "HBL Manifest",
   ].sort();
 
   // Origin Charges State
@@ -666,6 +689,19 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         setShowCommodityDropdown(false);
       }
     }
+
+    // Handle autocomplete for Rail Ramp
+    if (name === "railRamp") {
+      if (value.trim().length > 0 && mergedRailRampData.length > 0) {
+        const filtered = mergedRailRampData
+          .filter((ramp) => ramp.toLowerCase().includes(value.toLowerCase()))
+          .sort();
+        setFilteredRailRampData(filtered);
+        setShowRailRampDropdown(filtered.length > 0);
+      } else {
+        setShowRailRampDropdown(false);
+      }
+    }
   };
 
   // Handle customer selection from dropdown
@@ -765,6 +801,15 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       commodity: commodity,
     }));
     setShowCommodityDropdown(false);
+  };
+
+  // Handle Rail Ramp selection from dropdown
+  const handleRailRampSelect = (ramp) => {
+    setBasicInfo((prev) => ({
+      ...prev,
+      railRamp: ramp,
+    }));
+    setShowRailRampDropdown(false);
   };
 
   // Origin Charges Handlers
@@ -965,6 +1010,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         "pol",
         "pod",
         "finalDestination",
+        "railRamp",
         "shippingLine",
         "totalTransitTime",
         "etd",
@@ -991,6 +1037,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         "pol",
         "pod",
         "finalDestination",
+        "railRamp",
         "shippingLine",
         "totalTransitTime",
         "etd",
@@ -1011,6 +1058,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
          "terms",
         "airPortOfDeparture",
         "airPortOfDestination",
+        "railRamp",
         "airLines",
         "remarks",
       ];
@@ -1018,7 +1066,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
 
     // Service Job - show special section
     if (segment === "service job") {
-      return ["serviceJobRadio", "remarks"];
+      return ["serviceJobRadio", "railRamp", "remarks"];
     }
 
     return [];
@@ -1184,6 +1232,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       chargeableWeight: ["Chargeable Weight", basicInfo.chargeableWeight || "N/A"],
       volumeWeight: ["Volume Weight", basicInfo.volumeWeight || "N/A"],
       size: ["Size", basicInfo.size || "N/A"],
+      railRamp: ["Rail Ramp", basicInfo.railRamp || "N/A"],
     };
 
     // Add Service Job Type if applicable
@@ -1195,6 +1244,9 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     let currentRow = [];
     visibleFields.forEach((field) => {
       if (field === "serviceJobRadio" || field === "remarks") return; // Skip these in shipment details
+      
+      // Skip railRamp if empty (optional field)
+      if (field === "railRamp" && (!basicInfo.railRamp || !basicInfo.railRamp.trim())) return;
       
       if (fieldMap[field]) {
         currentRow.push(fieldMap[field][0], fieldMap[field][1]);
@@ -1493,6 +1545,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       pol: basicInfo.pol,
       pod: basicInfo.pod,
       finalDestination: basicInfo.finalDestination,
+      railRamp: basicInfo.railRamp,
       shippingLine: basicInfo.shippingLine,
       etd: basicInfo.etd,
       eta: basicInfo.eta,
@@ -1703,6 +1756,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       chargeableWeight: "",
       volumeWeight: "",
       size: "",
+      railRamp: "",
     });
 
     // Reset service job type
@@ -2366,6 +2420,45 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                       ))}
                     </div>
                   )}
+              </div>
+              )}
+              
+              {/* Rail Ramp - Optional field */}
+              {getVisibleFields().includes("railRamp") && (
+              <div className="relative">
+                <label className="block font-medium text-gray-700 mb-0.5">
+                  Rail Ramp{" "}
+                  <span className="text-gray-500 text-[10px]">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  name="railRamp"
+                  value={basicInfo.railRamp}
+                  onChange={handleBasicInfoChange}
+                  onFocus={() => {
+                    if (basicInfo.railRamp && filteredRailRampData.length > 0) {
+                      setShowRailRampDropdown(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowRailRampDropdown(false), 200);
+                  }}
+                  placeholder="Type rail ramp..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                />
+                {showRailRampDropdown && filteredRailRampData.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {filteredRailRampData.map((ramp, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleRailRampSelect(ramp)}
+                        className="px-2 py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                      >
+                        <div className="text-gray-800">{ramp}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               )}
 
