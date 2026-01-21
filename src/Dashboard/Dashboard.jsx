@@ -852,7 +852,7 @@ const Dashboard = ({ currentUser }) => {
     // Build complete HTML email body
     let html = `<div style="font-family: Arial, sans-serif; max-width: 700px;">`;
     html += `<p style="margin: 0 0 16px 0; font-size: 14px;">Dear Sir/Madam,</p>`;
-    html += `<p style="margin: 0 0 16px 0; font-size: 14px;">Please find the attachment quotation based on your RFQ.</p>`;
+    html += `<p style="margin: 0 0 16px 0; font-size: 14px;">Please find quotation based on your RFQ.</p>`;
     
     // Header info
     html += `<p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Quotation No:</strong> ${quotation.id}</p>`;
@@ -930,13 +930,13 @@ const Dashboard = ({ currentUser }) => {
       {/* Main Content */}
       <div className="lg:w-5/6 sm:w-6/6 md:w-6/6 m-auto sm:px-6 lg:px-8 py-6">
         {/* Page Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
+        <div className="mb-4">
+          <div className="flex items-center gap-3 mb-1">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl shadow-lg">
-              <BarChart3 className="text-white" size={32} />
+              <BarChart3 className="text-white" size={20} />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900">
                 Dashboard Overview
               </h1>
               <p className="text-sm text-gray-600">
@@ -947,11 +947,11 @@ const Dashboard = ({ currentUser }) => {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 mb-4">
           {/* Total Quotations Created */}
           <div 
             onClick={() => handleCardClick("All")}
-            className={`bg-white rounded-xl shadow-lg p-5 border-l-4 border-blue-500 hover:shadow-xl transition-all hover:scale-105 cursor-pointer ${
+            className={`bg-white rounded-xl shadow-lg p-4 border-l-4 border-blue-500 hover:shadow-xl transition-all hover:scale-105 cursor-pointer ${
               filterStatus === "All" ? "ring-2 ring-blue-500" : ""
             }`}
           >
@@ -960,22 +960,22 @@ const Dashboard = ({ currentUser }) => {
                 <p className="text-sm font-medium text-gray-600 mb-1">
                   Total Quotations Created
                 </p>
-                <h3 className="text-4xl font-bold text-gray-900">
+                <h3 className="text-3xl font-bold text-gray-900">
                   {stats.totalQuotations}
                 </h3>
                 <p className="text-xs text-gray-500 mt-2">
                   Import/Export quotations
                 </p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <FileText className="text-blue-600" size={25} />
+              <div className="bg-blue-100 p-2 rounded-full">
+                <FileText className="text-blue-600" size={20} />
               </div>
             </div>
           </div>
           {/* Business Not Converted */}
           <div 
             onClick={() => handleCardClick("Not Converted")}
-            className={`bg-white rounded-xl shadow-lg p-5 border-l-4 border-red-500 hover:shadow-xl transition-all hover:scale-105 cursor-pointer ${
+            className={`bg-white rounded-xl shadow-lg p-4 border-l-4 border-red-500 hover:shadow-xl transition-all hover:scale-105 cursor-pointer ${
               filterStatus === "Not Converted" ? "ring-2 ring-red-500" : ""
             }`}
           >
@@ -984,15 +984,15 @@ const Dashboard = ({ currentUser }) => {
                 <p className="text-sm font-medium text-gray-600 mb-1">
                   Business Not Converted
                 </p>
-                <h3 className="text-4xl font-bold text-gray-900">
+                <h3 className="text-3xl font-bold text-gray-900">
                   {stats.businessNotConverted}
                 </h3>
                 <p className="text-xs text-gray-500 mt-2">
                   Lost opportunities
                 </p>
               </div>
-              <div className="bg-red-100 p-3 rounded-full">
-                <XCircle className="text-red-600" size={25} />
+              <div className="bg-red-100 p-2 rounded-full">
+                <XCircle className="text-red-600" size={20} />
               </div>
             </div>
           </div>
@@ -1000,7 +1000,7 @@ const Dashboard = ({ currentUser }) => {
           {/* Jobs Created */}
           <div 
             onClick={() => handleCardClick("Job Created")}
-            className={`bg-white rounded-xl shadow-lg p-5 border-l-4 border-green-500 hover:shadow-xl transition-all hover:scale-105 cursor-pointer ${
+            className={`bg-white rounded-xl shadow-lg p-4 border-l-4 border-green-500 hover:shadow-xl transition-all hover:scale-105 cursor-pointer ${
               filterStatus === "Job Created" ? "ring-2 ring-green-500" : ""
             }`}
           >
@@ -1009,42 +1009,42 @@ const Dashboard = ({ currentUser }) => {
                 <p className="text-sm font-medium text-gray-600 mb-1">
                   Jobs Created
                 </p>
-                <h3 className="text-4xl font-bold text-gray-900">
+                <h3 className="text-3xl font-bold text-gray-900">
                   {stats.jobsCreated}
                 </h3>
                 <p className="text-xs text-gray-500 mt-2">
                   Converted to jobs
                 </p>
               </div>
-              <div className="bg-green-100 p-3 rounded-full">
-                <Briefcase className="text-green-600" size={25} />
+              <div className="bg-green-100 p-2 rounded-full">
+                <Briefcase className="text-green-600" size={20} />
               </div>
             </div>
           </div>
 
           {/* Total Bookings */}
-          <div className="bg-white rounded-xl shadow-lg p-5 border-l-4 border-purple-500 hover:shadow-xl transition-all hover:scale-105 cursor-pointer">
+          <div className="bg-white rounded-xl shadow-lg p-4 border-l-4 border-purple-500 hover:shadow-xl transition-all hover:scale-105 cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1">
                   Bookings Created
                 </p>
-                <h3 className="text-4xl font-bold text-gray-900">
+                <h3 className="text-3xl font-bold text-gray-900">
                   {stats.totalBookings}
                 </h3>
                 <p className="text-xs text-gray-500 mt-2">
                   Freight bookings
                 </p>
               </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <Package className="text-purple-600" size={25} />
+              <div className="bg-purple-100 p-2 rounded-full">
+                <Package className="text-purple-600" size={20} />
               </div>
             </div>
           </div>
         </div>
 
         {/* Filters Section */}
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+        <div className="bg-white rounded-xl shadow-md p-3 mb-3">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 text-gray-700 font-medium">
               <Filter size={18} className="text-blue-600" />
@@ -1173,11 +1173,11 @@ const Dashboard = ({ currentUser }) => {
 
         {/* Quotations Table */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold flex items-center gap-2">
-                  <FileText size={24} />
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <FileText size={20} />
                   {filterStatus === "All" ? "All Quotations" : `${filterStatus} Quotations`}
                 </h2>
                 <p className="text-sm text-blue-100 mt-1">

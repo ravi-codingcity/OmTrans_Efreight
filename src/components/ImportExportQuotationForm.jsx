@@ -462,6 +462,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     "Container Maintenance Charges",
     "Carrier DO Fee",
     "HBL Manifest",
+    "Handling Fee",
+    "Import Customs Clearance Charge",
+    "Road Tax",
+    "Trucking Charges to Door (By Road Only)"
   ].sort();
 
   // Origin Charges State
