@@ -41963,4 +41963,9 @@ export const consigneeData = [
     address:
       "Village Nawada Fatehpur P.o. Sikanderpur Badda Gurgaon Haryana 122004, India",
   },
+   {
+    name: "KEI Industiries Limited",
+    address:
+      "A-280-281-282-284  Riico Industrial Area Chopanki Rajasthan-301019, India",
+  },
 ];

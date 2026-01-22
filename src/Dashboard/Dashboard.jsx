@@ -1583,7 +1583,7 @@ const Dashboard = ({ currentUser }) => {
                     )}
                     {selectedQuotation.chargeableWeight && (
                       <div>
-                        <p className="text-xs text-gray-600 mb-0.5">Chargeable Weight</p>
+                        <p className="text-xs text-gray-600 mb-0.5">Chargeable Weight (kg)</p>
                         <p className="text-xs font-medium text-gray-900">
                           {selectedQuotation.chargeableWeight}
                         </p>

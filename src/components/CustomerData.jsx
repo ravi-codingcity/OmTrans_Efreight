@@ -1,5 +1,5 @@
 // Customer data
-export const customerData =  [
+export const customerData = [
   {
     name: "Aerocom Metals Limited",
     address: "UNIT B Groverlands IND. Estate, Great Britain (united Kingdom)",
@@ -25635,8 +25635,7 @@ export const customerData =  [
   },
   {
     name: "Scitech Laboratories Pvt. Ltd",
-    address:
-      "1103 Dlh Park S V Road Goregaon Mumbai Maharashtra 400062, India",
+    address: "1103 Dlh Park S V Road Goregaon Mumbai Maharashtra 400062, India",
   },
   {
     name: "N.P.T. Trepharm",
@@ -29746,8 +29745,7 @@ export const customerData =  [
   },
   {
     name: "Yamazen Machinery And Tools India Pvt Ltd ",
-    address:
-      "Ground Floor Plot No.44Sector 44 Gurgaon 1220022 Haryana, India",
+    address: "Ground Floor Plot No.44Sector 44 Gurgaon 1220022 Haryana, India",
   },
   {
     name: "Trimac Industrial Systems LLC",
@@ -41515,8 +41513,7 @@ export const customerData =  [
   },
   {
     name: "Anderson Fitzgerald LLC",
-    address:
-      "Noah Klein106 Murnane Street Weserville Oh 43081, USA",
+    address: "Noah Klein106 Murnane Street Weserville Oh 43081, USA",
   },
   {
     name: "Dr.Reddys Laboratories Ltd Bangalore",
@@ -41593,8 +41590,7 @@ export const customerData =  [
   },
   {
     name: "Sml Systemund Metallbau Gmbh",
-    address:
-      "Ms. Wichmann Brigit Juri-Gagarin-Ring 11 19370 Parchim, Germany",
+    address: "Ms. Wichmann Brigit Juri-Gagarin-Ring 11 19370 Parchim, Germany",
   },
   {
     name: "Seaways Shipping Logistics Limited - Ftwz ",
@@ -41779,8 +41775,7 @@ export const customerData =  [
   },
   {
     name: "Cargill Cotton",
-    address:
-      "Cargill Incvorporated 7101Goodlett Farms Parkway Cordova, USA",
+    address: "Cargill Incvorporated 7101Goodlett Farms Parkway Cordova, USA",
   },
 
   {
@@ -41864,8 +41859,7 @@ export const customerData =  [
   },
   {
     name: "Mombasa Polythene Bags Ltd",
-    address:
-      "P.o. Box 87074-80100 Mwangeka Road Lumumba Rd Mombasa, Kenya",
+    address: "P.o. Box 87074-80100 Mwangeka Road Lumumba Rd Mombasa, Kenya",
   },
   {
     name: "Dtt Holidays",
@@ -41874,8 +41868,7 @@ export const customerData =  [
   },
   {
     name: "Leisure Planners",
-    address:
-      "S.f. 5c/62 New Rohtak Road New Delhi Central Delhi 110005, Nan",
+    address: "S.f. 5c/62 New Rohtak Road New Delhi Central Delhi 110005, Nan",
   },
   {
     name: "Mohit Bhatia",
@@ -41917,8 +41910,7 @@ export const customerData =  [
   },
   {
     name: "Yoolim Industry Corp",
-    address:
-      "51 Hangeulbiseok-ro 15-gil Nowon-gu Seoul 01700, Korea (north)",
+    address: "51 Hangeulbiseok-ro 15-gil Nowon-gu Seoul 01700, Korea (north)",
   },
   {
     name: "Vivek Enterprise",
@@ -41962,5 +41954,10 @@ export const customerData =  [
     name: "Uno Minda Limited",
     address:
       "Village Nawada Fatehpur P.o. Sikanderpur Badda Gurgaon Haryana 122004, India",
+  },
+  {
+    name: "KEI Industiries Limited",
+    address:
+      "A-280-281-282-284  Riico Industrial Area Chopanki Rajasthan-301019, India",
   },
 ];
