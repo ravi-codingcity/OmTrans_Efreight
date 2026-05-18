@@ -508,6 +508,7 @@ const transformQuotation = (q) => {
     pol: q.pol || "",
     pod: q.pod || "",
     finalDestination: q.finalDestination || q.pod || "",
+    railRamp: q.railRamp || "",
     term: q.terms || "",
     forwarding: "",
     cha: "",

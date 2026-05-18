@@ -155,8 +155,6 @@ const ViewAllPreAdvice = ({ onEditPreAdvice }) => {
     let html = `<div style="font-family: Arial, sans-serif; max-width: 700px;">`;
     html += `<p style="margin: 0 0 16px 0; font-size: 14px;">Dear Sir/Madam,</p>`;
     html += `<p style="margin: 0 0 16px 0; font-size: 14px;">Please find the Pre-Advice details below.</p>`;
-    html += `<p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Job No:</strong> ${pa.jobNo || "N/A"}</p>`;
-    html += `<p style="margin: 0 0 16px 0; font-size: 14px;"><strong>Booked By:</strong> ${pa.bookedBy || "N/A"}</p>`;
 
     // Customer & Consignee
     html += `<table style="${tableStyle}">`;
@@ -218,6 +216,22 @@ const ViewAllPreAdvice = ({ onEditPreAdvice }) => {
     html += `<p style="margin: 16px 0 0 0; font-size: 12px; color: #6b7280;">OmTrans Logistics Ltd. | Simplifying Your Business</p>`;
     html += `</div>`;
 
+    // Subject: Pre Advise / Container / Final Destination (or POD) / POR /
+    // Shipping Line / Customer Name / Pre-Advice Number. Empty values are
+    // dropped so the line stays clean and readable.
+    const subject = [
+      "Pre Advise",
+      pa.equipmentSize,
+      pa.finalDestination || pa.pod,
+      pa.por,
+      pa.shippingLine,
+      pa.customerName,
+      pa.jobNo,
+    ]
+      .map((v) => (v == null ? "" : String(v).replace(/\s+/g, " ").trim()))
+      .filter(Boolean)
+      .join(" / ");
+
     try {
       const blob = new Blob([html], { type: "text/html" });
       const clipboardItem = new ClipboardItem({
@@ -226,14 +240,12 @@ const ViewAllPreAdvice = ({ onEditPreAdvice }) => {
       });
       await navigator.clipboard.write([clipboardItem]);
 
-      const subject = `Pre-Advice ${pa.jobNo || ""} - ${pa.shippingLine || "Shipment Details"}`;
       const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}`;
       setTimeout(() => {
         window.location.href = mailtoLink;
       }, 300);
     } catch (err) {
       console.error("Failed to prepare email:", err);
-      const subject = `Pre-Advice ${pa.jobNo || ""} - ${pa.shippingLine || "Shipment Details"}`;
       window.location.href = `mailto:?subject=${encodeURIComponent(subject)}`;
       alert("Please paste pre-advice details manually in the email body.");
     }
