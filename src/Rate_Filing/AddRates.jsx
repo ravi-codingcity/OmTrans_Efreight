@@ -288,7 +288,7 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
 
   /* ----- Form state ----- */
   const initialForm = {
-    name: currentUser?.username || "",
+    name: currentUser?.fullName || currentUser?.username || "",
     por: "",
     pol: "",
     pod: "",

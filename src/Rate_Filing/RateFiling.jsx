@@ -17,7 +17,7 @@ const RateFiling = ({ currentUser, onBack, onCreateQuotation }) => {
   const handleCopyRate = (rate) => {
     // Strip _id, createdAt, updatedAt so AddRates treats it as a new entry
     const { _id, createdAt, updatedAt, __v, ...copied } = rate;
-    copied.name = currentUser?.username || copied.name;
+    copied.name = currentUser?.fullName || currentUser?.username || copied.name;
     setEditingRate(copied);
     setSubView("add");
   };

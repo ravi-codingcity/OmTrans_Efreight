@@ -3,7 +3,7 @@
 // Common terms shown for all segments
 export const commonTerms = [
   "Above rates are subject to booking and space confirmation.",
-  "All receipted and incidental charges will be charged as actuals and prior to approval",
+  "All receipted and incidental charges will be charged as actuals and prior to approval.",
   "Given transit time is on approx basis and as per the last shipping line sailing."
 ];
 

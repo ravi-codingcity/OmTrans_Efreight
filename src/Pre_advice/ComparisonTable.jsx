@@ -273,26 +273,6 @@ const ComparisonTable = ({ rateFile, quotation, onProceed }) => {
     margin: initSelling - initBuying,
   });
 
-  // Remark — prefilled from Rate Filing or Quotation if present, otherwise
-  // an empty editable field so a remark can always be added here.
-  const [remark, setRemark] = useState(
-    rateFile.remarks || quotation.remarks || "",
-  );
-
-  const RemarkSection = () => (
-    <div className="border-t border-gray-200 px-4 py-3 bg-gray-50/40">
-      <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wide mb-1">
-        Remark
-      </label>
-      <textarea
-        value={remark}
-        onChange={(e) => setRemark(e.target.value)}
-        rows={3}
-        placeholder="Add a remark for this Pre-Advice (optional)…"
-        className="w-full px-2 py-1.5 text-[11px] border border-gray-300 rounded-md focus:ring-1 focus:ring-indigo-400 focus:border-transparent resize-y"
-      />
-    </div>
-  );
 
   // Info fields comparison
   const buyEquipment = rateFile.equipmentSize || "-";
@@ -367,7 +347,7 @@ const ComparisonTable = ({ rateFile, quotation, onProceed }) => {
         )}
       </h2>
       <button
-        onClick={() => onProceed({ buying: Number(totals.buying), selling: Number(totals.selling), margin: Number(totals.margin), remarks: remark })}
+        onClick={() => onProceed({ buying: Number(totals.buying), selling: Number(totals.selling), margin: Number(totals.margin) })}
         className="bg-white text-indigo-700 text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-indigo-50 transition-colors"
       >
         Proceed to Pre-Advice →
@@ -631,9 +611,6 @@ const ComparisonTable = ({ rateFile, quotation, onProceed }) => {
             </tbody>
           </table>
         </div>
-
-        {/* Remark */}
-        <RemarkSection />
       </div>
     );
   }
@@ -745,9 +722,6 @@ const ComparisonTable = ({ rateFile, quotation, onProceed }) => {
           </tbody>
         </table>
       </div>
-
-      {/* Remark */}
-      <RemarkSection />
     </div>
   );
 };

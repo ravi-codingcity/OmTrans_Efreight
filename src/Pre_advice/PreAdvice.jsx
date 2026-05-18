@@ -1383,7 +1383,6 @@ const PreAdvice = ({
                 quotation={quotationFormatted}
                 onGeneratePDF={handleGeneratePDF}
                 initialTotals={comparisonTotals}
-                initialRemarks={comparisonTotals?.remarks}
               />
             )}
           </>

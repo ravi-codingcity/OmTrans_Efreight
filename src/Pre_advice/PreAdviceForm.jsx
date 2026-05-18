@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Trash2,
@@ -453,7 +453,7 @@ const MultiContainerChargeTable = ({ charges, onChange, onAdd, onRemove, label, 
 /* ================================================================== */
 /*  PreAdviceForm                                                      */
 /* ================================================================== */
-const PreAdviceForm = ({ rateFile, quotation, onGeneratePDF, editMode, onSaveEdit, initialTotals, initialRemarks }) => {
+const PreAdviceForm = ({ rateFile, quotation, onGeneratePDF, editMode, onSaveEdit, initialTotals }) => {
   // ----- Collapsible Sections -----
   const [sections, setSections] = useState({
     customer: true,
@@ -512,10 +512,9 @@ const PreAdviceForm = ({ rateFile, quotation, onGeneratePDF, editMode, onSaveEdi
     totalBuying: initialTotals?.buying ?? 0,
     totalSelling: initialTotals?.selling ?? 0,
     totalMargin: initialTotals?.margin ?? 0,
-    // Remarks & agent — the remark entered/confirmed on the Rate Comparison
-    // screen takes priority, then any remark carried from Quotation/Rate Filing.
-    remarks:
-      initialRemarks ?? quotation.remarks ?? rateFile.remarks ?? "",
+    // Remarks & agent — prefilled from any remark carried from Quotation or
+    // Rate Filing; fully editable here on the Preview & Download page.
+    remarks: quotation.remarks ?? rateFile.remarks ?? "",
     // Shipping line contact
     slContactName: rateFile.shippingLineContact?.name || "",
     slContactEmail: rateFile.shippingLineContact?.email || "",
@@ -534,6 +533,45 @@ const PreAdviceForm = ({ rateFile, quotation, onGeneratePDF, editMode, onSaveEdi
   const [originCharges, setOriginCharges] = useState(mergedOrigin);
   const [freightCharges, setFreightCharges] = useState(mergedFreight);
   const [destinationCharges, setDestinationCharges] = useState(mergedDestination);
+
+  // Keep Rate Totals (and Margin) in sync with the charge rows + DDP so that
+  // editing any Buying/Selling amount recalculates margins in real time.
+  // These derived values are what gets saved, PDF-generated and viewed.
+  useEffect(() => {
+    const sumBuy = (arr) =>
+      (arr || []).reduce((s, c) => s + (Number(c.buyingAmount) || 0), 0);
+    const sumSell = (arr) =>
+      (arr || []).reduce((s, c) => s + (Number(c.sellingAmount) || 0), 0);
+
+    const totalBuying =
+      sumBuy(originCharges) +
+      sumBuy(freightCharges) +
+      sumBuy(destinationCharges) +
+      (Number(data.ddpBuying) || 0);
+    const totalSelling =
+      sumSell(originCharges) +
+      sumSell(freightCharges) +
+      sumSell(destinationCharges) +
+      (Number(data.ddpSelling) || 0);
+    const totalMargin = totalSelling - totalBuying;
+
+    setData((p) => {
+      if (
+        Number(p.totalBuying) === totalBuying &&
+        Number(p.totalSelling) === totalSelling &&
+        Number(p.totalMargin) === totalMargin
+      ) {
+        return p; // no change — avoid re-render loop
+      }
+      return { ...p, totalBuying, totalSelling, totalMargin };
+    });
+  }, [
+    originCharges,
+    freightCharges,
+    destinationCharges,
+    data.ddpBuying,
+    data.ddpSelling,
+  ]);
 
   // Check if sections have data
   const hasOriginCharges = originCharges.length > 0;
@@ -839,9 +877,9 @@ const PreAdviceForm = ({ rateFile, quotation, onGeneratePDF, editMode, onSaveEdi
           />
           {sections.totals && (
             <div className="grid grid-cols-3 gap-2 px-1">
-              <Field label="Total Buying (B/R)" value={data.totalBuying} onChange={set("totalBuying")} type="number" />
-              <Field label="Total Selling (S/R)" value={data.totalSelling} onChange={set("totalSelling")} type="number" />
-              <Field label="Total Margin" value={data.totalMargin} onChange={set("totalMargin")} type="number" />
+              <Field label="Total Buying (B/R)" value={data.totalBuying} onChange={set("totalBuying")} type="number" readOnly />
+              <Field label="Total Selling (S/R)" value={data.totalSelling} onChange={set("totalSelling")} type="number" readOnly />
+              <Field label="Total Margin (auto)" value={data.totalMargin} onChange={set("totalMargin")} type="number" readOnly />
             </div>
           )}
         </>

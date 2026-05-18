@@ -2,8 +2,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Eye,
-  Edit3,
-  Trash2,
   Copy,
   ChevronLeft,
   ChevronRight,
@@ -71,7 +69,7 @@ const parseCurrency = (val) => {
 /* ------------------------------------------------------------------ */
 /*  ViewRates component                                                 */
 /* ------------------------------------------------------------------ */
-const ViewRates = ({ onEdit, onCopy, onDeleted, onCreateQuotation }) => {
+const ViewRates = ({ onCopy, onCreateQuotation }) => {
   const [rates, setRates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -79,7 +77,6 @@ const ViewRates = ({ onEdit, onCopy, onDeleted, onCreateQuotation }) => {
   const [filterContainer, setFilterContainer] = useState("");
   const [page, setPage] = useState(1);
   const [expandedId, setExpandedId] = useState(null);
-  const [deleting, setDeleting] = useState(null);
   const perPage = 15;
 
   const fetchRates = async () => {
@@ -104,27 +101,6 @@ const ViewRates = ({ onEdit, onCopy, onDeleted, onCreateQuotation }) => {
 
   useEffect(() => { fetchRates(); }, []);
 
-  /* ----- Delete handler ----- */
-  const handleDelete = async (rate) => {
-    if (!rate._id) return;
-    if (!window.confirm(`Delete rate for ${rate.por || ""} → ${rate.pod || ""}? This cannot be undone.`)) return;
-    setDeleting(rate._id);
-    try {
-      const res = await fetch(`${RATE_FILING_API}/${rate._id}`, { method: "DELETE" });
-      if (res.ok) {
-        setRates((prev) => prev.filter((r) => r._id !== rate._id));
-        if (onDeleted) onDeleted(rate._id);
-      } else {
-        const data = await res.json().catch(() => ({}));
-        alert(data.message || "Failed to delete rate.");
-      }
-    } catch (err) {
-      console.error("Delete error:", err);
-      alert("Network error while deleting rate.");
-    } finally {
-      setDeleting(null);
-    }
-  };
 
   /* ----- Derived lists ----- */
   const shippingLines = useMemo(
@@ -315,9 +291,6 @@ const ViewRates = ({ onEdit, onCopy, onDeleted, onCreateQuotation }) => {
                   if (!r.originChargeMap) return null;
                   try { return typeof r.originChargeMap === "string" ? JSON.parse(r.originChargeMap) : r.originChargeMap; } catch { return null; }
                 })();
-                const currentUser = (localStorage.getItem("username") || "").toLowerCase();
-                const isOwner = (r.name || "").toLowerCase() === currentUser;
-
                 return (
                 <React.Fragment key={r._id || i}>
                   <tr
@@ -436,7 +409,7 @@ const ViewRates = ({ onEdit, onCopy, onDeleted, onCreateQuotation }) => {
                           </button>
                         )}
 
-                        {/* Row 3: Copy / Edit / Delete icons */}
+                        {/* Row 3: Copy icon */}
                         <div className="flex items-center justify-center gap-1.5">
                           {onCopy && (
                             <button
@@ -448,31 +421,6 @@ const ViewRates = ({ onEdit, onCopy, onDeleted, onCreateQuotation }) => {
                               title="Copy & Create New"
                             >
                               <Copy size={12} />
-                            </button>
-                          )}
-                          {onEdit && isOwner && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onEdit(r);
-                              }}
-                              className="text-amber-500 hover:text-amber-700 hover:bg-amber-50 p-0.5 rounded transition-colors"
-                              title="Edit"
-                            >
-                              <Edit3 size={12} />
-                            </button>
-                          )}
-                          {isOwner && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(r);
-                              }}
-                              disabled={deleting === r._id}
-                              className="text-red-400 hover:text-red-600 hover:bg-red-50 p-0.5 rounded transition-colors disabled:opacity-40"
-                              title="Delete"
-                            >
-                              {deleting === r._id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                             </button>
                           )}
                         </div>
