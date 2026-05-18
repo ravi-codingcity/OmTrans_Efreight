@@ -67,7 +67,14 @@ const ViewAllPreAdvice = ({ onEditPreAdvice }) => {
     catch { return {}; }
   })();
   const currentUsername = currentUser.fullName || currentUser.username || "";
-  const isAdmin = normalize(currentUsername) === "vikram" || currentUser?.role === "admin" || currentUser?.role?.toLowerCase() === "super admin";
+  const role = normalize(currentUser?.role);
+  // Admin if role is admin/super admin (case-insensitive), or the user is
+  // Vikram — matched via substring so the full name "Vikram Garg" still works.
+  const isAdmin =
+    role === "admin" ||
+    role === "super admin" ||
+    normalize(currentUser.fullName).includes("vikram") ||
+    normalize(currentUser.username).includes("vikram");
 
   /* ============ FETCH ============ */
   const fetchPreAdvices = async () => {
@@ -79,9 +86,18 @@ const ViewAllPreAdvice = ({ onEditPreAdvice }) => {
       });
       const json = await res.json();
       let arr = Array.isArray(json) ? json : json.data || [];
-      // Non-admin users only see their own pre-advice
+      // Non-admin users only see their own pre-advice. Match against both
+      // full name and username so records saved under either still appear.
       if (!isAdmin && currentUsername) {
-        arr = arr.filter((pa) => normalize(pa.createdBy) === normalize(currentUsername));
+        const fname = normalize(currentUser.fullName);
+        const uname = normalize(currentUser.username);
+        arr = arr.filter((pa) => {
+          const cb = normalize(pa.createdBy);
+          return (
+            (!!fname && (cb === fname || cb.includes(fname))) ||
+            (!!uname && (cb === uname || cb.includes(uname)))
+          );
+        });
       }
       // Sort newest first
       arr.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
