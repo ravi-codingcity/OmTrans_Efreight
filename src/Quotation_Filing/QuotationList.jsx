@@ -858,6 +858,31 @@ const QuotationList = ({ currentUser, onEditDraft, onCopyQuotation, onCompareRat
       html += `</ol></td></tr></table>`;
     }
 
+    // Subject: Quotation / Container / Final Destination (or POD) / POR /
+    // Shipping Line / Customer Name / Quotation Number / Segment. Empty
+    // values are dropped so the line stays clean and readable.
+    const containerStr =
+      quotation.equipmentList && quotation.equipmentList.length > 0
+        ? quotation.equipmentList
+            .map((s) => `${s.qty}x${String(s.type || "").replace(" Container", "").trim()}`)
+            .join(", ")
+        : quotation.equipment || "";
+    // customerName holds "Name\nAddress" — keep only the name (first line).
+    const customerNameOnly = String(quotation.customerName || "").split("\n")[0];
+    const subject = [
+      "Quotation",
+      containerStr,
+      quotation.finalDestination || quotation.pod,
+      quotation.por,
+      quotation.shippingLine,
+      customerNameOnly,
+      quotation.id,
+      quotation.quotationSegment,
+    ]
+      .map((v) => (v == null ? "" : String(v).replace(/\s+/g, " ").trim()))
+      .filter(Boolean)
+      .join(" / ");
+
     try {
       const blob = new Blob([html], { type: "text/html" });
       const clipboardItem = new ClipboardItem({
@@ -866,14 +891,12 @@ const QuotationList = ({ currentUser, onEditDraft, onCopyQuotation, onCompareRat
       });
       await navigator.clipboard.write([clipboardItem]);
 
-      const subject = `Quotation ${quotation.id} - ${quotation.quotationSegment || "Quote"}`;
       const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}`;
       setTimeout(() => {
         window.location.href = mailtoLink;
       }, 300);
     } catch (err) {
       console.error("Failed to prepare email:", err);
-      const subject = `Quotation ${quotation.id} - ${quotation.quotationSegment || "Quote"}`;
       window.location.href = `mailto:?subject=${encodeURIComponent(subject)}`;
       alert(`Please paste quotation details manually in the email body.`);
     }
