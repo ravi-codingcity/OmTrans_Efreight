@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   FileText,
   Send,
@@ -7,22 +7,98 @@ import {
   Plus,
   Trash2,
   Search,
+  Save,
+  GripVertical,
+  ArrowLeft,
+  List,
+  FilePlus,
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import OmTransLogo from "../assets/OmTrans_PDF.jpg"; // Import the logo image
-import { icdLocations } from "./POR";
-import { indianPorts } from "./POL";
-import { foreignDestinations } from "./POD";
+import { icdLocations } from "../components/POR";
+import { indianPorts } from "../components/POL";
+import { foreignDestinations } from "../components/POD";
 import { customerData } from "./CustomerData";
-import { consigneeData } from "./ConsigneeData";
-import { shippingLines } from "./ShippingLines";
-import { airlines } from "./Airlines";
-import { airportsOfDeparture } from "./AirportOfDeparture";
-import { airportsOfDestination } from "./AirportOfDestination";
+import { shippingLines } from "../components/ShippingLines";
+import { airlines } from "../components/Airlines";
+import { airportsOfDeparture } from "../components/AirportOfDeparture";
+import { airportsOfDestination } from "../components/AirportOfDestination";
 import { allAvailableTerms, getTermsForSegment } from "./Terms_and_Conditions";
+import { invalidateQuotationsCache } from "./QuotationList";
 
-const API_BASE_URL = "https://omtransefreight-ss7idyoh.b4a.run/api";
+const API_BASE_URL = "https://papayawhip-antelope-424743.hostingersite.com/api";
+
+// Sortable Term Item component for drag-and-drop reordering
+const SortableTermItem = ({ id, term, index, onRemove }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-start gap-1 bg-white rounded px-2 py-1 border ${
+        isDragging
+          ? "border-yellow-400 shadow-lg bg-yellow-50"
+          : "border-yellow-200 hover:border-yellow-300"
+      } transition group`}
+    >
+      <button
+        type="button"
+        className="mt-0.5 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none"
+        title="Drag to reorder"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical size={14} />
+      </button>
+      <span className="text-yellow-600 font-bold mt-0.5 min-w-[20px]">
+        {index + 1}.
+      </span>
+      <span className="flex-1 leading-relaxed text-xs text-gray-700">
+        {term}
+      </span>
+      <button
+        type="button"
+        onClick={() => onRemove(index)}
+        className="ml-1 text-red-400 hover:text-red-600 hover:bg-red-50 p-1 rounded transition flex-shrink-0"
+        title="Remove term"
+      >
+        <X size={14} />
+      </button>
+    </li>
+  );
+};
 
 // Module-level cache for quotations data (shared across component instances)
 const suggestionsCache = {
@@ -71,13 +147,23 @@ export const prefetchSuggestionData = async () => {
   return suggestionsCache.promise;
 };
 
-const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
+const ImportExportQuotationForm = ({
+  currentUser,
+  onNavigate,
+  draftQuotation,
+  onDraftCleared,
+  copyQuotation,
+  onCopyCleared,
+}) => {
   // Data loading state
   const [isDataReady, setIsDataReady] = useState(!!suggestionsCache.data);
   const abortControllerRef = useRef(null);
+  // Draft saving state
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   // Basic Information State
   const [basicInfo, setBasicInfo] = useState({
     customerNameAndAddress: "",
+    shipperNameAndAddress: "",
     consigneeAddress: "",
     equipment: "",
     weight: "",
@@ -92,9 +178,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     etd: "",
     eta: "",
     totalTransitTime: "",
+    ratesValidity: "",
     remarks: "",
     numberOfPackets: "",
-    cargoSize: "",
+    cargoSizes: [""],
     airLines: "",
     airPortOfDeparture: "",
     airPortOfDestination: "",
@@ -102,6 +189,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     volumeWeight: "",
     size: "",
     railRamp: "",
+    pickupLocation: "",
   });
 
   // Popup state
@@ -111,11 +199,17 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
   const [quotationSegment, setQuotationSegment] = useState(""); // Quotation segment selection
   const [serviceJobType, setServiceJobType] = useState(""); // For Service Job radio selection
 
+  // Multi-container selection state (FCL segments only)
+  const [containerSelections, setContainerSelections] = useState([]);
+  const [newContainerType, setNewContainerType] = useState("20ft Standard Container");
+  const [newContainerQty, setNewContainerQty] = useState(1);
+
   // Terms and Conditions state
   const [selectedTerms, setSelectedTerms] = useState([]);
   const [termSearchInput, setTermSearchInput] = useState("");
   const [showTermsSuggestions, setShowTermsSuggestions] = useState(false);
   const [filteredTermsSuggestions, setFilteredTermsSuggestions] = useState([]);
+  const [mergedTermsData, setMergedTermsData] = useState(allAvailableTerms);
 
   // Quotation segment options with prefixes
   const quotationSegments = [
@@ -132,6 +226,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
 
   // Autocomplete state
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [showShipperDropdown, setShowShipperDropdown] = useState(false);
   const [showConsigneeDropdown, setShowConsigneeDropdown] = useState(false);
   const [showShippingLineDropdown, setShowShippingLineDropdown] =
     useState(false);
@@ -158,6 +253,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     setFilteredDestinationChargeSuggestions,
   ] = useState({});
   const [filteredCustomers, setFilteredCustomers] = useState([]);
+  const [filteredShippers, setFilteredShippers] = useState([]);
   const [filteredConsignees, setFilteredConsignees] = useState([]);
   const [filteredShippingLines, setFilteredShippingLines] = useState([]);
   const [filteredPorLocations, setFilteredPorLocations] = useState([]);
@@ -168,6 +264,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
   );
   const [showAirlinesDropdown, setShowAirlinesDropdown] = useState(false);
   const [filteredAirlines, setFilteredAirlines] = useState([]);
+  const [mergedAirlinesData, setMergedAirlinesData] = useState(airlines);
   const [showAirportDepartureDropdown, setShowAirportDepartureDropdown] =
     useState(false);
   const [filteredAirportsDeparture, setFilteredAirportsDeparture] = useState(
@@ -180,9 +277,45 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
   const [showCommodityDropdown, setShowCommodityDropdown] = useState(false);
   const [filteredCommodities, setFilteredCommodities] = useState([]);
 
-  // State for merged customer and consignee data (static + custom from DB)
+  // State for merged customer, shipper and consignee data (static + custom from DB)
+  // All three address fields share CustomerData.jsx as their base suggestion
+  // source; each is then merged with its own previously-submitted entries.
   const [mergedCustomerData, setMergedCustomerData] = useState(customerData);
-  const [mergedConsigneeData, setMergedConsigneeData] = useState(consigneeData);
+  const [mergedShipperData, setMergedShipperData] = useState(customerData);
+  const [mergedConsigneeData, setMergedConsigneeData] = useState(customerData);
+
+  // Autocomplete is backed by ~9k+ records. Precompute one lowercased
+  // search string per entry whenever the dataset changes so keystroke
+  // filtering doesn't re-lowercase the whole list every time.
+  const buildSearchIndex = (data) =>
+    data.map((d) => ({
+      item: d,
+      search: `${d.name || ""}\n${d.address || ""}`.toLowerCase(),
+    }));
+  const customerSearchIndex = useMemo(
+    () => buildSearchIndex(mergedCustomerData),
+    [mergedCustomerData],
+  );
+  const shipperSearchIndex = useMemo(
+    () => buildSearchIndex(mergedShipperData),
+    [mergedShipperData],
+  );
+  const consigneeSearchIndex = useMemo(
+    () => buildSearchIndex(mergedConsigneeData),
+    [mergedConsigneeData],
+  );
+  // Cap matches so a broad query (e.g. one letter) can't compute or
+  // render thousands of rows — early exit keeps it near-instant.
+  const MAX_SUGGESTIONS = 50;
+  const filterSuggestions = (index, query) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    const out = [];
+    for (let i = 0; i < index.length && out.length < MAX_SUGGESTIONS; i++) {
+      if (index[i].search.includes(q)) out.push(index[i].item);
+    }
+    return out;
+  };
 
   // State for merged POR, POL, POD data (static + custom from DB)
   const [mergedPorData, setMergedPorData] = useState(icdLocations);
@@ -214,8 +347,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     const processQuotationsData = (quotations) => {
       // Extract unique values from quotations
       const submittedCustomers = [];
+      const submittedShippers = [];
       const submittedConsignees = [];
       const seenCustomers = new Set();
+      const seenShippers = new Set();
       const seenConsignees = new Set();
       const submittedPor = new Set();
       const submittedPol = new Set();
@@ -225,6 +360,11 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       const submittedAirportDeparture = new Set();
       const submittedAirportDestination = new Set();
       const submittedRailRamp = new Set();
+      const submittedAirlines = new Set();
+      const submittedTerms = new Set();
+      const submittedOriginChargeNames = new Set();
+      const submittedFreightChargeNames = new Set();
+      const submittedDestinationChargeNames = new Set();
 
       quotations.forEach((q) => {
         // Process customer data
@@ -252,6 +392,20 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
           const address = lines.slice(1).join("\n").trim() || "";
           if (name) {
             submittedConsignees.push({ name, address });
+          }
+        }
+
+        // Process shipper data
+        if (
+          q.shipperName &&
+          !seenShippers.has(q.shipperName.toLowerCase())
+        ) {
+          seenShippers.add(q.shipperName.toLowerCase());
+          const lines = q.shipperName.split("\n");
+          const name = lines[0]?.trim() || "";
+          const address = lines.slice(1).join("\n").trim() || "";
+          if (name) {
+            submittedShippers.push({ name, address });
           }
         }
 
@@ -294,6 +448,45 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         if (q.railRamp && q.railRamp.trim()) {
           submittedRailRamp.add(q.railRamp.trim());
         }
+
+        // Process Airlines data
+        if (q.airLines && q.airLines.trim()) {
+          submittedAirlines.add(q.airLines.trim());
+        }
+
+        // Process Terms & Conditions data
+        if (q.termsAndConditions) {
+          const terms = Array.isArray(q.termsAndConditions)
+            ? q.termsAndConditions
+            : typeof q.termsAndConditions === "string"
+              ? [q.termsAndConditions]
+              : [];
+          terms.forEach((term) => {
+            if (term && typeof term === "string" && term.trim()) {
+              submittedTerms.add(term.trim());
+            }
+          });
+        }
+
+        // Process charge names from Origin, Freight, and Destination charges
+        if (q.originCharges && Array.isArray(q.originCharges)) {
+          q.originCharges.forEach((c) => {
+            if (c.charges && c.charges.trim())
+              submittedOriginChargeNames.add(c.charges.trim());
+          });
+        }
+        if (q.freightCharges && Array.isArray(q.freightCharges)) {
+          q.freightCharges.forEach((c) => {
+            if (c.charges && c.charges.trim())
+              submittedFreightChargeNames.add(c.charges.trim());
+          });
+        }
+        if (q.destinationCharges && Array.isArray(q.destinationCharges)) {
+          q.destinationCharges.forEach((c) => {
+            if (c.charges && c.charges.trim())
+              submittedDestinationChargeNames.add(c.charges.trim());
+          });
+        }
       });
 
       // Merge static data with submitted data (remove duplicates)
@@ -306,14 +499,21 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       );
       setMergedCustomerData([...customerData, ...uniqueSubmittedCustomers]);
 
-      const existingConsigneeKeys = new Set(
-        consigneeData.map((c) => `${c.name}\n${c.address}`.toLowerCase()),
+      // Shipper data — same CustomerData.jsx base as customers, plus
+      // any shippers entered on previously submitted quotations.
+      const uniqueSubmittedShippers = submittedShippers.filter(
+        (s) =>
+          !existingCustomerKeys.has(`${s.name}\n${s.address}`.toLowerCase()),
       );
+      setMergedShipperData([...customerData, ...uniqueSubmittedShippers]);
+
+      // Consignee data — same CustomerData.jsx base, merged with
+      // any consignees entered on previously submitted quotations.
       const uniqueSubmittedConsignees = submittedConsignees.filter(
         (c) =>
-          !existingConsigneeKeys.has(`${c.name}\n${c.address}`.toLowerCase()),
+          !existingCustomerKeys.has(`${c.name}\n${c.address}`.toLowerCase()),
       );
-      setMergedConsigneeData([...consigneeData, ...uniqueSubmittedConsignees]);
+      setMergedConsigneeData([...customerData, ...uniqueSubmittedConsignees]);
 
       // Merge POR data
       const existingPorKeys = new Set(icdLocations.map((p) => p.toLowerCase()));
@@ -380,6 +580,69 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       // Set Rail Ramp data from submitted quotations
       setMergedRailRampData([...submittedRailRamp]);
 
+      // Merge Airlines data from submitted quotations
+      const existingAirlinesKeys = new Set(
+        airlines.map((a) => a.toLowerCase()),
+      );
+      const uniqueSubmittedAirlines = [...submittedAirlines]
+        .filter((a) => !existingAirlinesKeys.has(a.toLowerCase()))
+        .sort();
+      setMergedAirlinesData([...airlines, ...uniqueSubmittedAirlines]);
+
+      // Merge custom terms from saved quotations with predefined terms
+      const existingTermsKeys = new Set(
+        allAvailableTerms.map((t) => t.toLowerCase()),
+      );
+      const uniqueCustomTerms = [...submittedTerms]
+        .filter((t) => !existingTermsKeys.has(t.toLowerCase()))
+        .sort();
+      console.log(
+        "[T&C Debug] Quotations:",
+        quotations.length,
+        "| DB terms:",
+        submittedTerms.size,
+        "| Static:",
+        allAvailableTerms.length,
+        "| Custom found:",
+        uniqueCustomTerms.length,
+        uniqueCustomTerms.slice(0, 5),
+      );
+      setMergedTermsData([...allAvailableTerms, ...uniqueCustomTerms]);
+
+      // Merge charge name suggestions from submitted quotations
+      const existingOriginChargeKeys = new Set(
+        originChargeSuggestionsStatic.map((c) => c.toLowerCase()),
+      );
+      const uniqueOriginCharges = [...submittedOriginChargeNames]
+        .filter((c) => !existingOriginChargeKeys.has(c.toLowerCase()))
+        .sort();
+      setMergedOriginChargeSuggestions([
+        ...originChargeSuggestionsStatic,
+        ...uniqueOriginCharges,
+      ]);
+
+      const existingFreightChargeKeys = new Set(
+        freightChargeSuggestionsStatic.map((c) => c.toLowerCase()),
+      );
+      const uniqueFreightCharges = [...submittedFreightChargeNames]
+        .filter((c) => !existingFreightChargeKeys.has(c.toLowerCase()))
+        .sort();
+      setMergedFreightChargeSuggestions([
+        ...freightChargeSuggestionsStatic,
+        ...uniqueFreightCharges,
+      ]);
+
+      const existingDestChargeKeys = new Set(
+        destinationChargeSuggestionsStatic.map((c) => c.toLowerCase()),
+      );
+      const uniqueDestCharges = [...submittedDestinationChargeNames]
+        .filter((c) => !existingDestChargeKeys.has(c.toLowerCase()))
+        .sort();
+      setMergedDestinationChargeSuggestions([
+        ...destinationChargeSuggestionsStatic,
+        ...uniqueDestCharges,
+      ]);
+
       setIsDataReady(true);
     };
 
@@ -415,11 +678,200 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     }
   }, [quotationSegment, basicInfo.terms]);
 
+  // Sync basicInfo.equipment with containerSelections summary for FCL segments
+  useEffect(() => {
+    const seg = quotationSegment.toLowerCase();
+    if (seg === "sea export fcl" || seg === "sea import fcl") {
+      if (containerSelections.length > 0) {
+        const summary = containerSelections
+          .map((s) => `${s.type.replace(" Container", "")} \u00d7${s.qty}`)
+          .join(", ");
+        setBasicInfo((prev) => ({ ...prev, equipment: summary }));
+      } else {
+        setBasicInfo((prev) => ({ ...prev, equipment: "" }));
+      }
+    }
+  }, [containerSelections, quotationSegment]);
+
+  // Effect to prefill form when copying a quotation
+  useEffect(() => {
+    if (copyQuotation) {
+      // Prefill basic info from copied quotation
+      setBasicInfo({
+        customerNameAndAddress: copyQuotation.customerName || "",
+        shipperNameAndAddress: copyQuotation.shipperName || "",
+        consigneeAddress: copyQuotation.consigneeName || "",
+        equipment: copyQuotation.equipment || "",
+        weight: copyQuotation.weight || "",
+        cbm: copyQuotation.cbm || "",
+        terms: copyQuotation.terms || "",
+        commodity: copyQuotation.commodity || "",
+        por: copyQuotation.por || "",
+        pol: copyQuotation.pol || "",
+        pod: copyQuotation.pod || "",
+        finalDestination: copyQuotation.finalDestination || "",
+        shippingLine: copyQuotation.shippingLine || "",
+        etd: copyQuotation.etd || "",
+        eta: copyQuotation.eta || "",
+        totalTransitTime: copyQuotation.transitTime || "",
+        ratesValidity: copyQuotation.ratesValidity || "",
+        remarks: copyQuotation.remarks || "",
+        numberOfPackets: copyQuotation.numberOfPackets || "",
+        cargoSizes: Array.isArray(copyQuotation.cargoSizes) && copyQuotation.cargoSizes.length > 0 ? copyQuotation.cargoSizes : (copyQuotation.cargoSize && copyQuotation.cargoSize.trim() ? [copyQuotation.cargoSize] : [""]),
+        airLines: copyQuotation.airLines || "",
+        airPortOfDeparture: copyQuotation.airPortOfDeparture || "",
+        airPortOfDestination: copyQuotation.airPortOfDestination || "",
+        chargeableWeight: copyQuotation.chargeableWeight || "",
+        volumeWeight: copyQuotation.volumeWeight || "",
+        size: copyQuotation.size || "",
+        railRamp: copyQuotation.railRamp || "",
+        pickupLocation: copyQuotation.pickup_location || "",
+      });
+
+      // Prefill quotation segment
+      setQuotationSegment(copyQuotation.quotationSegment || "");
+
+      // Prefill service job type
+      setServiceJobType(copyQuotation.serviceJobType || "");
+
+      // Prefill multi-container selections
+      if (copyQuotation.equipmentList && copyQuotation.equipmentList.length > 0) {
+        setContainerSelections(copyQuotation.equipmentList);
+      } else {
+        setContainerSelections([]);
+      }
+
+      // Prefill charges with new IDs to avoid conflicts
+      if (
+        copyQuotation.originCharges &&
+        copyQuotation.originCharges.length > 0
+      ) {
+        setOriginCharges(
+          copyQuotation.originCharges.map((c) => ({
+            ...c,
+            id: Date.now() + Math.random(),
+          })),
+        );
+      }
+      if (
+        copyQuotation.freightCharges &&
+        copyQuotation.freightCharges.length > 0
+      ) {
+        setFreightCharges(
+          copyQuotation.freightCharges.map((c) => ({
+            ...c,
+            id: Date.now() + Math.random(),
+          })),
+        );
+      }
+      if (
+        copyQuotation.destinationCharges &&
+        copyQuotation.destinationCharges.length > 0
+      ) {
+        setDestinationCharges(
+          copyQuotation.destinationCharges.map((c) => ({
+            ...c,
+            id: Date.now() + Math.random(),
+          })),
+        );
+      }
+
+      // Prefill terms and conditions
+      if (
+        copyQuotation.termsAndConditions &&
+        copyQuotation.termsAndConditions.length > 0
+      ) {
+        setSelectedTerms(copyQuotation.termsAndConditions);
+      }
+
+      // Clear copy state so this is treated as a brand new quotation
+      if (onCopyCleared) onCopyCleared();
+    }
+  }, [copyQuotation]);
+
+  // Effect to prefill form when editing a draft quotation
+  useEffect(() => {
+    if (draftQuotation) {
+      // Prefill basic info
+      setBasicInfo({
+        customerNameAndAddress: draftQuotation.customerName || "",
+        shipperNameAndAddress: draftQuotation.shipperName || "",
+        consigneeAddress: draftQuotation.consigneeName || "",
+        equipment: draftQuotation.equipment || "",
+        weight: draftQuotation.weight || "",
+        cbm: draftQuotation.cbm || "",
+        terms: draftQuotation.terms || "",
+        commodity: draftQuotation.commodity || "",
+        por: draftQuotation.por || "",
+        pol: draftQuotation.pol || "",
+        pod: draftQuotation.pod || "",
+        finalDestination: draftQuotation.finalDestination || "",
+        shippingLine: draftQuotation.shippingLine || "",
+        etd: draftQuotation.etd || "",
+        eta: draftQuotation.eta || "",
+        totalTransitTime: draftQuotation.transitTime || "",
+        ratesValidity: draftQuotation.ratesValidity || "",
+        remarks: draftQuotation.remarks || "",
+        numberOfPackets: draftQuotation.numberOfPackets || "",
+        cargoSizes: Array.isArray(draftQuotation.cargoSizes) && draftQuotation.cargoSizes.length > 0 ? draftQuotation.cargoSizes : (draftQuotation.cargoSize && draftQuotation.cargoSize.trim() ? [draftQuotation.cargoSize] : [""]),
+        airLines: draftQuotation.airLines || "",
+        airPortOfDeparture: draftQuotation.airPortOfDeparture || "",
+        airPortOfDestination: draftQuotation.airPortOfDestination || "",
+        chargeableWeight: draftQuotation.chargeableWeight || "",
+        volumeWeight: draftQuotation.volumeWeight || "",
+        size: draftQuotation.size || "",
+        railRamp: draftQuotation.railRamp || "",
+        pickupLocation: draftQuotation.pickup_location || "",
+      });
+
+      // Prefill quotation segment
+      setQuotationSegment(draftQuotation.quotationSegment || "");
+
+      // Prefill service job type
+      setServiceJobType(draftQuotation.serviceJobType || "");
+
+      // Prefill multi-container selections
+      if (draftQuotation.equipmentList && draftQuotation.equipmentList.length > 0) {
+        setContainerSelections(draftQuotation.equipmentList);
+      } else {
+        setContainerSelections([]);
+      }
+
+      // Prefill charges
+      if (
+        draftQuotation.originCharges &&
+        draftQuotation.originCharges.length > 0
+      ) {
+        setOriginCharges(draftQuotation.originCharges);
+      }
+      if (
+        draftQuotation.freightCharges &&
+        draftQuotation.freightCharges.length > 0
+      ) {
+        setFreightCharges(draftQuotation.freightCharges);
+      }
+      if (
+        draftQuotation.destinationCharges &&
+        draftQuotation.destinationCharges.length > 0
+      ) {
+        setDestinationCharges(draftQuotation.destinationCharges);
+      }
+
+      // Prefill terms and conditions
+      if (
+        draftQuotation.termsAndConditions &&
+        draftQuotation.termsAndConditions.length > 0
+      ) {
+        setSelectedTerms(draftQuotation.termsAndConditions);
+      }
+    }
+  }, [draftQuotation]);
+
   // Handler for term search input
   const handleTermSearchChange = (value) => {
     setTermSearchInput(value);
     if (value.trim().length > 0) {
-      const filtered = allAvailableTerms.filter(
+      const filtered = mergedTermsData.filter(
         (term) =>
           term.toLowerCase().includes(value.toLowerCase()) &&
           !selectedTerms.includes(term),
@@ -428,7 +880,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       setShowTermsSuggestions(true);
     } else {
       setFilteredTermsSuggestions(
-        allAvailableTerms.filter((term) => !selectedTerms.includes(term)),
+        mergedTermsData.filter((term) => !selectedTerms.includes(term)),
       );
       setShowTermsSuggestions(true);
     }
@@ -458,8 +910,35 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     setSelectedTerms((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Drag-and-drop sensors for terms reordering
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  // Handler for drag-and-drop reordering of terms
+  const handleTermsDragEnd = (event) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setSelectedTerms((prev) => {
+        const oldIndex = prev.findIndex(
+          (term, i) => `term-${i}-${term.substring(0, 20)}` === active.id,
+        );
+        const newIndex = prev.findIndex(
+          (term, i) => `term-${i}-${term.substring(0, 20)}` === over.id,
+        );
+        if (oldIndex !== -1 && newIndex !== -1) {
+          return arrayMove(prev, oldIndex, newIndex);
+        }
+        return prev;
+      });
+    }
+  };
+
   // Origin Charge Suggestions
-  const originChargeSuggestions = [
+  const originChargeSuggestionsStatic = [
     "Transport Charge",
     "Ex Work Charge",
     "BL Fee Charge",
@@ -477,8 +956,9 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
   ].sort();
 
   // Freight Charge Suggestions
-  const freightChargeSuggestions = [
+  const freightChargeSuggestionsStatic = [
     "Ocean Freight Charges",
+    "Transport Charge",
     "ISPS Charge",
     "Seal Charge",
     "ACD Charge",
@@ -490,7 +970,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
   ].sort();
 
   // Destination Charge Suggestions
-  const destinationChargeSuggestions = [
+  const destinationChargeSuggestionsStatic = [
     "Shipping Line Charge",
     "Air Freight Charge",
     "Documentation Charge",
@@ -512,14 +992,25 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     "Trucking Charges to Door (By Road Only)",
   ].sort();
 
+  // Merged charge suggestions (static + custom from DB)
+  const [mergedOriginChargeSuggestions, setMergedOriginChargeSuggestions] =
+    useState(originChargeSuggestionsStatic);
+  const [mergedFreightChargeSuggestions, setMergedFreightChargeSuggestions] =
+    useState(freightChargeSuggestionsStatic);
+  const [
+    mergedDestinationChargeSuggestions,
+    setMergedDestinationChargeSuggestions,
+  ] = useState(destinationChargeSuggestionsStatic);
+
   // Origin Charges State
   const [originCharges, setOriginCharges] = useState([
     {
       id: Date.now(),
       charges: "",
-      currency: "USD",
+      currency: "INR",
       amount: "",
       unit: "Per BL",
+      containerAmounts: {},
     },
   ]);
 
@@ -528,9 +1019,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     {
       id: Date.now() + 1,
       charges: "",
-      currency: "USD",
+      currency: "INR",
       amount: "",
       unit: "Per BL",
+      containerAmounts: {},
     },
   ]);
 
@@ -539,9 +1031,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     {
       id: Date.now() + 2,
       charges: "",
-      currency: "USD",
+      currency: "INR",
       amount: "",
       unit: "Per BL",
+      containerAmounts: {},
     },
   ]);
 
@@ -604,11 +1097,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     // Handle autocomplete for customer address
     if (name === "customerNameAndAddress") {
       if (value.trim().length > 0) {
-        const filtered = mergedCustomerData.filter(
-          (customer) =>
-            customer.name.toLowerCase().includes(value.toLowerCase()) ||
-            customer.address.toLowerCase().includes(value.toLowerCase()),
-        );
+        const filtered = filterSuggestions(customerSearchIndex, value);
         setFilteredCustomers(filtered);
         setShowCustomerDropdown(filtered.length > 0);
       } else {
@@ -616,14 +1105,21 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       }
     }
 
+    // Handle autocomplete for shipper
+    if (name === "shipperNameAndAddress") {
+      if (value.trim().length > 0) {
+        const filtered = filterSuggestions(shipperSearchIndex, value);
+        setFilteredShippers(filtered);
+        setShowShipperDropdown(filtered.length > 0);
+      } else {
+        setShowShipperDropdown(false);
+      }
+    }
+
     // Handle autocomplete for consignee address
     if (name === "consigneeAddress") {
       if (value.trim().length > 0) {
-        const filtered = mergedConsigneeData.filter(
-          (consignee) =>
-            consignee.name.toLowerCase().includes(value.toLowerCase()) ||
-            consignee.address.toLowerCase().includes(value.toLowerCase()),
-        );
+        const filtered = filterSuggestions(consigneeSearchIndex, value);
         setFilteredConsignees(filtered);
         setShowConsigneeDropdown(filtered.length > 0);
       } else {
@@ -693,7 +1189,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     // Handle autocomplete for Airlines
     if (name === "airLines") {
       if (value.trim().length > 0) {
-        const filtered = airlines
+        const filtered = mergedAirlinesData
           .filter((airline) =>
             airline.toLowerCase().includes(value.toLowerCase()),
           )
@@ -771,6 +1267,15 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       customerNameAndAddress: `${customer.name}\n${customer.address}`,
     }));
     setShowCustomerDropdown(false);
+  };
+
+  // Handle shipper selection from dropdown
+  const handleShipperSelect = (shipper) => {
+    setBasicInfo((prev) => ({
+      ...prev,
+      shipperNameAndAddress: `${shipper.name}\n${shipper.address}`,
+    }));
+    setShowShipperDropdown(false);
   };
 
   // Handle consignee selection from dropdown
@@ -879,9 +1384,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       {
         id: Date.now(),
         charges: "",
-        currency: "USD",
+        currency: "INR",
         amount: "",
         unit: "Per BL",
+        containerAmounts: {},
       },
     ]);
   };
@@ -897,10 +1403,17 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       ),
     );
 
-    // Handle autocomplete for charges field
+    // Handle autocomplete for charges field, excluding already-added charges
     if (field === "charges") {
-      const filtered = originChargeSuggestions.filter((suggestion) =>
-        suggestion.toLowerCase().includes(value.toLowerCase()),
+      const usedCharges = new Set(
+        originCharges
+          .filter((c) => c.id !== id && c.charges.trim())
+          .map((c) => c.charges.trim().toLowerCase()),
+      );
+      const filtered = mergedOriginChargeSuggestions.filter(
+        (suggestion) =>
+          !usedCharges.has(suggestion.toLowerCase()) &&
+          suggestion.toLowerCase().includes(value.toLowerCase()),
       );
       setFilteredOriginChargeSuggestions((prev) => ({
         ...prev,
@@ -933,9 +1446,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       {
         id: Date.now(),
         charges: "",
-        currency: "USD",
+        currency: "INR",
         amount: "",
         unit: "Per BL",
+        containerAmounts: {},
       },
     ]);
   };
@@ -951,10 +1465,17 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       ),
     );
 
-    // Handle autocomplete for charges field
+    // Handle autocomplete for charges field, excluding already-added charges
     if (field === "charges") {
-      const filtered = freightChargeSuggestions.filter((suggestion) =>
-        suggestion.toLowerCase().includes(value.toLowerCase()),
+      const usedCharges = new Set(
+        freightCharges
+          .filter((c) => c.id !== id && c.charges.trim())
+          .map((c) => c.charges.trim().toLowerCase()),
+      );
+      const filtered = mergedFreightChargeSuggestions.filter(
+        (suggestion) =>
+          !usedCharges.has(suggestion.toLowerCase()) &&
+          suggestion.toLowerCase().includes(value.toLowerCase()),
       );
       setFilteredFreightChargeSuggestions((prev) => ({
         ...prev,
@@ -987,9 +1508,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       {
         id: Date.now(),
         charges: "",
-        currency: "USD",
+        currency: "INR",
         amount: "",
         unit: "Per BL",
+        containerAmounts: {},
       },
     ]);
   };
@@ -1009,8 +1531,15 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
 
     // Handle autocomplete for charges field
     if (field === "charges") {
-      const filtered = destinationChargeSuggestions.filter((suggestion) =>
-        suggestion.toLowerCase().includes(value.toLowerCase()),
+      const usedCharges = new Set(
+        destinationCharges
+          .filter((c) => c.id !== id && c.charges.trim())
+          .map((c) => c.charges.trim().toLowerCase()),
+      );
+      const filtered = mergedDestinationChargeSuggestions.filter(
+        (suggestion) =>
+          !usedCharges.has(suggestion.toLowerCase()) &&
+          suggestion.toLowerCase().includes(value.toLowerCase()),
       );
       setFilteredDestinationChargeSuggestions((prev) => ({
         ...prev,
@@ -1035,6 +1564,61 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       [id]: false,
     }));
   };
+
+  // ── Multi-container (FCL) handlers ──────────────────────────────────────────
+  const addContainerSelection = () => {
+    if (!newContainerType || newContainerQty < 1) return;
+    const existing = containerSelections.find((s) => s.type === newContainerType);
+    if (existing) {
+      setContainerSelections((prev) =>
+        prev.map((s) =>
+          s.type === newContainerType
+            ? { ...s, qty: s.qty + Number(newContainerQty) }
+            : s,
+        ),
+      );
+    } else {
+      setContainerSelections((prev) => [
+        ...prev,
+        { type: newContainerType, qty: Number(newContainerQty) },
+      ]);
+    }
+  };
+
+  const removeContainerSelection = (type) => {
+    setContainerSelections((prev) => prev.filter((s) => s.type !== type));
+  };
+
+  const handleOriginContainerAmount = (chargeId, containerType, value) => {
+    setOriginCharges((prev) =>
+      prev.map((c) =>
+        c.id === chargeId
+          ? { ...c, containerAmounts: { ...(c.containerAmounts || {}), [containerType]: value } }
+          : c,
+      ),
+    );
+  };
+
+  const handleFreightContainerAmount = (chargeId, containerType, value) => {
+    setFreightCharges((prev) =>
+      prev.map((c) =>
+        c.id === chargeId
+          ? { ...c, containerAmounts: { ...(c.containerAmounts || {}), [containerType]: value } }
+          : c,
+      ),
+    );
+  };
+
+  const handleDestContainerAmount = (chargeId, containerType, value) => {
+    setDestinationCharges((prev) =>
+      prev.map((c) =>
+        c.id === chargeId
+          ? { ...c, containerAmounts: { ...(c.containerAmounts || {}), [containerType]: value } }
+          : c,
+      ),
+    );
+  };
+  // ────────────────────────────────────────────────────────────────────────────
 
   // Generate quotation number based on selected segment
   const generateQuotationNumber = () => {
@@ -1072,11 +1656,13 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         "pol",
         "pod",
         "finalDestination",
+        "pickupLocation",
         "railRamp",
         "shippingLine",
         "totalTransitTime",
         "etd",
         "eta",
+        "ratesValidity",
         "remarks",
       ];
     }
@@ -1099,11 +1685,13 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         "pol",
         "pod",
         "finalDestination",
+        "pickupLocation",
         "railRamp",
         "shippingLine",
         "totalTransitTime",
         "etd",
         "eta",
+        "ratesValidity",
         "remarks",
       ];
     }
@@ -1120,16 +1708,18 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         "terms",
         "airPortOfDeparture",
         "airPortOfDestination",
+        "pickupLocation",
         "railRamp",
         "airLines",
         "totalTransitTime",
+        "ratesValidity",
         "remarks",
       ];
     }
 
     // Service Job - show special section
     if (segment === "service job") {
-      return ["serviceJobRadio", "railRamp", "remarks"];
+      return ["serviceJobRadio", "pickupLocation", "railRamp", "ratesValidity", "remarks"];
     }
 
     return [];
@@ -1144,6 +1734,137 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       basicInfo.commodity?.trim() &&
       basicInfo.weight?.trim()
     );
+  };
+
+  // Check if minimum fields are filled for draft save
+  const canSaveDraft = () => {
+    return quotationSegment && basicInfo.customerNameAndAddress?.trim();
+  };
+
+  // Save quotation as draft (Submit Later)
+  const handleSaveDraft = async () => {
+    if (!quotationSegment) {
+      alert("Please select a Quotation Segment before saving as draft.");
+      return;
+    }
+
+    if (!basicInfo.customerNameAndAddress?.trim()) {
+      alert("Please fill in Customer Name & Address before saving as draft.");
+      return;
+    }
+
+    setIsSavingDraft(true);
+
+    // Get the selected segment details
+    const selectedSegmentDetails = quotationSegments.find(
+      (s) => s.label === quotationSegment,
+    );
+
+    // Generate draft quotation number (or use existing if editing)
+    const draftQuotationNumber =
+      draftQuotation?.id || generateQuotationNumber();
+
+    // Prepare draft quotation data
+    const draftData = {
+      id: draftQuotationNumber,
+      quotationSegment: quotationSegment,
+      quotationSegmentPrefix: selectedSegmentDetails?.prefix || "",
+      customerName: basicInfo.customerNameAndAddress,
+      shipperName: basicInfo.shipperNameAndAddress,
+      consigneeName: basicInfo.consigneeAddress,
+      equipment: basicInfo.equipment,
+      equipmentList: containerSelections,
+      weight: basicInfo.weight,
+      cbm: basicInfo.cbm,
+      terms: basicInfo.terms,
+      commodity: basicInfo.commodity,
+      por: basicInfo.por,
+      pol: basicInfo.pol,
+      pod: basicInfo.pod,
+      finalDestination: basicInfo.finalDestination,
+      railRamp: basicInfo.railRamp,
+      pickup_location: basicInfo.pickupLocation,
+      shippingLine: basicInfo.shippingLine,
+      etd: basicInfo.etd,
+      eta: basicInfo.eta,
+      transitTime: basicInfo.totalTransitTime,
+      ratesValidity: basicInfo.ratesValidity,
+      remarks: basicInfo.remarks,
+      numberOfPackets: basicInfo.numberOfPackets,
+      cargoSizes: basicInfo.cargoSizes,
+      airLines: basicInfo.airLines,
+      airPortOfDeparture: basicInfo.airPortOfDeparture,
+      airPortOfDestination: basicInfo.airPortOfDestination,
+      chargeableWeight: basicInfo.chargeableWeight,
+      volumeWeight: basicInfo.volumeWeight,
+      size: basicInfo.size,
+      serviceJobType: serviceJobType,
+      originCharges: originCharges,
+      freightCharges: freightCharges,
+      destinationCharges: destinationCharges,
+      termsAndConditions: selectedTerms,
+      createdBy:
+        currentUser?.fullName || currentUser?.username || "Unknown User",
+      createdByRole: currentUser?.role || "User",
+      createdByLocation: currentUser?.location || "N/A",
+      createdDate: draftQuotation?.createdDate || new Date().toISOString(),
+      isDraft: true, // Mark as draft
+      status: "draft", // Backup draft indicator
+      pdfFileName: "",
+    };
+
+    try {
+      let response;
+      let method = "POST";
+      let url = `${API_BASE_URL}/quotations`;
+
+      // If editing existing draft, update it
+      if (draftQuotation?.id) {
+        method = "PUT";
+        url = `${API_BASE_URL}/quotations/${draftQuotation.id}`;
+      }
+
+      response = await fetch(url, {
+        method: method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(draftData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("Failed to save draft:", result.message);
+        alert(`Failed to save draft: ${result.message || "Unknown error"}`);
+        setIsSavingDraft(false);
+        return;
+      }
+
+      console.log("Draft saved successfully:", result);
+
+      // Clear the draft quotation reference
+      if (onDraftCleared) {
+        onDraftCleared();
+      }
+
+      // Invalidate cache to force refresh on dashboard
+      suggestionsCache.data = null;
+      suggestionsCache.timestamp = null;
+      invalidateQuotationsCache();
+
+      alert(`Draft saved successfully! Quotation ID: ${draftQuotationNumber}`);
+
+      // Navigate to View Quotations page
+      if (onNavigate) {
+        onNavigate("quotation");
+      }
+    } catch (error) {
+      console.error("Error saving draft:", error);
+      alert("Failed to save draft. Please try again.");
+    } finally {
+      setIsSavingDraft(false);
+    }
   };
 
   // Generate PDF and Submit
@@ -1179,390 +1900,362 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     const newQuotationNumber = generateQuotationNumber();
     setQuotationNumber(newQuotationNumber);
 
-    let yPos = 15;
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    const usable = pageW - 2 * margin;
+    let y = 12;
 
-    // Add logo with high quality - use original PNG without any preprocessing
-    // The 'NONE' compression option preserves full image quality in PDF
+    /* ---- Helpers (matching Pre-Advice style) ---- */
+    const addPageIfNeeded = (needed = 20) => {
+      if (y + needed > pageH - 15) {
+        doc.addPage();
+        y = 15;
+      }
+    };
+
+    const sanitizeForPDF = (text) => {
+      if (!text) return text;
+      return String(text)
+        .replace(/₹/g, "Rs.")
+        .replace(/\u2192/g, "->")
+        .replace(/\u2190/g, "<-")
+        .replace(/\u2194/g, "<->");
+    };
+
+    const hasVal = (v) =>
+      v &&
+      String(v).trim() !== "" &&
+      String(v).trim() !== "-" &&
+      String(v).trim() !== "N/A";
+
+    const sectionTitle = (title) => {
+      addPageIfNeeded(14);
+      doc.setFillColor(245, 245, 245);
+      doc.rect(margin, y, usable, 8, "F");
+      doc.setTextColor(37, 99, 235);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text(title.toUpperCase(), margin + 2, y + 5.5);
+      y += 12;
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "normal");
+    };
+
+    const kvRow = (pairs) => {
+      const colW = usable / pairs.length;
+      const maxValueW = colW - 4;
+      const wrapped = pairs.map(([, value]) => {
+        const text = sanitizeForPDF(String(value || "-"));
+        doc.setFontSize(8.5);
+        return doc.splitTextToSize(text, maxValueW);
+      });
+      const maxLines = Math.max(...wrapped.map((l) => l.length));
+      const rowH = 5 + maxLines * 3.8;
+      addPageIfNeeded(rowH + 2);
+
+      pairs.forEach(([label], i) => {
+        const x = margin + i * colW;
+        doc.setFontSize(7);
+        doc.setTextColor(100, 100, 100);
+        doc.text(sanitizeForPDF(label), x + 2, y + 3);
+        doc.setFontSize(8.5);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "normal");
+        doc.text(wrapped[i], x + 2, y + 7);
+      });
+      y += rowH;
+    };
+
+    /* ---------- Header with Logo (compact) ---------- */
     try {
-      doc.addImage(OmTransLogo, "JPEG", 15, yPos, 45, 17, "logo", "NONE");
+      doc.addImage(OmTransLogo, "JPEG", margin, y, 30, 11, "logo", "NONE");
     } catch (e) {
-      // Fallback if NONE compression fails
-      doc.addImage(OmTransLogo, "JPEG", 15, yPos, 45, 17);
+      doc.addImage(OmTransLogo, "JPEG", margin, y, 30, 11);
     }
 
-    // Company Info (top right)
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(37, 99, 235);
-    doc.text("OmTrans Logistics Ltd.", 195, yPos + 5, { align: "right" });
-    doc.setFontSize(8);
+    doc.text("OmTrans Logistics Ltd.", pageW - margin, y + 4, {
+      align: "right",
+    });
+    doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 100, 100);
-    doc.text("Simplifying Your Business", 195, yPos + 10, { align: "right" });
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 195, yPos + 15, {
+    doc.text("Simplifying Your Business", pageW - margin, y + 8, {
       align: "right",
     });
 
-    yPos += 25;
+    y += 15;
 
-    // Quotation Header
+    /* ---------- Compact Quotation Header Bar ---------- */
     doc.setFillColor(37, 99, 235);
-    doc.rect(15, yPos, 180, 15, "F");
+    doc.rect(margin, y, usable, 9, "F");
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("QUOTATION", 105, yPos + 10, { align: "center" });
-
-    yPos += 20;
-
-    // Quotation Number and Segment Box
-    doc.setFillColor(240, 248, 255);
-    doc.rect(15, yPos, 180, 16, "F");
-    doc.setTextColor(37, 99, 235);
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.text(`Quotation No: ${newQuotationNumber}`, 105, yPos + 6, {
-      align: "center",
-    });
     doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Segment: ${quotationSegment}`, 105, yPos + 12, {
-      align: "center",
-    });
+    doc.setFont("helvetica", "bold");
+    doc.text(
+      `Quotation No: ${newQuotationNumber}  |  Segment: ${quotationSegment}  |  Date: ${new Date().toLocaleDateString()}`,
+      pageW / 2,
+      y + 6.5,
+      { align: "center" },
+    );
+    y += 13;
 
-    yPos += 20;
-    doc.setTextColor(0, 0, 0);
+    /* ========== CUSTOMER, SHIPPER & CONSIGNEE DETAILS ========== */
+    addPageIfNeeded(22);
+    const halfW = usable / 2 - 2;
 
-    // Customer & Consignee Section
+    // Left header: Customer
     doc.setFillColor(245, 245, 245);
-    doc.rect(15, yPos, 85, 8, "F");
-    doc.rect(110, yPos, 85, 8, "F");
-
-    doc.setFontSize(10);
+    doc.rect(margin, y, halfW, 7, "F");
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(37, 99, 235);
-    doc.text("CUSTOMER DETAILS", 17, yPos + 5.5);
-    doc.text("CONSIGNEE DETAILS", 112, yPos + 5.5);
+    doc.text("CUSTOMER DETAILS", margin + 2, y + 5);
 
-    yPos += 10;
+    // Right header: Consignee
+    doc.setFillColor(245, 245, 245);
+    doc.rect(margin + halfW + 4, y, halfW, 7, "F");
+    doc.text("CONSIGNEE DETAILS", margin + halfW + 6, y + 5);
+
+    y += 9;
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
 
-    const customerLines = doc.splitTextToSize(
-      basicInfo.customerNameAndAddress || "N/A",
-      80,
-    );
-    doc.text(customerLines, 17, yPos);
+    const custLines = doc.splitTextToSize(sanitizeForPDF(basicInfo.customerNameAndAddress || "N/A"), halfW - 4);
+    const consLines = doc.splitTextToSize(sanitizeForPDF(basicInfo.consigneeAddress || "N/A"), halfW - 4);
+    doc.text(custLines, margin + 2, y + 1);
+    doc.text(consLines, margin + halfW + 6, y + 1);
+    y += Math.max(custLines.length, consLines.length) * 3.5 + 6;
 
-    const consigneeLines = doc.splitTextToSize(
-      basicInfo.consigneeAddress || "N/A",
-      80,
-    );
-    doc.text(consigneeLines, 112, yPos);
+    // Shipper details (full-width row, only if data entered)
+    if (basicInfo.shipperNameAndAddress && basicInfo.shipperNameAndAddress.trim()) {
+      addPageIfNeeded(16);
+      doc.setFillColor(245, 245, 245);
+      doc.rect(margin, y, usable, 7, "F");
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(37, 99, 235);
+      doc.text("SHIPPER DETAILS", margin + 2, y + 5);
+      y += 9;
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      const shipperLines = doc.splitTextToSize(sanitizeForPDF(basicInfo.shipperNameAndAddress), usable - 4);
+      doc.text(shipperLines, margin + 2, y + 1);
+      y += shipperLines.length * 3.5 + 6;
+    }
 
-    yPos += Math.max(customerLines.length, consigneeLines.length) * 4 + 8;
+    /* ========== SHIPMENT DETAILS ========== */
+    sectionTitle("Shipment Details");
 
-    // Shipment Details Table
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(37, 99, 235);
-    doc.text("SHIPMENT DETAILS", 15, yPos);
-    yPos += 2;
-
-    // Build PDF body dynamically based on visible fields
     const visibleFields = getVisibleFields();
-    const pdfBody = [];
 
-    // Define field mappings
+    // Service Job Type
+    if (
+      quotationSegment.toLowerCase() === "service job" &&
+      hasVal(serviceJobType)
+    ) {
+      kvRow([["Service Type", serviceJobType]]);
+    }
+
+    // Build shipment detail pairs dynamically based on visible fields
     const fieldMap = {
-      numberOfPackets: [
-        "Number of Packets",
-        basicInfo.numberOfPackets || "N/A",
-      ],
-      weight: ["Gross Weight (kg)", basicInfo.weight || "N/A"],
-      equipment: ["Equipment", basicInfo.equipment || "N/A"],
-      cargoSize: ["Cargo Size", basicInfo.cargoSize || "N/A"],
-      cbm: ["CBM (m³)", basicInfo.cbm || "N/A"],
-      commodity: ["Commodity", basicInfo.commodity || "N/A"],
-      terms: ["Terms", basicInfo.terms || "N/A"],
-      por: ["POR", basicInfo.por || "N/A"],
-      pol: ["POL", basicInfo.pol || "N/A"],
-      pod: ["POD", basicInfo.pod || "N/A"],
-      finalDestination: [
-        "Final Destination",
-        basicInfo.finalDestination || "N/A",
-      ],
-      shippingLine: ["Shipping Line", basicInfo.shippingLine || "N/A"],
-      totalTransitTime: ["Transit Time", basicInfo.totalTransitTime || "N/A"],
-      etd: ["ETD", basicInfo.etd || "N/A"],
-      eta: ["ETA", basicInfo.eta || "N/A"],
-      airLines: ["Airlines", basicInfo.airLines || "N/A"],
+      numberOfPackets: ["No. of Packets", basicInfo.numberOfPackets],
+      weight: ["Gross Weight (kg)", basicInfo.weight],
+      equipment: ["Equipment", basicInfo.equipment],
+      cargoSize: ["Cargo Size", (basicInfo.cargoSizes || []).filter(Boolean).join(", ")],
+      cbm: ["CBM (m³)", basicInfo.cbm],
+      commodity: ["Commodity", basicInfo.commodity],
+      terms: ["Terms", basicInfo.terms],
+      por: ["POR", basicInfo.por],
+      pol: ["POL", basicInfo.pol],
+      pod: ["POD", basicInfo.pod],
+      finalDestination: ["Final Destination", basicInfo.finalDestination],
+      shippingLine: ["Shipping Line", basicInfo.shippingLine],
+      totalTransitTime: ["Transit Time", basicInfo.totalTransitTime],
+      etd: ["ETD", basicInfo.etd],
+      eta: ["ETA", basicInfo.eta],
+      ratesValidity: ["Quotation Validity Date", (() => { if (!basicInfo.ratesValidity) return ""; const [y, m, d] = basicInfo.ratesValidity.split("-"); return `${d} ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m - 1]} ${y}`; })()],
+      airLines: ["Airlines", basicInfo.airLines],
       airPortOfDeparture: [
         "Airport of Departure",
-        basicInfo.airPortOfDeparture || "N/A",
+        basicInfo.airPortOfDeparture,
       ],
       airPortOfDestination: [
         "Airport of Destination",
-        basicInfo.airPortOfDestination || "N/A",
+        basicInfo.airPortOfDestination,
       ],
-      chargeableWeight: [
-        "Chargeable Weight (kg)",
-        basicInfo.chargeableWeight || "N/A",
-      ],
-      volumeWeight: ["Volume Weight", basicInfo.volumeWeight || "N/A"],
-      size: ["Size", basicInfo.size || "N/A"],
-      railRamp: ["Rail Ramp", basicInfo.railRamp || "N/A"],
+      chargeableWeight: ["Chargeable Weight (kg)", basicInfo.chargeableWeight],
+      volumeWeight: ["Volume Weight", basicInfo.volumeWeight],
+      size: ["Size", basicInfo.size],
+      railRamp: ["Rail Ramp", basicInfo.railRamp],
+      pickupLocation: ["Pickup Location", basicInfo.pickupLocation],
     };
 
-    // Add Service Job Type if applicable
-    if (quotationSegment.toLowerCase() === "service job") {
-      pdfBody.push(["Service Type", serviceJobType || "N/A", "", ""]);
-    }
-
-    // Build rows in pairs for 2-column layout
+    // Collect applicable fields into table rows (2-column key-value pairs)
+    const pdfBody = [];
     let currentRow = [];
     visibleFields.forEach((field) => {
-      if (field === "serviceJobRadio" || field === "remarks") return; // Skip these in shipment details
-
-      // Skip railRamp if empty (optional field)
-      if (
-        field === "railRamp" &&
-        (!basicInfo.railRamp || !basicInfo.railRamp.trim())
-      )
-        return;
-
+      if (field === "serviceJobRadio" || field === "remarks") return;
+      if (field === "railRamp" && !hasVal(basicInfo.railRamp)) return;
+      if (field === "pickupLocation" && !hasVal(basicInfo.pickupLocation)) return;
       if (fieldMap[field]) {
-        currentRow.push(fieldMap[field][0], fieldMap[field][1]);
-
+        currentRow.push(fieldMap[field][0], sanitizeForPDF(fieldMap[field][1] || "N/A"));
         if (currentRow.length === 4) {
           pdfBody.push([...currentRow]);
           currentRow = [];
         }
       }
     });
-
-    // Add remaining fields if row is not complete
     if (currentRow.length > 0) {
-      while (currentRow.length < 4) {
-        currentRow.push("");
-      }
+      while (currentRow.length < 4) currentRow.push("");
       pdfBody.push(currentRow);
     }
 
     autoTable(doc, {
-      startY: yPos,
+      startY: y,
       head: [["Field", "Details", "Field", "Details"]],
       body: pdfBody,
-      theme: "grid",
+      styles: {
+        fontSize: 7.5,
+        cellPadding: 1.8,
+        lineColor: [220, 220, 220],
+        lineWidth: 0.2,
+      },
       headStyles: {
         fillColor: [37, 99, 235],
-        textColor: [255, 255, 255],
+        textColor: 255,
         fontStyle: "bold",
-        fontSize: 9,
-      },
-      bodyStyles: {
         fontSize: 8,
       },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
       columnStyles: {
-        0: { fontStyle: "bold", cellWidth: 35 },
+        0: { fontStyle: "bold", cellWidth: 35, textColor: [80, 80, 80] },
         1: { cellWidth: 55 },
-        2: { fontStyle: "bold", cellWidth: 35 },
+        2: { fontStyle: "bold", cellWidth: 35, textColor: [80, 80, 80] },
         3: { cellWidth: 55 },
       },
-      margin: { left: 15, right: 15 },
+      margin: { left: margin, right: margin },
     });
+    y = doc.lastAutoTable.finalY + 4;
 
-    yPos = doc.lastAutoTable.finalY + 10;
+    /* ========== CHARGE TABLE HELPER ========== */
+    const chargeTable = (title, charges) => {
+      const hasData = (c) =>
+        c.charges ||
+        c.amount ||
+        (c.containerAmounts &&
+          Object.values(c.containerAmounts).some((v) => v));
+      if (!charges || !charges.length || !charges.some(hasData)) return;
 
-    // Origin Charges Table
-    if (
-      originCharges.length > 0 &&
-      originCharges.some((c) => c.charges || c.amount)
-    ) {
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(37, 99, 235);
-      doc.text("ORIGIN CHARGES", 15, yPos);
-      yPos += 2;
+      const filteredCharges = charges.filter(hasData);
+      if (filteredCharges.length === 0) return;
 
-      const originData = originCharges
-        .filter((c) => c.charges || c.amount)
-        .map((charge) => [
-          charge.charges || "N/A",
-          charge.currency || "USD",
-          charge.amount || "0",
-          charge.unit || "Per Shipment",
+      sectionTitle(title);
+      addPageIfNeeded(20);
+
+      let head, body, columnStyles;
+
+      if (isMultiContainer) {
+        // Per-container amount columns
+        const cLabels = containerSelections.map(
+          (s) => `${s.type.replace(" Container", "")} ×${s.qty}`,
+        );
+        head = [["Charge Description", "Currency", ...cLabels, "Unit"]];
+        body = filteredCharges.map((c) => [
+          sanitizeForPDF(c.charges || "-"),
+          (c.currency || "USD").replace(/[^A-Za-z]/g, "").toUpperCase() || "USD",
+          ...containerSelections.map(
+            (s) => (c.containerAmounts && c.containerAmounts[s.type]) || "0",
+          ),
+          c.unit || "Per Shipment",
         ]);
+        const descW = usable * 0.30;
+        const currW = usable * 0.11;
+        const unitW = usable * 0.12;
+        const remaining = usable - descW - currW - unitW;
+        const amtW = remaining / containerSelections.length;
+        columnStyles = {
+          0: { cellWidth: descW },
+          1: { cellWidth: currW, halign: "center" },
+        };
+        containerSelections.forEach((_, idx) => {
+          columnStyles[idx + 2] = { cellWidth: amtW, halign: "right" };
+        });
+        columnStyles[containerSelections.length + 2] = {
+          cellWidth: unitW,
+          halign: "center",
+        };
+      } else {
+        head = [["Charge Description", "Currency", "Amount", "Unit"]];
+        body = filteredCharges.map((c) => [
+          sanitizeForPDF(c.charges || "-"),
+          (c.currency || "USD").replace(/[^A-Za-z]/g, "").toUpperCase() || "USD",
+          c.amount || "0",
+          c.unit || "Per Shipment",
+        ]);
+        columnStyles = {
+          0: { cellWidth: usable * 0.42 },
+          1: { cellWidth: usable * 0.16, halign: "center" },
+          2: { cellWidth: usable * 0.22, halign: "right" },
+          3: { cellWidth: usable * 0.2, halign: "center" },
+        };
+      }
 
       autoTable(doc, {
-        startY: yPos,
-        head: [["Charge Description", "Currency", "Amount", "Unit"]],
-        body: originData,
-        theme: "striped",
+        startY: y,
+        margin: { left: margin, right: margin },
+        head,
+        body,
+        styles: {
+          fontSize: 7,
+          cellPadding: 1.5,
+          lineColor: [220, 220, 220],
+          lineWidth: 0.2,
+        },
         headStyles: {
           fillColor: [37, 99, 235],
-          textColor: [255, 255, 255],
+          textColor: 255,
           fontStyle: "bold",
-          fontSize: 9,
-        },
-        bodyStyles: {
           fontSize: 8,
         },
-        columnStyles: {
-          0: { cellWidth: 80 },
-          1: { cellWidth: 30, halign: "left" },
-          2: { cellWidth: 40, halign: "left" },
-          3: { cellWidth: 30 },
-        },
-        margin: { left: 15, right: 15 },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        columnStyles,
       });
+      y = doc.lastAutoTable.finalY + 4;
+    };
 
-      yPos = doc.lastAutoTable.finalY + 8;
-    }
+    /* ========== CHARGE SECTIONS ========== */
+    chargeTable("Origin Charges", originCharges);
+    chargeTable("Freight Charges", freightCharges);
+    chargeTable("Destination Charges", destinationCharges);
 
-    // Freight Charges Table
-    if (
-      freightCharges.length > 0 &&
-      freightCharges.some((c) => c.charges || c.amount)
-    ) {
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(37, 99, 235);
-      doc.text("FREIGHT CHARGES", 15, yPos);
-      yPos += 2;
-
-      const freightData = freightCharges
-        .filter((c) => c.charges || c.amount)
-        .map((charge) => [
-          charge.charges || "N/A",
-          charge.currency || "USD",
-          charge.amount || "0",
-          charge.unit || "Per Container",
-        ]);
-
-      autoTable(doc, {
-        startY: yPos,
-        head: [["Charge Description", "Currency", "Amount", "Unit"]],
-        body: freightData,
-        theme: "striped",
-        headStyles: {
-          fillColor: [37, 99, 235],
-          textColor: [255, 255, 255],
-          fontStyle: "bold",
-          fontSize: 9,
-        },
-        bodyStyles: {
-          fontSize: 8,
-        },
-        columnStyles: {
-          0: { cellWidth: 80 },
-          1: { cellWidth: 30, halign: "left" },
-          2: { cellWidth: 40, halign: "left" },
-          3: { cellWidth: 30 },
-        },
-        margin: { left: 15, right: 15 },
-      });
-
-      yPos = doc.lastAutoTable.finalY + 8;
-    }
-
-    // Destination Charges Table
-    if (
-      destinationCharges.length > 0 &&
-      destinationCharges.some((c) => c.charges || c.amount)
-    ) {
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(37, 99, 235);
-      doc.text("DESTINATION CHARGES", 15, yPos);
-      yPos += 2;
-
-      const destinationData = destinationCharges
-        .filter((c) => c.charges || c.amount)
-        .map((charge) => [
-          charge.charges || "N/A",
-          charge.currency || "USD",
-          charge.amount || "0",
-          charge.unit || "Per Shipment",
-        ]);
-
-      autoTable(doc, {
-        startY: yPos,
-        head: [["Charge Description", "Currency", "Amount", "Unit"]],
-        body: destinationData,
-        theme: "striped",
-        headStyles: {
-          fillColor: [37, 99, 235],
-          textColor: [255, 255, 255],
-          fontStyle: "bold",
-          fontSize: 9,
-        },
-        bodyStyles: {
-          fontSize: 8,
-        },
-        columnStyles: {
-          0: { cellWidth: 80 },
-          1: { cellWidth: 30, halign: "left" },
-          2: { cellWidth: 40, halign: "left" },
-          3: { cellWidth: 30 },
-        },
-        margin: { left: 15, right: 15 },
-      });
-
-      yPos = doc.lastAutoTable.finalY + 8;
-    }
-
-    // Check if we need a new page
-    if (yPos > 240) {
-      doc.addPage();
-      yPos = 20;
-    }
-
-    // Remarks Section
-    if (basicInfo.remarks) {
-      doc.setFillColor(245, 245, 245);
-      doc.rect(15, yPos, 180, 8, "F");
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(37, 99, 235);
-      doc.text("REMARKS", 17, yPos + 5.5);
-      yPos += 12;
-
-      doc.setTextColor(0, 0, 0);
+    /* ========== REMARKS ========== */
+    if (hasVal(basicInfo.remarks)) {
+      sectionTitle("Remarks");
+      addPageIfNeeded(15);
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-      const remarksLines = doc.splitTextToSize(basicInfo.remarks, 175);
-      doc.text(remarksLines, 17, yPos);
-      yPos += remarksLines.length * 4 + 10;
+      doc.setTextColor(0, 0, 0);
+      const remarksLines = doc.splitTextToSize(
+        sanitizeForPDF(basicInfo.remarks),
+        usable - 4,
+      );
+      doc.text(remarksLines, margin + 2, y);
+      y += remarksLines.length * 4 + 4;
     }
 
-    // Check if we need a new page for T&C
-    if (yPos > 230) {
-      doc.addPage();
-      yPos = 20;
-    }
-
-    // Terms and Conditions
-    doc.setFillColor(245, 245, 245);
-    doc.rect(15, yPos, 180, 8, "F");
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(37, 99, 235);
-    doc.text("TERMS AND CONDITIONS", 17, yPos + 5.5);
-    yPos += 12;
+    /* ========== TERMS AND CONDITIONS ========== */
+    sectionTitle("Terms and Conditions");
 
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
 
-    // Helper function to replace ₹ with Rs. for PDF compatibility
-    const sanitizeForPDF = (text) => {
-      return text.replace(/₹/g, "Rs.");
-    };
-
-    // Use dynamic selectedTerms instead of hardcoded terms
     const termsToRender =
       selectedTerms.length > 0
         ? selectedTerms
@@ -1575,35 +2268,31 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
           ];
 
     termsToRender.forEach((term, index) => {
-      // Check if we need a new page for more terms
-      if (yPos > 275) {
-        doc.addPage();
-        yPos = 20;
-      }
+      addPageIfNeeded(8);
       const termText = `${index + 1}. ${sanitizeForPDF(term)}`;
-      const termLines = doc.splitTextToSize(termText, 175);
-      doc.text(termLines, 17, yPos);
-      yPos += termLines.length * 4 + 2;
+      const termLines = doc.splitTextToSize(termText, usable - 4);
+      doc.text(termLines, margin + 2, y);
+      y += termLines.length * 3.5 + 1;
     });
 
-    yPos += 5;
-
-    // Footer with border
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-
-      // Footer line
+    /* ---------- Footer on every page ---------- */
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p);
       doc.setDrawColor(37, 99, 235);
       doc.setLineWidth(0.5);
-      doc.line(15, 285, 195, 285);
-
-      // Footer text
+      doc.line(margin, pageH - 12, pageW - margin, pageH - 12);
       doc.setFontSize(8);
       doc.setTextColor(100, 100, 100);
       doc.setFont("helvetica", "normal");
-      doc.text("OmTrans Logistics Ltd. | Simplifying Your Business", 15, 290);
-      doc.text(`Page ${i} of ${pageCount}`, 195, 290, { align: "right" });
+      doc.text(
+        "OmTrans Logistics Ltd. | Simplifying Your Business",
+        margin,
+        pageH - 7,
+      );
+      doc.text(`Page ${p} of ${totalPages}`, pageW - margin, pageH - 7, {
+        align: "right",
+      });
     }
 
     // Save PDF
@@ -1621,8 +2310,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       quotationSegment: quotationSegment,
       quotationSegmentPrefix: selectedSegmentDetails?.prefix || "",
       customerName: basicInfo.customerNameAndAddress,
+      shipperName: basicInfo.shipperNameAndAddress,
       consigneeName: basicInfo.consigneeAddress,
       equipment: basicInfo.equipment,
+      equipmentList: containerSelections,
       weight: basicInfo.weight,
       cbm: basicInfo.cbm,
       terms: basicInfo.terms,
@@ -1632,14 +2323,16 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       pod: basicInfo.pod,
       finalDestination: basicInfo.finalDestination,
       railRamp: basicInfo.railRamp,
+      pickup_location: basicInfo.pickupLocation,
       shippingLine: basicInfo.shippingLine,
       etd: basicInfo.etd,
       eta: basicInfo.eta,
       transitTime: basicInfo.totalTransitTime,
+      ratesValidity: basicInfo.ratesValidity,
       remarks: basicInfo.remarks,
       // Air-specific fields
       numberOfPackets: basicInfo.numberOfPackets,
-      cargoSize: basicInfo.cargoSize,
+      cargoSizes: basicInfo.cargoSizes,
       airLines: basicInfo.airLines,
       airPortOfDeparture: basicInfo.airPortOfDeparture,
       airPortOfDestination: basicInfo.airPortOfDestination,
@@ -1658,14 +2351,26 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
         currentUser?.fullName || currentUser?.username || "Unknown User",
       createdByRole: currentUser?.role || "User",
       createdByLocation: currentUser?.location || "N/A",
-      createdDate: new Date().toISOString(),
+      createdDate: draftQuotation?.createdDate || new Date().toISOString(),
       pdfFileName: pdfFileName,
+      isDraft: false, // Mark as final (not draft)
+      status: "submitted", // Backup status indicator
     };
 
     // Save quotation to backend API
     try {
-      const response = await fetch(`${API_BASE_URL}/quotations`, {
-        method: "POST",
+      let method = "POST";
+      let url = `${API_BASE_URL}/quotations`;
+
+      // If finalizing a draft, use PUT to update the existing record
+      if (draftQuotation?.id) {
+        method = "PUT";
+        url = `${API_BASE_URL}/quotations/${draftQuotation.id}`;
+        quotationData.id = draftQuotation.id; // Keep original ID
+      }
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -1722,6 +2427,27 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
             setMergedConsigneeData((prev) => [
               ...prev,
               { name: consigneeName, address: consigneeAddr },
+            ]);
+          }
+        }
+      }
+
+      // Update merged shipper data for immediate use
+      if (basicInfo.shipperNameAndAddress && basicInfo.shipperNameAndAddress.trim()) {
+        const shipperExists = mergedShipperData.some((s) => {
+          const fullShipper = `${s.name}\n${s.address}`.toLowerCase();
+          return fullShipper === basicInfo.shipperNameAndAddress.toLowerCase();
+        });
+
+        if (!shipperExists) {
+          const lines = basicInfo.shipperNameAndAddress.split("\n");
+          const shipperName = lines[0]?.trim() || "";
+          const shipperAddr = lines.slice(1).join("\n").trim() || "";
+
+          if (shipperName) {
+            setMergedShipperData((prev) => [
+              ...prev,
+              { name: shipperName, address: shipperAddr },
             ]);
           }
         }
@@ -1812,12 +2538,61 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
           ]);
         }
       }
+
+      // Update merged Airlines data for immediate use
+      if (basicInfo.airLines && basicInfo.airLines.trim()) {
+        const airlinesExists = mergedAirlinesData.some(
+          (a) => a.toLowerCase() === basicInfo.airLines.toLowerCase(),
+        );
+        if (!airlinesExists) {
+          setMergedAirlinesData((prev) => [...prev, basicInfo.airLines.trim()]);
+        }
+      }
+
+      // Update merged charge suggestions for immediate use
+      const updateChargeSuggestions = (charges, mergedList, setMergedList) => {
+        charges.forEach((charge) => {
+          if (charge.charges && charge.charges.trim()) {
+            const exists = mergedList.some(
+              (c) => c.toLowerCase() === charge.charges.toLowerCase(),
+            );
+            if (!exists) {
+              setMergedList((prev) => [...prev, charge.charges.trim()]);
+            }
+          }
+        });
+      };
+      updateChargeSuggestions(
+        originCharges,
+        mergedOriginChargeSuggestions,
+        setMergedOriginChargeSuggestions,
+      );
+      updateChargeSuggestions(
+        freightCharges,
+        mergedFreightChargeSuggestions,
+        setMergedFreightChargeSuggestions,
+      );
+      updateChargeSuggestions(
+        destinationCharges,
+        mergedDestinationChargeSuggestions,
+        setMergedDestinationChargeSuggestions,
+      );
     } catch (error) {
       console.error("Error saving quotation:", error);
       alert("Failed to connect to server. Please try again later.");
       setIsSubmitting(false);
       return;
     }
+
+    // Clear the draft quotation reference if we were editing a draft
+    if (draftQuotation && onDraftCleared) {
+      onDraftCleared();
+    }
+
+    // Invalidate cache to force refresh on dashboard
+    suggestionsCache.data = null;
+    suggestionsCache.timestamp = null;
+    invalidateQuotationsCache();
 
     // Console log all form data
     console.log("=== QUOTATION SUBMITTED ===");
@@ -1843,6 +2618,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
     // Clear all form fields after submission
     setBasicInfo({
       customerNameAndAddress: "",
+      shipperNameAndAddress: "",
       consigneeAddress: "",
       equipment: "",
       weight: "",
@@ -1857,9 +2633,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       etd: "",
       eta: "",
       totalTransitTime: "",
+      ratesValidity: "",
       remarks: "",
       numberOfPackets: "",
-      cargoSize: "",
+      cargoSizes: [""],
       airLines: "",
       airPortOfDeparture: "",
       airPortOfDestination: "",
@@ -1867,18 +2644,25 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       volumeWeight: "",
       size: "",
       railRamp: "",
+      pickupLocation: "",
     });
 
     // Reset service job type
     setServiceJobType("");
 
+    // Reset multi-container selections
+    setContainerSelections([]);
+    setNewContainerType("20ft Standard Container");
+    setNewContainerQty(1);
+
     setOriginCharges([
       {
         id: Date.now(),
         charges: "",
-        currency: "USD",
+        currency: "INR",
         amount: "",
         unit: "Per BL",
+        containerAmounts: {},
       },
     ]);
 
@@ -1886,9 +2670,10 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       {
         id: Date.now() + 1,
         charges: "",
-        currency: "USD",
+        currency: "INR",
         amount: "",
         unit: "Per BL",
+        containerAmounts: {},
       },
     ]);
 
@@ -1896,23 +2681,67 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
       {
         id: Date.now() + 2,
         charges: "",
-        currency: "USD",
+        currency: "INR",
         amount: "",
         unit: "Per BL",
+        containerAmounts: {},
       },
     ]);
 
-    // Hide popup after 3 seconds and redirect to Dashboard
+    // Hide popup after 3 seconds and redirect to View Quotations
     setTimeout(() => {
       setShowPopup(false);
       if (onNavigate) {
-        onNavigate("dashboard");
+        onNavigate("quotation");
       }
     }, 3000);
   };
 
+  // Computed FCL helpers (used in JSX and PDF)
+  const isFCL =
+    quotationSegment.toLowerCase() === "sea export fcl" ||
+    quotationSegment.toLowerCase() === "sea import fcl";
+  const isMultiContainer = isFCL && containerSelections.length > 1;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-0 md:py-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-0">
+      {/* Sub-Navigation Bar */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-12">
+            {/* Left - Back button */}
+            <button
+              onClick={() => onNavigate("dashboard")}
+              className="flex items-center gap-2 text-gray-600 hover:text-blue-700 transition-colors text-sm font-medium"
+            >
+              <ArrowLeft size={16} />
+              <span>Back to Main</span>
+            </button>
+
+            {/* Center - Sub-navigation */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onNavigate("quotation")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all text-gray-600 hover:bg-gray-100"
+              >
+                <List size={14} />
+                <span>View Quotations</span>
+              </button>
+              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-blue-50 text-blue-700 border border-blue-200">
+                <FilePlus size={14} />
+                <span>Create Quotation</span>
+              </button>
+            </div>
+
+            {/* Right - Module label */}
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <FileText size={14} />
+              <span className="font-medium">Quotation Module</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="w-full px-8 sm:px-10 lg:px-10 py-5">
         {/* Header Card */}
         <div className="bg-white rounded-lg shadow-md mb-4 overflow-hidden">
@@ -2136,7 +2965,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="relative">
                   <label className="block text-xs font-medium text-gray-700 mb-1">
                     Customer Name and Address{" "}
@@ -2163,18 +2992,60 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                     className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   />
                   {showCustomerDropdown && filteredCustomers.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto overflow-x-hidden">
                       {filteredCustomers.map((customer, index) => (
                         <div
                           key={index}
                           onClick={() => handleCustomerSelect(customer)}
                           className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                         >
-                          <div className="font-semibold text-sm text-gray-800">
+                          <div className="font-semibold text-sm text-gray-800 break-words">
                             {customer.name}
                           </div>
-                          <div className="text-xs text-gray-600 whitespace-pre-line">
+                          <div className="text-xs text-gray-600 whitespace-pre-wrap break-words">
                             {customer.address}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="relative">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Shipper Name and Address
+                  </label>
+                  <textarea
+                    name="shipperNameAndAddress"
+                    value={basicInfo.shipperNameAndAddress}
+                    onChange={handleBasicInfoChange}
+                    onFocus={() => {
+                      if (
+                        basicInfo.shipperNameAndAddress &&
+                        filteredShippers.length > 0
+                      ) {
+                        setShowShipperDropdown(true);
+                      }
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => setShowShipperDropdown(false), 200);
+                    }}
+                    placeholder="Start typing shipper name..."
+                    rows="3"
+                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  />
+                  {showShipperDropdown && filteredShippers.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto overflow-x-hidden">
+                      {filteredShippers.map((shipper, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleShipperSelect(shipper)}
+                          className="px-3 py-2 hover:bg-teal-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-semibold text-sm text-gray-800 break-words">
+                            {shipper.name}
+                          </div>
+                          <div className="text-xs text-gray-600 whitespace-pre-wrap break-words">
+                            {shipper.address}
                           </div>
                         </div>
                       ))}
@@ -2206,17 +3077,17 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                     className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   />
                   {showConsigneeDropdown && filteredConsignees.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto overflow-x-hidden">
                       {filteredConsignees.map((consignee, index) => (
                         <div
                           key={index}
                           onClick={() => handleConsigneeSelect(consignee)}
                           className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                         >
-                          <div className="font-semibold text-sm text-gray-800">
+                          <div className="font-semibold text-sm text-gray-800 break-words">
                             {consignee.name}
                           </div>
-                          <div className="text-xs text-gray-600 whitespace-pre-line">
+                          <div className="text-xs text-gray-600 whitespace-pre-wrap break-words">
                             {consignee.address}
                           </div>
                         </div>
@@ -2282,50 +3153,158 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                     </div>
                   )}
                   {getVisibleFields().includes("equipment") && (
-                    <div>
+                    <div className={isFCL ? "md:col-span-2" : ""}>
                       <label className="block font-medium text-gray-700 mb-0.5">
                         Equipment <span className="text-red-500">*</span>
                       </label>
-                      <select
-                        name="equipment"
-                        value={basicInfo.equipment}
-                        onChange={handleBasicInfoChange}
-                        className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent bg-white"
-                      >
-                        <option value="">Select Container</option>
-                        <option value="20ft Standard">20ft Standard</option>
-                        <option value="20ft High Cube">20ft High Cube</option>
-                        <option value="40ft Standard">40ft Standard</option>
-                        <option value="40ft High Cube">40ft High Cube</option>
-                        <option value="45ft High Cube">45ft High Cube</option>
-                        <option value="20ft Reefer">20ft Reefer</option>
-                        <option value="40ft Reefer">40ft Reefer</option>
-                        <option value="20ft Open Top">20ft Open Top</option>
-                        <option value="40ft Open Top">40ft Open Top</option>
-                        <option value="20ft Flat Rack">20ft Flat Rack</option>
-                        <option value="40ft Flat Rack">40ft Flat Rack</option>
-                      </select>
+                      {isFCL ? (
+                        <div className="space-y-2">
+                          {/* Row: type dropdown + qty input + Add button */}
+                          <div className="flex gap-1.5 items-center">
+                            <select
+                              value={newContainerType}
+                              onChange={(e) => setNewContainerType(e.target.value)}
+                              className="flex-1 px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent bg-white"
+                            >
+                              <option value="20ft Standard Container">20ft Standard</option>
+                              <option value="40ft Standard Container">40ft Standard</option>
+                              <option value="40ft High Cube Container">40ft High Cube</option>
+                              <option value="45ft High Cube Container">45ft High Cube</option>
+                              <option value="20ft Reefer Container">20ft Reefer</option>
+                              <option value="40ft Reefer Container">40ft Reefer</option>
+                              <option value="20ft Open Top Container">20ft Open Top</option>
+                              <option value="40ft Open Top Container">40ft Open Top</option>
+                              <option value="20ft Flat Rack Container">20ft Flat Rack</option>
+                              <option value="40ft Flat Rack Container">40ft Flat Rack</option>
+                            </select>
+                            <input
+                              type="number"
+                              min="1"
+                              value={newContainerQty}
+                              onChange={(e) =>
+                                setNewContainerQty(
+                                  Math.max(1, parseInt(e.target.value) || 1),
+                                )
+                              }
+                              className="w-14 px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 text-center"
+                              placeholder="Qty"
+                            />
+                            <button
+                              type="button"
+                              onClick={addContainerSelection}
+                              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded text-xs font-medium transition whitespace-nowrap"
+                            >
+                              <Plus size={12} /> Add
+                            </button>
+                          </div>
+                          {/* Selected container badges */}
+                          {containerSelections.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {containerSelections.map((sel) => (
+                                <span
+                                  key={sel.type}
+                                  className="flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full border border-blue-300"
+                                >
+                                  {sel.type.replace(" Container", "")} &times;
+                                  {sel.qty}
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      removeContainerSelection(sel.type)
+                                    }
+                                    className="text-blue-500 hover:text-red-600 font-bold leading-none ml-0.5"
+                                    title="Remove"
+                                  >
+                                    ×
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-gray-400 italic">
+                              No containers added — click Add to select
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <select
+                          name="equipment"
+                          value={basicInfo.equipment}
+                          onChange={handleBasicInfoChange}
+                          className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent bg-white"
+                        >
+                          <option value="">Select Container</option>
+                          <option value="20ft Standard Container">
+                            20ft Standard
+                          </option>
+                          <option value="40ft Standard Container">
+                            40ft Standard
+                          </option>
+                          <option value="40ft High Cube Container">
+                            40ft High Cube
+                          </option>
+                          <option value="45ft High Cube Container">
+                            45ft High Cube
+                          </option>
+                          <option value="20ft Reefer Container">
+                            20ft Reefer
+                          </option>
+                          <option value="40ft Reefer Container">
+                            40ft Reefer
+                          </option>
+                          <option value="20ft Open Top Container">
+                            20ft Open Top
+                          </option>
+                          <option value="40ft Open Top Container">
+                            40ft Open Top
+                          </option>
+                          <option value="20ft Flat Rack Container">
+                            20ft Flat Rack
+                          </option>
+                          <option value="40ft Flat Rack Container">
+                            40ft Flat Rack
+                          </option>
+                        </select>
+                      )}
                     </div>
                   )}
                   {getVisibleFields().includes("cargoSize") && (
                     <div>
                       <label className="block font-medium text-gray-700 mb-0.5">
-                        Cargo Size
+                        Cargo Sizes
                       </label>
-                      <input
-                        type="text"
-                        name="cargoSize"
-                        value={basicInfo.cargoSize}
-                        onChange={handleBasicInfoChange}
-                        placeholder="Enter cargo size"
-                        className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
-                      />
+                      {(basicInfo.cargoSizes || [""]).map((size, idx) => (
+                        <div key={idx} className="flex gap-1 mb-1">
+                          <input
+                            type="text"
+                            value={size}
+                            onChange={(e) => {
+                              const updated = [...basicInfo.cargoSizes];
+                              updated[idx] = e.target.value;
+                              setBasicInfo(prev => ({ ...prev, cargoSizes: updated }));
+                            }}
+                            placeholder="Enter cargo size"
+                            className="flex-1 px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                          />
+                          {basicInfo.cargoSizes.length > 1 && (
+                            <button type="button" onClick={() => {
+                              setBasicInfo(prev => ({ ...prev, cargoSizes: prev.cargoSizes.filter((_, i) => i !== idx) }));
+                            }} className="text-red-400 hover:text-red-600 px-1">
+                              <Trash2 size={12} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button type="button" onClick={() => setBasicInfo(prev => ({ ...prev, cargoSizes: [...prev.cargoSizes, ""] }))}
+                        className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1">
+                        <Plus size={10} /> Add More
+                      </button>
                     </div>
                   )}
                   {getVisibleFields().includes("volumeWeight") && (
                     <div>
                       <label className="block font-medium text-gray-700 mb-0.5">
-                        Volume Weight
+                        Volume Weight (kg)
                       </label>
                       <input
                         type="text"
@@ -2607,6 +3586,26 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                             )}
                           </div>
                         )}
+                    </div>
+                  )}
+
+                  {/* Pickup Location - Optional field */}
+                  {getVisibleFields().includes("pickupLocation") && (
+                    <div className="relative">
+                      <label className="block font-medium text-gray-700 mb-0.5">
+                        Pickup Location{" "}
+                        <span className="text-gray-500 text-[10px]">
+                          (Optional)
+                        </span>
+                      </label>
+                      <input
+                        type="text"
+                        name="pickupLocation"
+                        value={basicInfo.pickupLocation}
+                        onChange={handleBasicInfoChange}
+                        placeholder="Enter pickup location..."
+                        className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                      />
                     </div>
                   )}
 
@@ -2942,8 +3941,25 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                         value={basicInfo.remarks}
                         onChange={handleBasicInfoChange}
                         placeholder="Additional notes..."
-                        rows="2"
+                        rows="3"
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent resize-none"
+                      />
+                    </div>
+                  )}
+
+                  {/* Quotation Validity Date */}
+                  {getVisibleFields().includes("ratesValidity") && (
+                    <div className="md:col-span-2">
+                      <label className="block font-medium text-gray-700 mb-0.5">
+                        Quotation Validity Date
+                      </label>
+                      <input
+                        type="date"
+                        name="ratesValidity"
+                        value={basicInfo.ratesValidity}
+                        onChange={handleBasicInfoChange}
+                        onClick={(e) => e.currentTarget.showPicker?.()}
+                        className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent bg-white cursor-pointer"
                       />
                     </div>
                   )}
@@ -2981,7 +3997,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
 
                   {/* Compact Table */}
                   <div className="bg-white rounded-md border border-gray-200">
-                    <table className="w-full text-xs">
+                    <table className="w-full text-xs overflow-x-auto">
                       <thead className="bg-blue-100">
                         <tr>
                           <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
@@ -2990,9 +4006,20 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                           <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
                             Currency
                           </th>
-                          <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
-                            Amount
-                          </th>
+                          {isMultiContainer ? (
+                            containerSelections.map((sel) => (
+                              <th
+                                key={sel.type}
+                                className="px-1 py-1.5 text-center font-semibold text-gray-700 w-28"
+                              >
+                                {sel.type.replace(" Container", "")} &times;{sel.qty}
+                              </th>
+                            ))
+                          ) : (
+                            <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
+                              Amount
+                            </th>
+                          )}
                           <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-24">
                             Unit
                           </th>
@@ -3017,10 +4044,24 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                                   )
                                 }
                                 onFocus={() => {
-                                  // Show all suggestions on focus
+                                  // Show all suggestions on focus, excluding already-added charges
+                                  const usedCharges = new Set(
+                                    originCharges
+                                      .filter(
+                                        (c) =>
+                                          c.id !== charge.id &&
+                                          c.charges.trim(),
+                                      )
+                                      .map((c) =>
+                                        c.charges.trim().toLowerCase(),
+                                      ),
+                                  );
                                   const filtered =
-                                    originChargeSuggestions.filter(
+                                    mergedOriginChargeSuggestions.filter(
                                       (suggestion) =>
+                                        !usedCharges.has(
+                                          suggestion.toLowerCase(),
+                                        ) &&
                                         suggestion
                                           .toLowerCase()
                                           .includes(
@@ -3088,28 +4129,61 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                                 }
                                 className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-400 bg-white"
                               >
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="GBP">GBP</option>
-                                <option value="INR">INR</option>
-                                <option value="AED">AED</option>
+                                <option value="USD">USD $</option>
+                                <option value="INR">INR ₹</option>
+                                <option value="EUR">EUR €</option>
+                                <option value="GBP">GBP £</option>
+                                <option value="AED">AED د.إ</option>
+                                <option value="SAR">SAR ﷼</option>
+                                <option value="AUD">AUD A$</option>
+                                <option value="JPY">JPY ¥</option>
+                                <option value="CAD">CAD C$</option>
+                                <option value="CNY">CNY ¥</option>
+                                <option value="BDT">BDT ৳</option>
+                                <option value="BRL">BRL R$</option>
+                                <option value="HKD">HKD HK$</option>
+                                <option value="IDR">IDR Rp</option>
+                                <option value="ILS">ILS ₪</option>
+                                <option value="RUB">RUB ₽</option>
+                                <option value="QAR">QAR ﷼</option>
+                                <option value="SGD">SGD S$</option>
                               </select>
                             </td>
-                            <td className="px-1 py-1.5">
-                              <input
-                                type="text"
-                                value={charge.amount}
-                                onChange={(e) =>
-                                  handleOriginChargeChange(
-                                    charge.id,
-                                    "amount",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="0.00"
-                                className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-blue-400"
-                              />
-                            </td>
+                            {isMultiContainer ? (
+                              containerSelections.map((sel) => (
+                                <td key={sel.type} className="px-1 py-1.5">
+                                  <input
+                                    type="text"
+                                    value={charge.containerAmounts?.[sel.type] || ""}
+                                    onChange={(e) =>
+                                      handleOriginContainerAmount(
+                                        charge.id,
+                                        sel.type,
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder="0.00"
+                                    className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-blue-400"
+                                  />
+                                </td>
+                              ))
+                            ) : (
+                              <td className="px-1 py-1.5">
+                                <input
+                                  type="text"
+                                  value={charge.amount}
+                                  onChange={(e) =>
+                                    handleOriginChargeChange(
+                                      charge.id,
+                                      "amount",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="0.00"
+                                  className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-blue-400"
+                                />
+                              </td>
+                            )}
                             <td className="px-1 py-1.5">
                               <select
                                 value={charge.unit}
@@ -3126,6 +4200,8 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                                 <option value="Per PKG">/PKG</option>
                                 <option value="Per HBL">/HBL</option>
                                 <option value="Per KG">/KG</option>
+                                <option value="Per Truck">/Truck</option>
+                                <option value="Per Metric Ton">/MT</option>
                                 <option value="Per MAWB">/MAWB</option>
                                 <option value="Per HAWB">/HAWB</option>
                                 <option value="Per Shipment">/Shipment</option>
@@ -3173,7 +4249,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
 
                   {/* Compact Table */}
                   <div className="bg-white rounded-md border border-gray-200">
-                    <table className="w-full text-xs">
+                    <table className="w-full text-xs overflow-x-auto">
                       <thead className="bg-green-100">
                         <tr>
                           <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
@@ -3182,9 +4258,20 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                           <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
                             Currency
                           </th>
-                          <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
-                            Amount
-                          </th>
+                          {isMultiContainer ? (
+                            containerSelections.map((sel) => (
+                              <th
+                                key={sel.type}
+                                className="px-1 py-1.5 text-center font-semibold text-gray-700 w-28"
+                              >
+                                {sel.type.replace(" Container", "")} &times;{sel.qty}
+                              </th>
+                            ))
+                          ) : (
+                            <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
+                              Amount
+                            </th>
+                          )}
                           <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-24">
                             Unit
                           </th>
@@ -3209,10 +4296,24 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                                   )
                                 }
                                 onFocus={() => {
-                                  // Show all suggestions on focus
+                                  // Show all suggestions on focus, excluding already-added charges
+                                  const usedCharges = new Set(
+                                    freightCharges
+                                      .filter(
+                                        (c) =>
+                                          c.id !== charge.id &&
+                                          c.charges.trim(),
+                                      )
+                                      .map((c) =>
+                                        c.charges.trim().toLowerCase(),
+                                      ),
+                                  );
                                   const filtered =
-                                    freightChargeSuggestions.filter(
+                                    mergedFreightChargeSuggestions.filter(
                                       (suggestion) =>
+                                        !usedCharges.has(
+                                          suggestion.toLowerCase(),
+                                        ) &&
                                         suggestion
                                           .toLowerCase()
                                           .includes(
@@ -3280,28 +4381,61 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                                 }
                                 className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-green-400 bg-white"
                               >
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="GBP">GBP</option>
-                                <option value="INR">INR</option>
-                                <option value="AED">AED</option>
+                                <option value="USD">USD $</option>
+                                <option value="INR">INR ₹</option>
+                                <option value="EUR">EUR €</option>
+                                <option value="GBP">GBP £</option>
+                                <option value="AED">AED د.إ</option>
+                                <option value="SAR">SAR ﷼</option>
+                                <option value="AUD">AUD A$</option>
+                                <option value="JPY">JPY ¥</option>
+                                <option value="CAD">CAD C$</option>
+                                <option value="CNY">CNY ¥</option>
+                                <option value="BDT">BDT ৳</option>
+                                <option value="BRL">BRL R$</option>
+                                <option value="HKD">HKD HK$</option>
+                                <option value="IDR">IDR Rp</option>
+                                <option value="ILS">ILS ₪</option>
+                                <option value="RUB">RUB ₽</option>
+                                <option value="QAR">QAR ﷼</option>
+                                <option value="SGD">SGD S$</option>
                               </select>
                             </td>
-                            <td className="px-1 py-1.5">
-                              <input
-                                type="text"
-                                value={charge.amount}
-                                onChange={(e) =>
-                                  handleFreightChargeChange(
-                                    charge.id,
-                                    "amount",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="0.00"
-                                className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-green-400"
-                              />
-                            </td>
+                            {isMultiContainer ? (
+                              containerSelections.map((sel) => (
+                                <td key={sel.type} className="px-1 py-1.5">
+                                  <input
+                                    type="text"
+                                    value={charge.containerAmounts?.[sel.type] || ""}
+                                    onChange={(e) =>
+                                      handleFreightContainerAmount(
+                                        charge.id,
+                                        sel.type,
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder="0.00"
+                                    className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-green-400"
+                                  />
+                                </td>
+                              ))
+                            ) : (
+                              <td className="px-1 py-1.5">
+                                <input
+                                  type="text"
+                                  value={charge.amount}
+                                  onChange={(e) =>
+                                    handleFreightChargeChange(
+                                      charge.id,
+                                      "amount",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="0.00"
+                                  className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-green-400"
+                                />
+                              </td>
+                            )}
                             <td className="px-1 py-1.5">
                               <select
                                 value={charge.unit}
@@ -3318,6 +4452,8 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                                 <option value="Per PKG">/PKG</option>
                                 <option value="Per HBL">/HBL</option>
                                 <option value="Per KG">/KG</option>
+                                <option value="Per Truck">/Truck</option>
+                                <option value="Per Metric Ton">/MT</option>
                                 <option value="Per MAWB">/MAWB</option>
                                 <option value="Per HAWB">/HAWB</option>
                                 <option value="Per Shipment">/Shipment</option>
@@ -3365,7 +4501,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
 
                   {/* Compact Table */}
                   <div className="bg-white rounded-md border border-gray-200">
-                    <table className="w-full text-xs">
+                    <table className="w-full text-xs overflow-x-auto">
                       <thead className="bg-purple-100">
                         <tr>
                           <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
@@ -3374,9 +4510,20 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                           <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
                             Currency
                           </th>
-                          <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
-                            Amount
-                          </th>
+                          {isMultiContainer ? (
+                            containerSelections.map((sel) => (
+                              <th
+                                key={sel.type}
+                                className="px-1 py-1.5 text-center font-semibold text-gray-700 w-28"
+                              >
+                                {sel.type.replace(" Container", "")} &times;{sel.qty}
+                              </th>
+                            ))
+                          ) : (
+                            <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
+                              Amount
+                            </th>
+                          )}
                           <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-24">
                             Unit
                           </th>
@@ -3401,10 +4548,24 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                                   )
                                 }
                                 onFocus={() => {
-                                  // Show all suggestions on focus
+                                  // Show all suggestions on focus, excluding already-added charges
+                                  const usedCharges = new Set(
+                                    destinationCharges
+                                      .filter(
+                                        (c) =>
+                                          c.id !== charge.id &&
+                                          c.charges.trim(),
+                                      )
+                                      .map((c) =>
+                                        c.charges.trim().toLowerCase(),
+                                      ),
+                                  );
                                   const filtered =
-                                    destinationChargeSuggestions.filter(
+                                    mergedDestinationChargeSuggestions.filter(
                                       (suggestion) =>
+                                        !usedCharges.has(
+                                          suggestion.toLowerCase(),
+                                        ) &&
                                         suggestion
                                           .toLowerCase()
                                           .includes(
@@ -3476,28 +4637,61 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                                 }
                                 className="w-full px-0.5 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-purple-400 bg-white"
                               >
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="GBP">GBP</option>
-                                <option value="INR">INR</option>
-                                <option value="AED">AED</option>
+                                <option value="USD">USD $</option>
+                                <option value="INR">INR ₹</option>
+                                <option value="EUR">EUR €</option>
+                                <option value="GBP">GBP £</option>
+                                <option value="AED">AED د.إ</option>
+                                <option value="SAR">SAR ﷼</option>
+                                <option value="AUD">AUD A$</option>
+                                <option value="JPY">JPY ¥</option>
+                                <option value="CAD">CAD C$</option>
+                                <option value="CNY">CNY ¥</option>
+                                <option value="BDT">BDT ৳</option>
+                                <option value="BRL">BRL R$</option>
+                                <option value="HKD">HKD HK$</option>
+                                <option value="IDR">IDR Rp</option>
+                                <option value="ILS">ILS ₪</option>
+                                <option value="RUB">RUB ₽</option>
+                                <option value="QAR">QAR ﷼</option>
+                                <option value="SGD">SGD S$</option>
                               </select>
                             </td>
-                            <td className="px-1 py-1.5">
-                              <input
-                                type="text"
-                                value={charge.amount}
-                                onChange={(e) =>
-                                  handleDestinationChargeChange(
-                                    charge.id,
-                                    "amount",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="0.00"
-                                className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-purple-400"
-                              />
-                            </td>
+                            {isMultiContainer ? (
+                              containerSelections.map((sel) => (
+                                <td key={sel.type} className="px-1 py-1.5">
+                                  <input
+                                    type="text"
+                                    value={charge.containerAmounts?.[sel.type] || ""}
+                                    onChange={(e) =>
+                                      handleDestContainerAmount(
+                                        charge.id,
+                                        sel.type,
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder="0.00"
+                                    className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-purple-400"
+                                  />
+                                </td>
+                              ))
+                            ) : (
+                              <td className="px-1 py-1.5">
+                                <input
+                                  type="text"
+                                  value={charge.amount}
+                                  onChange={(e) =>
+                                    handleDestinationChargeChange(
+                                      charge.id,
+                                      "amount",
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="0.00"
+                                  className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center focus:ring-1 focus:ring-purple-400"
+                                />
+                              </td>
+                            )}
                             <td className="px-1 py-1.5">
                               <select
                                 value={charge.unit}
@@ -3514,6 +4708,8 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                                 <option value="Per PKG">/PKG</option>
                                 <option value="Per HBL">/HBL</option>
                                 <option value="Per KG">/KG</option>
+                                <option value="Per Truck">/Truck</option>
+                                <option value="Per Metric Ton">/MT</option>
                                 <option value="Per MAWB">/MAWB</option>
                                 <option value="Per HAWB">/HAWB</option>
                                 <option value="Per Shipment">/Shipment</option>
@@ -3577,7 +4773,7 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                       onChange={(e) => handleTermSearchChange(e.target.value)}
                       onFocus={() => {
                         setFilteredTermsSuggestions(
-                          allAvailableTerms.filter(
+                          mergedTermsData.filter(
                             (term) => !selectedTerms.includes(term),
                           ),
                         );
@@ -3633,27 +4829,30 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                     : "Please select a quotation segment to load default terms."}
                 </p>
               ) : (
-                <ul className="space-y-1.5 text-xs text-gray-700">
-                  {selectedTerms.map((term, index) => (
-                    <li
-                      key={index}
-                      className="flex items-start gap-1 bg-white rounded px-2 py-1 border border-yellow-200 hover:border-red-300 transition group"
-                    >
-                      <span className="text-yellow-600 font-bold mt-0.5 min-w-[20px]">
-                        {index + 1}.
-                      </span>
-                      <span className="flex-1 leading-relaxed">{term}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTerm(index)}
-                        className="ml-1 text-red-400 hover:text-red-600 hover:bg-red-50 p-1 rounded transition flex-shrink-0"
-                        title="Remove term"
-                      >
-                        <X size={14} />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleTermsDragEnd}
+                >
+                  <SortableContext
+                    items={selectedTerms.map(
+                      (term, i) => `term-${i}-${term.substring(0, 20)}`,
+                    )}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <ul className="space-y-1.5 text-xs text-gray-700">
+                      {selectedTerms.map((term, index) => (
+                        <SortableTermItem
+                          key={`term-${index}-${term.substring(0, 20)}`}
+                          id={`term-${index}-${term.substring(0, 20)}`}
+                          term={term}
+                          index={index}
+                          onRemove={handleRemoveTerm}
+                        />
+                      ))}
+                    </ul>
+                  </SortableContext>
+                </DndContext>
               )}
 
               {/* Term Count */}
@@ -3665,13 +4864,14 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
               )}
             </section>
 
-            {/* Action Button */}
-            <div className="pt-2">
+            {/* Action Buttons */}
+            <div className="pt-2 space-y-2">
+              {/* Submit & Download PDF Button */}
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !isFormValid()}
-                className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-3 rounded-md text-sm font-medium transition shadow-md hover:shadow-lg ${isSubmitting || !isFormValid() ? "opacity-70 cursor-not-allowed" : ""}`}
+                disabled={isSubmitting || isSavingDraft || !isFormValid()}
+                className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-3 rounded-md text-sm font-medium transition shadow-md hover:shadow-lg ${isSubmitting || isSavingDraft || !isFormValid() ? "opacity-70 cursor-not-allowed" : ""}`}
               >
                 {isSubmitting ? (
                   <>
@@ -3681,7 +4881,29 @@ const ImportExportQuotationForm = ({ currentUser, onNavigate }) => {
                 ) : (
                   <>
                     <Send size={18} />
-                    Submit & Download PDF
+                    {draftQuotation
+                      ? "Submit Draft & Download PDF"
+                      : "Submit & Download PDF"}
+                  </>
+                )}
+              </button>
+
+              {/* Save as Draft Button */}
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={isSubmitting || isSavingDraft || !canSaveDraft()}
+                className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-4 py-2.5 rounded-md text-sm font-medium transition shadow-md hover:shadow-lg ${isSubmitting || isSavingDraft || !canSaveDraft() ? "opacity-70 cursor-not-allowed" : ""}`}
+              >
+                {isSavingDraft ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Saving Draft...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} />
+                    Save & Submit Later
                   </>
                 )}
               </button>

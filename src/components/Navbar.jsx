@@ -6,28 +6,35 @@ import {
   FileText,
   Package,
   LayoutDashboard,
+  ClipboardList,
+  DollarSign,
+  Users,
+  Activity,
+  MapPin,
 } from "lucide-react";
 import OmTransLogo from "../assets/OmTrans.png";
+import OmTransDP from "../assets/omtrans_dp.jpg";
+import VikramImg from "../assets/vikram.jpg";
+import TarunImg from "../assets/tarun.jpeg";
+import HarmeetImg from "../assets/harmeet.jpg";
+
+const getUserImage = (username) => {
+  if (!username) return OmTransDP;
+  const name = username.toLowerCase().trim();
+  if (name.includes("vikram")) return VikramImg;
+  if (name.includes("tarun")) return TarunImg;
+  if (name.includes("harmeet")) return HarmeetImg;
+  return OmTransDP;
+};
 
 const Navbar = ({ currentUser, onLogout, onNavigate, currentView }) => {
-  const [showQuotationMenu, setShowQuotationMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const quotationMenuRef = useRef(null);
   const userMenuRef = useRef(null);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        quotationMenuRef.current &&
-        !quotationMenuRef.current.contains(event.target)
-      ) {
-        setShowQuotationMenu(false);
-      }
-      if (
-        userMenuRef.current &&
-        !userMenuRef.current.contains(event.target)
-      ) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setShowUserMenu(false);
       }
     };
@@ -37,11 +44,6 @@ const Navbar = ({ currentUser, onLogout, onNavigate, currentView }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  const handleQuotationClick = (view) => {
-    onNavigate(view);
-    setShowQuotationMenu(false);
-  };
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50 w-full">
@@ -55,96 +57,119 @@ const Navbar = ({ currentUser, onLogout, onNavigate, currentView }) => {
                 alt="OmTrans Logo"
                 className="h-10 w-auto"
               />
-             
             </div>
           </div>
 
           {/* Center Section - Navigation Menu */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 text-sm">
             {/* Dashboard Menu */}
             <button
               onClick={() => onNavigate("dashboard")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
                 currentView === "dashboard"
                   ? "bg-blue-50 text-blue-700"
                   : "text-gray-700 hover:bg-gray-100"
               }`}
             >
-              <LayoutDashboard size={18} />
+              <LayoutDashboard size={15} />
               <span>Dashboard</span>
             </button>
 
-            {/* Quotation Menu with Dropdown */}
-            <div className="relative" ref={quotationMenuRef}>
-              <button
-                onClick={() => setShowQuotationMenu(!showQuotationMenu)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                  currentView === "form"
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <FileText size={18} />
-                <span>Quotation</span>
-                <ChevronDown
-                  size={16}
-                  className={`transition-transform ${
-                    showQuotationMenu ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {/* Quotation Dropdown */}
-              {showQuotationMenu && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 animate-slideDown">
-                  <button
-                    onClick={() => handleQuotationClick("form")}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                      currentView === "form"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <div className="bg-blue-100 p-2 rounded-lg">
-                      <FileText size={18} className="text-blue-600" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Create Quotation</div>
-                      <div className="text-xs text-gray-500">
-                        Generate new quotation
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Booking Menu */}
+            {/* Rate Filing Menu */}
             <button
-              onClick={() => onNavigate("booking")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                currentView === "booking"
+              onClick={() => onNavigate("ratefiling")}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                currentView === "ratefiling"
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <DollarSign size={15} />
+              <span>Rate Filing</span>
+            </button>
+
+            {/* Quotation Menu */}
+            <button
+              onClick={() => onNavigate("quotation")}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                currentView === "form" || currentView === "quotation"
                   ? "bg-blue-50 text-blue-700"
                   : "text-gray-700 hover:bg-gray-100"
               }`}
             >
-              <Package size={18} />
-              <span>Booking</span>
+              <FileText size={15} />
+              <span>Quotation</span>
             </button>
+
+            {/* Pre-Advice Menu */}
+            <button
+              onClick={() => onNavigate("preadvice")}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                currentView === "preadvice"
+                  ? "bg-indigo-50 text-indigo-700"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <ClipboardList size={15} />
+              <span>Pre-Advice</span>
+            </button>
+
+            {/* Agent Database Menu */}
+            <button
+              onClick={() => onNavigate("agentdb")}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                currentView === "agentdb"
+                  ? "bg-teal-50 text-teal-700"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <Users size={15} />
+              <span>Agent</span>
+            </button>
+
+            {/* Destination Menu */}
+            <button
+              onClick={() => onNavigate("destination")}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                currentView === "destination"
+                  ? "bg-purple-50 text-purple-700"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <MapPin size={15} />
+              <span>Destination</span>
+            </button>
+
+            {/* Login Info Menu - Super Admin only */}
+            {currentUser?.role?.toLowerCase() === "super admin" && (
+              <button
+                onClick={() => onNavigate("logininfo")}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                  currentView === "logininfo"
+                    ? "bg-rose-50 text-rose-700"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <Activity size={15} />
+                <span>Login Info</span>
+              </button>
+            )}
           </div>
 
           {/* Right Section - User Profile & Logout */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 ">
             {/* User Profile Dropdown */}
-            <div className="relative" ref={userMenuRef}>
+            <div className="relative " ref={userMenuRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-3 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 px-4 py-2 rounded-lg transition-all border border-blue-200"
               >
                 <div className="flex items-center gap-2">
-                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-full">
-                    <User size={16} className="text-white" />
-                  </div>
+                  <img
+                    src={getUserImage(currentUser?.fullName || currentUser?.username)}
+                    alt={currentUser?.fullName || currentUser?.username || "User"}
+                    className="w-9 h-9 rounded-full object-cover border-2 border-blue-500"
+                  />
                   <div className="text-left hidden md:block">
                     <div className="text-sm font-semibold text-gray-900">
                       {currentUser?.fullName || currentUser?.username}
@@ -168,9 +193,11 @@ const Navbar = ({ currentUser, onLogout, onNavigate, currentView }) => {
                   {/* User Info Section */}
                   <div className="px-4 py-3 border-b border-gray-200">
                     <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-full">
-                        <User size={20} className="text-white" />
-                      </div>
+                      <img
+                        src={getUserImage(currentUser?.fullName || currentUser?.username)}
+                        alt={currentUser?.fullName || currentUser?.username || "User"}
+                        className="w-11 h-11 rounded-full object-cover border-2 border-blue-500"
+                      />
                       <div>
                         <div className="font-semibold text-gray-900">
                           {currentUser?.fullName || currentUser?.username}

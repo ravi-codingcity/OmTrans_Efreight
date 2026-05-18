@@ -11,7 +11,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-const API_BASE_URL = "https://omtransefreight-ss7idyoh.b4a.run/api/auth";
+const API_BASE_URL = "https://papayawhip-antelope-424743.hostingersite.com/api/auth";
 
 const ResetPassword = ({ onSwitchToLogin }) => {
   const [formData, setFormData] = useState({

@@ -9,7 +9,8 @@ import {
   Package,
 } from "lucide-react";
 
-const API_BASE_URL = "https://omtransefreight-ss7idyoh.b4a.run/api/auth";
+const API_BASE_URL = "https://papayawhip-antelope-424743.hostingersite.com/api/auth";
+const API_ROOT = "https://papayawhip-antelope-424743.hostingersite.com/api";
 
 const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState("");
@@ -50,6 +51,28 @@ const Login = ({ onLoginSuccess }) => {
         // Store token if provided
         if (data.token) {
           localStorage.setItem("authToken", data.token);
+        }
+
+        // Track login activity (fire-and-forget)
+        try {
+          fetch(`${API_ROOT}/login-info`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: data.data.username,
+              fullName: data.data.fullName,
+              role: data.data.role,
+            }),
+          })
+            .then((r) => r.json())
+            .then((j) => {
+              if (j.success && j.data && j.data._id) {
+                localStorage.setItem("loginRecordId", j.data._id);
+              }
+            })
+            .catch(() => {});
+        } catch {
+          // Silently ignore tracking errors
         }
 
         // Call the success callback
