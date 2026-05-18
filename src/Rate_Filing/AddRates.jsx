@@ -387,7 +387,7 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
     return {};
   });
 
-  const [newContainerType, setNewContainerType] = useState(CONTAINER_TYPES[0]);
+  const [newContainerType, setNewContainerType] = useState("");
 
   const updateContainerCharge = (ct, field, val) =>
     setContainerCharges((prev) => ({
@@ -809,7 +809,7 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
     setContainerSelections([]);
     setContainerCharges({});
     setOriginChargeMap({});
-    setNewContainerType(CONTAINER_TYPES[0]);
+    setNewContainerType("");
     setCustomCharges([]);
     setErrors({});
     setCommodityMode("");
@@ -926,7 +926,7 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                 {errors.pol && <span className="text-[9px] text-red-500">{errors.pol}</span>}
               </Field>
 
-              <Field label="Container Type(s)" required>
+              <Field label="Equipment" required>
                 <div className="space-y-1.5">
                   {containerSelections.length > 0 && (
                     <div className="flex flex-wrap gap-1">
@@ -946,6 +946,7 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                       onChange={(e) => setNewContainerType(e.target.value)}
                       className={`${inputCls} flex-1`}
                     >
+                      <option value="">Select &amp; Add your container</option>
                       {CONTAINER_TYPES.map((ct) => (
                         <option key={ct} value={ct} disabled={containerSelections.includes(ct)}>
                           {ct}{containerSelections.includes(ct) ? " ✓" : ""}
@@ -955,7 +956,7 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                     <button
                       type="button"
                       onClick={addContainerType}
-                      disabled={containerSelections.includes(newContainerType)}
+                      disabled={!newContainerType || containerSelections.includes(newContainerType)}
                       className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded hover:bg-emerald-700 transition-colors disabled:opacity-40"
                     >
                       <Plus size={12} /> Add

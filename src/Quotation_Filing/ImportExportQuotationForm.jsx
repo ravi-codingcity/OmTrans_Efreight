@@ -201,7 +201,7 @@ const ImportExportQuotationForm = ({
 
   // Multi-container selection state (FCL segments only)
   const [containerSelections, setContainerSelections] = useState([]);
-  const [newContainerType, setNewContainerType] = useState("20ft Standard Container");
+  const [newContainerType, setNewContainerType] = useState("");
   const [newContainerQty, setNewContainerQty] = useState(1);
 
   // Terms and Conditions state
@@ -2652,7 +2652,7 @@ const ImportExportQuotationForm = ({
 
     // Reset multi-container selections
     setContainerSelections([]);
-    setNewContainerType("20ft Standard Container");
+    setNewContainerType("");
     setNewContainerQty(1);
 
     setOriginCharges([
@@ -3166,6 +3166,7 @@ const ImportExportQuotationForm = ({
                               onChange={(e) => setNewContainerType(e.target.value)}
                               className="flex-1 px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent bg-white"
                             >
+                              <option value="">Select &amp; Add your container</option>
                               <option value="20ft Standard Container">20ft Standard</option>
                               <option value="40ft Standard Container">40ft Standard</option>
                               <option value="40ft High Cube Container">40ft High Cube</option>
@@ -3192,7 +3193,8 @@ const ImportExportQuotationForm = ({
                             <button
                               type="button"
                               onClick={addContainerSelection}
-                              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded text-xs font-medium transition whitespace-nowrap"
+                              disabled={!newContainerType}
+                              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded text-xs font-medium transition whitespace-nowrap disabled:opacity-40"
                             >
                               <Plus size={12} /> Add
                             </button>
