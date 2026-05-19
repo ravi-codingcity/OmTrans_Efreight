@@ -297,6 +297,9 @@ function App() {
       railRamp: rate.railRamp || '',
       originCharges: originCharges.length > 0 ? originCharges : undefined,
       freightCharges: freightCharges.length > 0 ? freightCharges : undefined,
+      // Marks this as created from Rate Filing → show read-only Buying Rates
+      // column in the quotation Charges sections for buy-vs-sell comparison.
+      fromRateFile: true,
     }
 
     setCopyQuotation(quotationData)

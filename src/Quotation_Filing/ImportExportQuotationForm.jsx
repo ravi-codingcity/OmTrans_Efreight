@@ -696,6 +696,18 @@ const ImportExportQuotationForm = ({
   // Effect to prefill form when copying a quotation
   useEffect(() => {
     if (copyQuotation) {
+      // When created from Rate Filing, the copied charge amounts are the
+      // BUYING rates: keep them as read-only reference (buyingAmount) and
+      // clear the editable Amount so the user enters the Selling rate.
+      const fromRate = !!copyQuotation.fromRateFile;
+      setIsFromRateFile(fromRate);
+      const mapCopiedCharge = (c) => ({
+        ...c,
+        id: Date.now() + Math.random(),
+        ...(fromRate
+          ? { buyingAmount: c.amount ?? "", amount: "" }
+          : {}),
+      });
       // Prefill basic info from copied quotation
       setBasicInfo({
         customerNameAndAddress: copyQuotation.customerName || "",
@@ -746,34 +758,19 @@ const ImportExportQuotationForm = ({
         copyQuotation.originCharges &&
         copyQuotation.originCharges.length > 0
       ) {
-        setOriginCharges(
-          copyQuotation.originCharges.map((c) => ({
-            ...c,
-            id: Date.now() + Math.random(),
-          })),
-        );
+        setOriginCharges(copyQuotation.originCharges.map(mapCopiedCharge));
       }
       if (
         copyQuotation.freightCharges &&
         copyQuotation.freightCharges.length > 0
       ) {
-        setFreightCharges(
-          copyQuotation.freightCharges.map((c) => ({
-            ...c,
-            id: Date.now() + Math.random(),
-          })),
-        );
+        setFreightCharges(copyQuotation.freightCharges.map(mapCopiedCharge));
       }
       if (
         copyQuotation.destinationCharges &&
         copyQuotation.destinationCharges.length > 0
       ) {
-        setDestinationCharges(
-          copyQuotation.destinationCharges.map((c) => ({
-            ...c,
-            id: Date.now() + Math.random(),
-          })),
-        );
+        setDestinationCharges(copyQuotation.destinationCharges.map(mapCopiedCharge));
       }
 
       // Prefill terms and conditions
@@ -1001,6 +998,10 @@ const ImportExportQuotationForm = ({
     mergedDestinationChargeSuggestions,
     setMergedDestinationChargeSuggestions,
   ] = useState(destinationChargeSuggestionsStatic);
+
+  // True when the form is created from Rate Filing → View Rates ("Create
+  // Quotation"). Drives the read-only "Buying Rates" column in Charges.
+  const [isFromRateFile, setIsFromRateFile] = useState(false);
 
   // Origin Charges State
   const [originCharges, setOriginCharges] = useState([
@@ -2654,6 +2655,7 @@ const ImportExportQuotationForm = ({
     setContainerSelections([]);
     setNewContainerType("");
     setNewContainerQty(1);
+    setIsFromRateFile(false);
 
     setOriginCharges([
       {
@@ -4005,6 +4007,11 @@ const ImportExportQuotationForm = ({
                           <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
                             Charge
                           </th>
+                          {isFromRateFile && (
+                            <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-24">
+                              Buying Rates
+                            </th>
+                          )}
                           <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
                             Currency
                           </th>
@@ -4119,6 +4126,19 @@ const ImportExportQuotationForm = ({
                                   </div>
                                 )}
                             </td>
+                            {isFromRateFile && (
+                              <td className="px-1 py-1.5">
+                                <input
+                                  type="text"
+                                  value={charge.buyingAmount ?? ""}
+                                  readOnly
+                                  tabIndex={-1}
+                                  placeholder="—"
+                                  title="Buying rate (from Rate Filing) — reference only"
+                                  className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center bg-gray-100 text-gray-600 cursor-not-allowed"
+                                />
+                              </td>
+                            )}
                             <td className="px-1 py-1.5">
                               <select
                                 value={charge.currency}
@@ -4257,6 +4277,11 @@ const ImportExportQuotationForm = ({
                           <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
                             Charge
                           </th>
+                          {isFromRateFile && (
+                            <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-24">
+                              Buying Rates
+                            </th>
+                          )}
                           <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
                             Currency
                           </th>
@@ -4371,6 +4396,19 @@ const ImportExportQuotationForm = ({
                                   </div>
                                 )}
                             </td>
+                            {isFromRateFile && (
+                              <td className="px-1 py-1.5">
+                                <input
+                                  type="text"
+                                  value={charge.buyingAmount ?? ""}
+                                  readOnly
+                                  tabIndex={-1}
+                                  placeholder="—"
+                                  title="Buying rate (from Rate Filing) — reference only"
+                                  className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center bg-gray-100 text-gray-600 cursor-not-allowed"
+                                />
+                              </td>
+                            )}
                             <td className="px-1 py-1.5">
                               <select
                                 value={charge.currency}
@@ -4509,6 +4547,11 @@ const ImportExportQuotationForm = ({
                           <th className="px-2 py-1.5 text-left font-semibold text-gray-700">
                             Charge
                           </th>
+                          {isFromRateFile && (
+                            <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-24">
+                              Buying Rates
+                            </th>
+                          )}
                           <th className="px-1 py-1.5 text-center font-semibold text-gray-700 w-20">
                             Currency
                           </th>
@@ -4627,6 +4670,19 @@ const ImportExportQuotationForm = ({
                                   </div>
                                 )}
                             </td>
+                            {isFromRateFile && (
+                              <td className="px-1 py-1.5">
+                                <input
+                                  type="text"
+                                  value={charge.buyingAmount ?? ""}
+                                  readOnly
+                                  tabIndex={-1}
+                                  placeholder="—"
+                                  title="Buying rate (from Rate Filing) — reference only"
+                                  className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs text-center bg-gray-100 text-gray-600 cursor-not-allowed"
+                                />
+                              </td>
+                            )}
                             <td className="px-1 py-1.5">
                               <select
                                 value={charge.currency}
