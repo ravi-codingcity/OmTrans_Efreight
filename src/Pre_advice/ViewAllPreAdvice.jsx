@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Pencil,
   Mail,
+  Trash2,
 } from "lucide-react";
 
 const API_BASE_URL = "https://papayawhip-antelope-424743.hostingersite.com/api";
@@ -61,6 +62,7 @@ const ViewAllPreAdvice = ({ onEditPreAdvice }) => {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const currentUser = (() => {
     try { return JSON.parse(localStorage.getItem("currentUser") || "{}"); }
@@ -132,6 +134,51 @@ const ViewAllPreAdvice = ({ onEditPreAdvice }) => {
   /* ============ RE-DOWNLOAD PDF ============ */
   const handleReDownload = (pa) => {
     generatePreAdvicePDF(pa);
+  };
+
+  /* ============ DELETE ============ */
+  // A user may delete their own records (matched by full name or username);
+  // admins may delete anyone's.
+  const canDelete = (pa) => {
+    if (isAdmin) return true;
+    const cb = normalize(pa.createdBy);
+    const fname = normalize(currentUser.fullName);
+    const uname = normalize(currentUser.username);
+    return (
+      (!!fname && (cb === fname || cb.includes(fname))) ||
+      (!!uname && (cb === uname || cb.includes(uname)))
+    );
+  };
+
+  const handleDelete = async (pa) => {
+    if (!pa?._id || deletingId) return;
+    if (
+      !window.confirm(
+        `Delete Pre-Advice ${pa.jobNo || ""}? This action cannot be undone.`,
+      )
+    )
+      return;
+    setDeletingId(pa._id);
+    try {
+      const res = await fetch(`${API_BASE_URL}/pre-advice/${pa._id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("authToken") || ""}` },
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        console.error("Delete pre-advice failed:", res.status, body);
+        alert("Failed to delete Pre-Advice. Please try again.");
+        return;
+      }
+      // Refresh UI: drop the deleted record from local state.
+      setPreAdvices((prev) => prev.filter((p) => p._id !== pa._id));
+      if (selectedRecord?._id === pa._id) setSelectedRecord(null);
+    } catch (err) {
+      console.error("Failed to delete pre-advice:", err);
+      alert("Network error while deleting Pre-Advice.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   /* ============ MAIL (copy structured HTML to clipboard + open mailto) ============ */
@@ -508,6 +555,21 @@ const ViewAllPreAdvice = ({ onEditPreAdvice }) => {
                           >
                             <Pencil size={11} /> Edit
                           </button>
+                          {canDelete(pa) && (
+                            <button
+                              onClick={() => handleDelete(pa)}
+                              disabled={deletingId === pa._id}
+                              className="flex items-center justify-center gap-1 bg-red-50 text-red-600 px-2 py-1 rounded text-[10px] font-medium hover:bg-red-100 transition-colors disabled:opacity-40"
+                              title="Delete Pre-Advice"
+                            >
+                              {deletingId === pa._id ? (
+                                <Loader2 size={11} className="animate-spin" />
+                              ) : (
+                                <Trash2 size={11} />
+                              )}{" "}
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

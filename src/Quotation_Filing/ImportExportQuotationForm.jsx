@@ -3542,7 +3542,7 @@ const ImportExportQuotationForm = ({
                     </div>
                   )}
                   {getVisibleFields().includes("finalDestination") && (
-                    <div className="md:col-span-2 relative">
+                    <div className="relative">
                       <label className="block font-medium text-gray-700 mb-0.5">
                         Final Destination
                       </label>
@@ -3658,7 +3658,7 @@ const ImportExportQuotationForm = ({
 
                   {/* Row 3: Shipping & Time Details */}
                   {getVisibleFields().includes("shippingLine") && (
-                    <div className="md:col-span-2 relative">
+                    <div className="relative">
                       <label className="block font-medium text-gray-700 mb-0.5">
                         Shipping Line
                       </label>
@@ -3730,7 +3730,7 @@ const ImportExportQuotationForm = ({
                     </div>
                   )}
                   {getVisibleFields().includes("totalTransitTime") && (
-                    <div className="md:col-span-2">
+                    <div>
                       <label className="block font-medium text-gray-700 mb-0.5">
                         Transit Time
                       </label>
@@ -3932,6 +3932,23 @@ const ImportExportQuotationForm = ({
                     </div>
                   )}
 
+                  {/* Quotation Validity Date */}
+                  {getVisibleFields().includes("ratesValidity") && (
+                    <div>
+                      <label className="block font-medium text-gray-700 mb-0.5">
+                        Quotation Validity Date
+                      </label>
+                      <input
+                        type="date"
+                        name="ratesValidity"
+                        value={basicInfo.ratesValidity}
+                        onChange={handleBasicInfoChange}
+                        onClick={(e) => e.currentTarget.showPicker?.()}
+                        className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent bg-white cursor-pointer"
+                      />
+                    </div>
+                  )}
+
                   {/* Row 6: Remarks */}
                   {getVisibleFields().includes("remarks") && (
                     <div className="md:col-span-5">
@@ -3945,23 +3962,6 @@ const ImportExportQuotationForm = ({
                         placeholder="Additional notes..."
                         rows="3"
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent resize-none"
-                      />
-                    </div>
-                  )}
-
-                  {/* Quotation Validity Date */}
-                  {getVisibleFields().includes("ratesValidity") && (
-                    <div className="md:col-span-2">
-                      <label className="block font-medium text-gray-700 mb-0.5">
-                        Quotation Validity Date
-                      </label>
-                      <input
-                        type="date"
-                        name="ratesValidity"
-                        value={basicInfo.ratesValidity}
-                        onChange={handleBasicInfoChange}
-                        onClick={(e) => e.currentTarget.showPicker?.()}
-                        className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent bg-white cursor-pointer"
                       />
                     </div>
                   )}
@@ -4905,7 +4905,7 @@ const ImportExportQuotationForm = ({
                 ) : (
                   <>
                     <Save size={18} />
-                    Save & Submit Later
+                    Save as Draft
                   </>
                 )}
               </button>
