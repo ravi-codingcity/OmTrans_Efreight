@@ -45,6 +45,32 @@ import { invalidateQuotationsCache } from "./QuotationList";
 
 const API_BASE_URL = "https://papayawhip-antelope-424743.hostingersite.com/api";
 
+// Normalize a label for duplicate-comparison: trim, lowercase, collapse spaces.
+const normalizeLabel = (s) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");
+
+// Find an existing suggestion that the typed input is "the same as":
+// exact normalized match, or one is a whole-word prefix of the other.
+// Used to snap free-typed values to canonical entries on blur.
+const findCanonicalSuggestion = (input, suggestions) => {
+  const n = normalizeLabel(input);
+  if (!n || !Array.isArray(suggestions) || suggestions.length === 0) return null;
+  // Exact: "zim" → "ZIM"
+  const exact = suggestions.find((s) => normalizeLabel(s) === n);
+  if (exact) return exact;
+  // Input is prefix of suggestion: "Mundra" → "Mundra Port (GJ)"
+  const inputIsPrefix = suggestions.find((s) => {
+    const ns = normalizeLabel(s);
+    return ns === n || ns.startsWith(n + " ") || ns.startsWith(n + "(");
+  });
+  if (inputIsPrefix) return inputIsPrefix;
+  // Suggestion is prefix of input: "ZIM Lines" → "ZIM"
+  const suggestionIsPrefix = suggestions.find((s) => {
+    const ns = normalizeLabel(s);
+    return ns.length >= 2 && (n === ns || n.startsWith(ns + " ") || n.startsWith(ns + "("));
+  });
+  return suggestionIsPrefix || null;
+};
+
 // Sortable Term Item component for drag-and-drop reordering
 const SortableTermItem = ({ id, term, index, onRemove }) => {
   const {
@@ -1286,6 +1312,19 @@ const ImportExportQuotationForm = ({
       consigneeAddress: `${consignee.name}\n${consignee.address}`,
     }));
     setShowConsigneeDropdown(false);
+  };
+
+  // On blur of an autocomplete field: if the typed value matches an existing
+  // suggestion (case-insensitive / prefix), snap it to the canonical entry to
+  // prevent duplicates like "Zim" vs "ZIM" or "Mundra" vs "Mundra Port (GJ)".
+  const snapBasicInfoField = (field, suggestions) => {
+    setBasicInfo((prev) => {
+      const canonical = findCanonicalSuggestion(prev[field], suggestions);
+      if (canonical && canonical !== prev[field]) {
+        return { ...prev, [field]: canonical };
+      }
+      return prev;
+    });
   };
 
   // Handle shipping line selection from dropdown
@@ -3376,10 +3415,10 @@ const ImportExportQuotationForm = ({
                           }
                         }}
                         onBlur={() => {
-                          setTimeout(
-                            () => setShowCommodityDropdown(false),
-                            200,
-                          );
+                          setTimeout(() => {
+                            setShowCommodityDropdown(false);
+                            snapBasicInfoField("commodity", mergedCommodityData);
+                          }, 200);
                         }}
                         placeholder="Electronics, etc."
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
@@ -3445,7 +3484,10 @@ const ImportExportQuotationForm = ({
                           }
                         }}
                         onBlur={() => {
-                          setTimeout(() => setShowPorDropdown(false), 200);
+                          setTimeout(() => {
+                            setShowPorDropdown(false);
+                            snapBasicInfoField("por", mergedPorData);
+                          }, 200);
                         }}
                         placeholder="Type ICD location..."
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
@@ -3484,7 +3526,10 @@ const ImportExportQuotationForm = ({
                           }
                         }}
                         onBlur={() => {
-                          setTimeout(() => setShowPolDropdown(false), 200);
+                          setTimeout(() => {
+                            setShowPolDropdown(false);
+                            snapBasicInfoField("pol", mergedPolData);
+                          }, 200);
                         }}
                         placeholder="Type port name..."
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
@@ -3523,7 +3568,10 @@ const ImportExportQuotationForm = ({
                           }
                         }}
                         onBlur={() => {
-                          setTimeout(() => setShowPodDropdown(false), 200);
+                          setTimeout(() => {
+                            setShowPodDropdown(false);
+                            snapBasicInfoField("pod", mergedPodData);
+                          }, 200);
                         }}
                         placeholder="Type destination..."
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
@@ -3562,10 +3610,10 @@ const ImportExportQuotationForm = ({
                           }
                         }}
                         onBlur={() => {
-                          setTimeout(
-                            () => setShowFinalDestDropdown(false),
-                            200,
-                          );
+                          setTimeout(() => {
+                            setShowFinalDestDropdown(false);
+                            snapBasicInfoField("finalDestination", mergedFinalDestData);
+                          }, 200);
                         }}
                         placeholder="Type final destination..."
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
@@ -3636,7 +3684,10 @@ const ImportExportQuotationForm = ({
                           }
                         }}
                         onBlur={() => {
-                          setTimeout(() => setShowRailRampDropdown(false), 200);
+                          setTimeout(() => {
+                            setShowRailRampDropdown(false);
+                            snapBasicInfoField("railRamp", mergedRailRampData);
+                          }, 200);
                         }}
                         placeholder="Type rail ramp..."
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"
@@ -3679,10 +3730,10 @@ const ImportExportQuotationForm = ({
                         }}
                         onBlur={() => {
                           // Delay to allow click on dropdown item
-                          setTimeout(
-                            () => setShowShippingLineDropdown(false),
-                            200,
-                          );
+                          setTimeout(() => {
+                            setShowShippingLineDropdown(false);
+                            snapBasicInfoField("shippingLine", shippingLines);
+                          }, 200);
                         }}
                         placeholder="Start typing shipping line..."
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-transparent"

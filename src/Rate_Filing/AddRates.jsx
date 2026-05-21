@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   Save,
   Plus,
@@ -29,9 +35,12 @@ import { shippingLines as staticShippingLines } from "../components/ShippingLine
 /* ------------------------------------------------------------------ */
 /*  Constants / APIs                                                    */
 /* ------------------------------------------------------------------ */
-const ORIGIN_API = "https://mediumspringgreen-stork-730427.hostingersite.com/api/origin/forms/all";
-const RAIL_FREIGHT_API = "https://mediumspringgreen-stork-730427.hostingersite.com/api/railfreight/forms/all";
-const RATE_FILING_API = "https://papayawhip-antelope-424743.hostingersite.com/api/rate-filings";
+const ORIGIN_API =
+  "https://mediumspringgreen-stork-730427.hostingersite.com/api/origin/forms/all";
+const RAIL_FREIGHT_API =
+  "https://mediumspringgreen-stork-730427.hostingersite.com/api/railfreight/forms/all";
+const RATE_FILING_API =
+  "https://papayawhip-antelope-424743.hostingersite.com/api/rate-filings";
 
 const CONTAINER_TYPES = [
   "20ft Standard Container",
@@ -62,9 +71,24 @@ const TRANSIT_DAYS = Array.from({ length: 100 }, (_, i) => {
 const VALIDITY_TYPES = ["Gate-in", "Handover", "Sailing"];
 
 const CURRENCY_OPTIONS = ["INR", "USD", "EUR", "GBP", "AED", "JPY", "AUD"];
-const CURRENCY_SYMBOLS = { INR: "₹", USD: "$", EUR: "€", GBP: "£", AED: "د.إ", JPY: "¥", AUD: "A$" };
+const CURRENCY_SYMBOLS = {
+  INR: "₹",
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  AED: "د.إ",
+  JPY: "¥",
+  AUD: "A$",
+};
 const ACD_TYPES = ["ACD", "ENS", "AFR"];
-const UNIT_OPTIONS = ["Per BL", "Per Container", "Per Shipment", "Per CBM", "Per KG", "Lump Sum"];
+const UNIT_OPTIONS = [
+  "Per BL",
+  "Per Container",
+  "Per Shipment",
+  "Per CBM",
+  "Per KG",
+  "Lump Sum",
+];
 
 /* Map full container type names (form) → abbreviated API values */
 const containerTypeToApiMap = {
@@ -84,7 +108,8 @@ const containerTypeToApiMap = {
   "20ft Hazardous Container": "20ft Haz",
   "40ft Hazardous Container": "40ft Haz",
 };
-const mapContainerType = (fullName) => containerTypeToApiMap[fullName] || fullName;
+const mapContainerType = (fullName) =>
+  containerTypeToApiMap[fullName] || fullName;
 
 /* ------------------------------------------------------------------ */
 /*  Reusable tiny components                                            */
@@ -116,7 +141,40 @@ const inputCls =
 /* ------------------------------------------------------------------ */
 /*  Autocomplete input                                                  */
 /* ------------------------------------------------------------------ */
-const AutocompleteInput = ({ value, onChange, suggestions, placeholder, allowNew = false }) => {
+// Normalize a label for comparison: trim, lowercase, collapse whitespace.
+const normalizeLabel = (s) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");
+
+// Find an existing suggestion that the user's input is "the same as":
+// exact normalized match, or one is a (whole-word) prefix of the other.
+// Used to prevent duplicate entries from casing / partial spelling.
+const findCanonicalSuggestion = (input, suggestions) => {
+  const n = normalizeLabel(input);
+  if (!n) return null;
+  // Exact match (case/whitespace-insensitive): "zim" → "ZIM"
+  const exact = suggestions.find((s) => normalizeLabel(s) === n);
+  if (exact) return exact;
+  // Input is a prefix of a suggestion: "Mundra" → "Mundra Port (GJ)"
+  const inputIsPrefix = suggestions.find((s) => {
+    const ns = normalizeLabel(s);
+    return ns === n || ns.startsWith(n + " ") || ns.startsWith(n + "(");
+  });
+  if (inputIsPrefix) return inputIsPrefix;
+  // Suggestion is a prefix of input: user typed "ZIM Lines" → "ZIM"
+  const suggestionIsPrefix = suggestions.find((s) => {
+    const ns = normalizeLabel(s);
+    return ns.length >= 2 && (n === ns || n.startsWith(ns + " ") || n.startsWith(ns + "("));
+  });
+  if (suggestionIsPrefix) return suggestionIsPrefix;
+  return null;
+};
+
+const AutocompleteInput = ({
+  value,
+  onChange,
+  suggestions,
+  placeholder,
+  allowNew = false,
+}) => {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const ref = useRef(null);
@@ -130,8 +188,22 @@ const AutocompleteInput = ({ value, onChange, suggestions, placeholder, allowNew
   }, []);
 
   const filtered = suggestions.filter((s) =>
-    s.toLowerCase().includes((filter || value || "").toLowerCase())
+    s.toLowerCase().includes((filter || value || "").toLowerCase()),
   );
+
+  // On blur, snap free-typed input to an existing canonical suggestion
+  // when one looks like the same entry (case/partial/prefix). Only allow
+  // a genuinely new value through when no canonical match is found.
+  const handleBlur = () => {
+    // Delay so clicking a dropdown item runs first (its onChange wins).
+    setTimeout(() => {
+      const canonical = findCanonicalSuggestion(value, suggestions);
+      if (canonical && canonical !== value) {
+        onChange(canonical);
+        setFilter("");
+      }
+    }, 200);
+  };
 
   return (
     <div className="relative" ref={ref}>
@@ -145,13 +217,17 @@ const AutocompleteInput = ({ value, onChange, suggestions, placeholder, allowNew
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
+          onBlur={handleBlur}
           placeholder={placeholder}
           className={`${inputCls} w-full pr-7`}
         />
         {value && (
           <button
             type="button"
-            onClick={() => { onChange(""); setFilter(""); }}
+            onClick={() => {
+              onChange("");
+              setFilter("");
+            }}
             className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
             <X size={12} />
@@ -183,7 +259,12 @@ const AutocompleteInput = ({ value, onChange, suggestions, placeholder, allowNew
 /* ------------------------------------------------------------------ */
 /*  Autocomplete contact input — shows name + number in dropdown        */
 /* ------------------------------------------------------------------ */
-const AutocompleteContactInput = ({ value, onChange, contacts, placeholder }) => {
+const AutocompleteContactInput = ({
+  value,
+  onChange,
+  contacts,
+  placeholder,
+}) => {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const ref = useRef(null);
@@ -200,13 +281,14 @@ const AutocompleteContactInput = ({ value, onChange, contacts, placeholder }) =>
   const unique = useMemo(() => {
     const map = new Map();
     contacts.forEach((c) => {
-      if (c.name && !map.has(c.name.toLowerCase())) map.set(c.name.toLowerCase(), c);
+      if (c.name && !map.has(c.name.toLowerCase()))
+        map.set(c.name.toLowerCase(), c);
     });
     return [...map.values()];
   }, [contacts]);
 
   const filtered = unique.filter((c) =>
-    c.name.toLowerCase().includes((filter || value || "").toLowerCase())
+    c.name.toLowerCase().includes((filter || value || "").toLowerCase()),
   );
 
   return (
@@ -227,7 +309,10 @@ const AutocompleteContactInput = ({ value, onChange, contacts, placeholder }) =>
         {value && (
           <button
             type="button"
-            onClick={() => { onChange(""); setFilter(""); }}
+            onClick={() => {
+              onChange("");
+              setFilter("");
+            }}
             className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
             <X size={12} />
@@ -248,7 +333,11 @@ const AutocompleteContactInput = ({ value, onChange, contacts, placeholder }) =>
               className="w-full text-left px-2 py-1.5 text-xs hover:bg-emerald-50 transition-colors flex items-center justify-between"
             >
               <span className="font-medium text-gray-800">{c.name}</span>
-              {c.number && <span className="text-[10px] text-gray-400 ml-2">{c.number}</span>}
+              {c.number && (
+                <span className="text-[10px] text-gray-400 ml-2">
+                  {c.number}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -282,9 +371,12 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
   const [loadingRail, setLoadingRail] = useState(false);
 
   /* ----- Suggestions extracted from buying rates ----- */
-  const [finalDestinationSuggestions, setFinalDestinationSuggestions] = useState([]);
+  const [finalDestinationSuggestions, setFinalDestinationSuggestions] =
+    useState([]);
   const [railRampSuggestions, setRailRampSuggestions] = useState([]);
-  const [shippingContactSuggestions, setShippingContactSuggestions] = useState([]);
+  const [shippingContactSuggestions, setShippingContactSuggestions] = useState(
+    [],
+  );
 
   /* ----- Form state ----- */
   const initialForm = {
@@ -314,9 +406,12 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
 
   /* Parse stored "USD $100" → { currency: "USD", value: "100" } */
   const parseOceanFreight = (raw) => {
-    if (!raw || typeof raw !== "string") return { currency: "USD", value: raw || "" };
+    if (!raw || typeof raw !== "string")
+      return { currency: "USD", value: raw || "" };
     // Match patterns like "USD $100", "INR ₹500", "INR ₹ $100", "EUR 200"
-    const m = raw.match(/^(USD|INR|EUR|GBP|AED|SGD|JPY|AUD)\s*[^\d]*([\d,.]+)$/i);
+    const m = raw.match(
+      /^(USD|INR|EUR|GBP|AED|SGD|JPY|AUD)\s*[^\d]*([\d,.]+)$/i,
+    );
     if (m) return { currency: m[1].toUpperCase(), value: m[2].trim() };
     // If it's just a number, return as-is
     if (!isNaN(parseFloat(raw))) return { currency: "USD", value: raw };
@@ -325,9 +420,12 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
 
   /* Parse stored "ACD $50" or "ENS USD $50" → { type, currency, value } */
   const parseAcdEnsAfr = (raw) => {
-    if (!raw || typeof raw !== "string") return { type: "ACD", currency: "USD", value: "" };
+    if (!raw || typeof raw !== "string")
+      return { type: "ACD", currency: "USD", value: "" };
     // Match: "ACD USD $50", "ENS ₹100", "AFR $200", "ACD ₹ $50"
-    const m = raw.match(/^(ACD|ENS|AFR)\s*(?:(USD|INR|EUR|GBP|AED|SGD|JPY|AUD)\s*)?[^\d]*([\d,.]+)$/i);
+    const m = raw.match(
+      /^(ACD|ENS|AFR)\s*(?:(USD|INR|EUR|GBP|AED|SGD|JPY|AUD)\s*)?[^\d]*([\d,.]+)$/i,
+    );
     if (m) {
       const type = m[1].toUpperCase();
       let currency = m[2] ? m[2].toUpperCase() : "USD";
@@ -356,7 +454,8 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
   // Multi-container state
   const [containerSelections, setContainerSelections] = useState(() => {
     if (!editingRate) return [];
-    if (editingRate.container_types?.length > 0) return editingRate.container_types;
+    if (editingRate.container_types?.length > 0)
+      return editingRate.container_types;
     if (editingRate.container_type) return [editingRate.container_type];
     return [];
   });
@@ -365,9 +464,10 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
     if (!editingRate) return {};
     if (editingRate.containerCharges) {
       try {
-        const parsed = typeof editingRate.containerCharges === "string"
-          ? JSON.parse(editingRate.containerCharges)
-          : editingRate.containerCharges;
+        const parsed =
+          typeof editingRate.containerCharges === "string"
+            ? JSON.parse(editingRate.containerCharges)
+            : editingRate.containerCharges;
         if (parsed && typeof parsed === "object") return parsed;
       } catch {}
     }
@@ -396,7 +496,8 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
     }));
 
   const addContainerType = () => {
-    if (!newContainerType || containerSelections.includes(newContainerType)) return;
+    if (!newContainerType || containerSelections.includes(newContainerType))
+      return;
     setContainerSelections((prev) => [...prev, newContainerType]);
     setContainerCharges((prev) => ({
       ...prev,
@@ -415,19 +516,20 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
 
   const [customCharges, setCustomCharges] = useState(
     editingRate?.customCharges
-      ? (typeof editingRate.customCharges === "string"
-          ? JSON.parse(editingRate.customCharges)
-          : editingRate.customCharges)
-      : []
+      ? typeof editingRate.customCharges === "string"
+        ? JSON.parse(editingRate.customCharges)
+        : editingRate.customCharges
+      : [],
   );
   // Per-container origin charges (bl_fees, thc, muc, toll)
   const [originChargeMap, setOriginChargeMap] = useState(() => {
     if (!editingRate) return {};
     if (editingRate.originChargeMap) {
       try {
-        const parsed = typeof editingRate.originChargeMap === "string"
-          ? JSON.parse(editingRate.originChargeMap)
-          : editingRate.originChargeMap;
+        const parsed =
+          typeof editingRate.originChargeMap === "string"
+            ? JSON.parse(editingRate.originChargeMap)
+            : editingRate.originChargeMap;
         if (parsed && typeof parsed === "object") return parsed;
       } catch {}
     }
@@ -449,7 +551,10 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
   const updateOriginCharge = (ct, field, val) =>
     setOriginChargeMap((prev) => ({
       ...prev,
-      [ct]: { ...(prev[ct] || { bl_fees: "", thc: "", muc: "", toll: "" }), [field]: val },
+      [ct]: {
+        ...(prev[ct] || { bl_fees: "", thc: "", muc: "", toll: "" }),
+        [field]: val,
+      },
     }));
 
   const [errors, setErrors] = useState({});
@@ -459,7 +564,9 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
   const [railMatch, setRailMatch] = useState(null);
   const [railMatchMap, setRailMatchMap] = useState({});
   const [commodityMode, setCommodityMode] = useState(
-    editingRate?.commodity && editingRate.commodity !== "FAK" ? "Commodity Specific" : ""
+    editingRate?.commodity && editingRate.commodity !== "FAK"
+      ? "Commodity Specific"
+      : "",
   );
 
   const set = (field) => (val) => setForm((p) => ({ ...p, [field]: val }));
@@ -541,63 +648,48 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
     const norm = (s) => (s || "").trim().toLowerCase();
 
     const computeOriginMatch = (ct) => {
+      // STRICT match: all four fields (POR, POL, Shipping Line, Equipment)
+      // must be selected and must match an origin rate exactly. If any of
+      // them is empty — or no rate matches all four — return null so the
+      // Origin Rate Calculator shows no data instead of stale fallbacks.
+      if (!form.por || !form.pol || !form.shipping_lines || !ct) return null;
       const apiCt = mapContainerType(ct);
-      if (form.por && form.pol && form.shipping_lines && ct) {
-        const m = originRates.find((r) =>
-          norm(r.por) === norm(form.por) &&
-          norm(r.pol) === norm(form.pol) &&
-          norm(r.shipping_lines) === norm(form.shipping_lines) &&
-          norm(r.container_type) === norm(apiCt)
-        );
-        if (m) return m;
-      }
-      if (form.por && form.pol && form.shipping_lines) {
-        const m = originRates.find((r) =>
-          norm(r.por) === norm(form.por) &&
-          norm(r.pol) === norm(form.pol) &&
-          norm(r.shipping_lines) === norm(form.shipping_lines)
-        );
-        if (m) return m;
-      }
-      if (form.por && form.pol && ct) {
-        const m = originRates.find((r) =>
-          norm(r.por) === norm(form.por) &&
-          norm(r.pol) === norm(form.pol) &&
-          norm(r.container_type) === norm(mapContainerType(ct))
-        );
-        if (m) return m;
-      }
-      if (form.por && form.pol) {
-        return originRates.find((r) =>
-          norm(r.por) === norm(form.por) && norm(r.pol) === norm(form.pol)
-        ) || null;
-      }
-      return null;
+      return (
+        originRates.find(
+          (r) =>
+            norm(r.por) === norm(form.por) &&
+            norm(r.pol) === norm(form.pol) &&
+            norm(r.shipping_lines) === norm(form.shipping_lines) &&
+            norm(r.container_type) === norm(apiCt),
+        ) || null
+      );
     };
 
     const newMap = {};
-    containerSelections.forEach((ct) => { newMap[ct] = computeOriginMatch(ct); });
+    containerSelections.forEach((ct) => {
+      newMap[ct] = computeOriginMatch(ct);
+    });
     setOriginMatchMap(newMap);
 
     // Populate per-container origin charge map from matched records.
-    // Merge with existing state: only fill in fields that are currently empty
-    // so manually entered or previously-saved values are never overwritten.
-    setOriginChargeMap((prev) => {
-      const merged = {};
-      containerSelections.forEach((ct) => {
-        const m = newMap[ct];
-        const existing = prev[ct] || {};
-        merged[ct] = {
-          bl_fees: existing.bl_fees || (m ? (m.bl_fees ?? m.blFees ?? "") : ""),
-          thc:     existing.thc     || (m ? (m.thc     ?? "")             : ""),
-          muc:     existing.muc     || (m ? (m.muc     ?? "")             : ""),
-          toll:    existing.toll    || (m ? (m.toll    ?? "")             : ""),
-        };
-      });
-      return merged;
+    // The Origin Rate Calculator must be fully reactive: whenever POR / POL /
+    // Shipping Line / Equipment changes we overwrite the map with the new
+    // match values (or blanks when no match). Stale values from a previous
+    // combination must never linger.
+    const nextChargeMap = {};
+    containerSelections.forEach((ct) => {
+      const m = newMap[ct];
+      nextChargeMap[ct] = {
+        bl_fees: m ? (m.bl_fees ?? m.blFees ?? "") : "",
+        thc: m ? (m.thc ?? "") : "",
+        muc: m ? (m.muc ?? "") : "",
+        toll: m ? (m.toll ?? "") : "",
+      };
     });
+    setOriginChargeMap(nextChargeMap);
 
-    // Keep form.bl_fees/thc/muc/toll synced with first container for backward compat
+    // Keep form.bl_fees/thc/muc/toll synced with first container for backward
+    // compat. Always clear when no match so the calculator reflects reality.
     const firstCt = containerSelections[0] || "";
     const match = firstCt ? newMap[firstCt] : null;
     setOriginMatch(match || null);
@@ -609,10 +701,16 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
         muc: match.muc ?? "",
         toll: match.toll ?? "",
       }));
-    } else if (form.por && form.pol) {
+    } else {
       setForm((p) => ({ ...p, bl_fees: "", thc: "", muc: "", toll: "" }));
     }
-  }, [form.por, form.pol, form.shipping_lines, containerSelections, originRates]);
+  }, [
+    form.por,
+    form.pol,
+    form.shipping_lines,
+    containerSelections,
+    originRates,
+  ]);
 
   /* ----- Auto-calculate rail freight for all selected containers ----- */
   useEffect(() => {
@@ -621,46 +719,27 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
     const norm = (s) => (s || "").trim().toLowerCase();
 
     const computeRailMatch = (ct) => {
+      // STRICT match: all four fields (POR, POL, Shipping Line, Equipment)
+      // must be selected and must match a rail rate exactly. Any missing
+      // field or no exact match → null so the Rail section shows no data
+      // instead of falling back to a looser combination.
+      if (!form.por || !form.pol || !form.shipping_lines || !ct) return null;
       const apiCt = mapContainerType(ct);
-      if (form.por && form.pol && form.shipping_lines && ct) {
-        const m = railFreightRates.find((r) =>
-          norm(r.por) === norm(form.por) &&
-          norm(r.pol) === norm(form.pol) &&
-          norm(r.shipping_lines) === norm(form.shipping_lines) &&
-          norm(r.container_type) === norm(apiCt)
-        );
-        if (m) return m;
-      }
-      if (form.por && form.pol && form.shipping_lines) {
-        const m = railFreightRates.find((r) =>
-          norm(r.por) === norm(form.por) &&
-          norm(r.pol) === norm(form.pol) &&
-          norm(r.shipping_lines) === norm(form.shipping_lines)
-        );
-        if (m) return m;
-      }
-      if (form.por && form.pol && ct) {
-        const m = railFreightRates.find((r) =>
-          norm(r.por) === norm(form.por) &&
-          norm(r.pol) === norm(form.pol) &&
-          norm(r.container_type) === norm(mapContainerType(ct))
-        );
-        if (m) return m;
-      }
-      if (form.por && form.pol) {
-        const m = railFreightRates.find((r) =>
-          norm(r.por) === norm(form.por) && norm(r.pol) === norm(form.pol)
-        );
-        if (m) return m;
-      }
-      if (form.por) {
-        return railFreightRates.find((r) => norm(r.por) === norm(form.por)) || null;
-      }
-      return null;
+      return (
+        railFreightRates.find(
+          (r) =>
+            norm(r.por) === norm(form.por) &&
+            norm(r.pol) === norm(form.pol) &&
+            norm(r.shipping_lines) === norm(form.shipping_lines) &&
+            norm(r.container_type) === norm(apiCt),
+        ) || null
+      );
     };
 
     const newMap = {};
-    containerSelections.forEach((ct) => { newMap[ct] = computeRailMatch(ct); });
+    containerSelections.forEach((ct) => {
+      newMap[ct] = computeRailMatch(ct);
+    });
     setRailMatchMap(newMap);
 
     // Use first container's match for form state (backward compat)
@@ -668,13 +747,19 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
     const match = firstCt ? computeRailMatch(firstCt) : null;
     setRailMatch(match || null);
     setForm((p) => ({ ...p, railFreightRates: match || null }));
-  }, [form.por, form.pol, form.shipping_lines, containerSelections, railFreightRates]);
+  }, [
+    form.por,
+    form.pol,
+    form.shipping_lines,
+    containerSelections,
+    railFreightRates,
+  ]);
 
   /* ----- Auto-fill shipping contact ----- */
   const handleShippingNameChange = (val) => {
     setForm((p) => ({ ...p, shipping_name: val }));
     const found = shippingContactSuggestions.find(
-      (c) => c.name.toLowerCase() === val.toLowerCase()
+      (c) => c.name.toLowerCase() === val.toLowerCase(),
     );
     if (found) {
       setForm((p) => ({
@@ -694,9 +779,12 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
       { label: "", value: "", currency: "INR", unit: "Per Container" },
     ]);
   };
-  const removeCustomCharge = (idx) => setCustomCharges((p) => p.filter((_, i) => i !== idx));
+  const removeCustomCharge = (idx) =>
+    setCustomCharges((p) => p.filter((_, i) => i !== idx));
   const updateCustomCharge = (idx, field, val) =>
-    setCustomCharges((p) => p.map((c, i) => (i === idx ? { ...c, [field]: val } : c)));
+    setCustomCharges((p) =>
+      p.map((c, i) => (i === idx ? { ...c, [field]: val } : c)),
+    );
 
   /* ----- Validation ----- */
   const validate = () => {
@@ -705,9 +793,11 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
     if (!form.pol) e.pol = "Required";
     if (!form.pod) e.pod = "Required";
     if (!form.shipping_lines) e.shipping_lines = "Required";
-    if (containerSelections.length === 0) e.container_type = "Select at least one container type";
+    if (containerSelections.length === 0)
+      e.container_type = "Select at least one container type";
     containerSelections.forEach((ct) => {
-      if (!containerCharges[ct]?.ocean_freight) e[`ocean_freight_${ct}`] = "Required";
+      if (!containerCharges[ct]?.ocean_freight)
+        e[`ocean_freight_${ct}`] = "Required";
     });
     if (!form.validity) e.validity = "Required";
     setErrors(e);
@@ -718,7 +808,8 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
   const buildRateModel = () => {
     const firstCt = containerSelections[0] || "";
     const firstCharge = containerCharges[firstCt] || defaultContainerCharge();
-    const oceanSym = CURRENCY_SYMBOLS[firstCharge.ocean_freight_currency] || "$";
+    const oceanSym =
+      CURRENCY_SYMBOLS[firstCharge.ocean_freight_currency] || "$";
     const oceanStr = firstCharge.ocean_freight
       ? `${firstCharge.ocean_freight_currency} ${oceanSym}${firstCharge.ocean_freight}`
       : "";
@@ -747,8 +838,13 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
       thc: form.thc,
       muc: form.muc,
       toll: form.toll,
-      railFreightRates: form.railFreightRates ? JSON.stringify(form.railFreightRates) : "",
-      originChargeMap: Object.keys(originChargeMap).length > 0 ? JSON.stringify(originChargeMap) : "",
+      railFreightRates: form.railFreightRates
+        ? JSON.stringify(form.railFreightRates)
+        : "",
+      originChargeMap:
+        Object.keys(originChargeMap).length > 0
+          ? JSON.stringify(originChargeMap)
+          : "",
       shipping_name: form.shipping_name,
       shipping_number: form.shipping_number,
       shipping_email: form.shipping_email,
@@ -756,7 +852,8 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
       validity: form.validity,
       validity_for: form.validity_for,
       remarks: form.remarks,
-      customCharges: customCharges.length > 0 ? JSON.stringify(customCharges) : "",
+      customCharges:
+        customCharges.length > 0 ? JSON.stringify(customCharges) : "",
       customLabel: customCharges[0]?.label || "",
       customValue: customCharges[0]?.value || "",
       customUnit: customCharges[0]?.unit || "",
@@ -790,10 +887,17 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
       const data = await res.json();
 
       if (res.ok) {
-        alert(isEditing ? "Rate updated successfully!" : "Rate created successfully!");
+        alert(
+          isEditing
+            ? "Rate updated successfully!"
+            : "Rate created successfully!",
+        );
         if (onSaved) onSaved(data.data || data);
       } else {
-        alert(data.message || `Failed to ${isEditing ? "update" : "create"} rate. Please try again.`);
+        alert(
+          data.message ||
+            `Failed to ${isEditing ? "update" : "create"} rate. Please try again.`,
+        );
       }
     } catch (err) {
       console.error("Submit error:", err);
@@ -824,19 +928,23 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
   ].sort();
 
   /* ----- POL suggestions from API + static ----- */
-  const allPOL = [...new Set([
-    ...indianPorts,
-    ...buyingRates.map((r) => r.pol).filter(Boolean),
-  ])].sort();
+  const allPOL = [
+    ...new Set([
+      ...indianPorts,
+      ...buyingRates.map((r) => r.pol).filter(Boolean),
+    ]),
+  ].sort();
 
   /* ----- POD suggestions from API + static + allow new ----- */
-  const allPOD = [...new Set([
-    ...foreignDestinations,
-    ...buyingRates.map((r) => r.pod).filter(Boolean),
-  ])].sort();
+  const allPOD = [
+    ...new Set([
+      ...foreignDestinations,
+      ...buyingRates.map((r) => r.pod).filter(Boolean),
+    ]),
+  ].sort();
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-2">
       {/* Top bar */}
       <div className="flex items-center justify-between bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-2.5 rounded-lg">
         <div>
@@ -866,23 +974,28 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
             disabled={saving}
             className="flex items-center gap-1.5 bg-white text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-emerald-50 transition-colors disabled:opacity-50"
           >
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {saving ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Save size={14} />
+            )}
             {saving ? "Saving..." : "Save Rate"}
           </button>
         </div>
       </div>
 
       {/* ====== 70/30 SPLIT LAYOUT ====== */}
-      <div className="flex flex-col lg:flex-row gap-3">
+      <div className="flex flex-col md:flex-row gap-3">
         {/* ======== LEFT PANEL — 70% Main Form ======== */}
-        <div className="w-full lg:w-[70%] space-y-4">
-
+        <div className="w-full md:w-[70%] space-y-4">
           {/* ====== ROUTE INFORMATION ====== */}
           <div className="bg-white border border-gray-200 rounded-lg overflow-visible shadow-sm">
             <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-gray-200">
               <div className="flex items-center gap-2">
                 <MapPin size={14} className="text-emerald-600" />
-                <h3 className="text-xs font-bold text-emerald-800 uppercase tracking-wide">Route Information</h3>
+                <h3 className="text-xs font-bold text-emerald-800 uppercase tracking-wide">
+                  Route Information
+                </h3>
               </div>
               <button
                 type="button"
@@ -894,52 +1007,54 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
               </button>
             </div>
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
-              <Field label="POR (Place of Receipt)" required>
-                <AutocompleteInput
-                  value={form.por}
-                  onChange={set("por")}
-                  suggestions={icdLocations}
-                  placeholder="Select POR..."
-                />
-                {errors.por && <span className="text-[9px] text-red-500">{errors.por}</span>}
-              </Field>
-
-              <Field label="Shipping Line" required>
-                <AutocompleteInput
-                  value={form.shipping_lines}
-                  onChange={set("shipping_lines")}
-                  suggestions={allShippingLines}
-                  placeholder="Search Shipping Line..."
-                />
-                {errors.shipping_lines && (
-                  <span className="text-[9px] text-red-500">{errors.shipping_lines}</span>
-                )}
-              </Field>
-
-              <Field label="POL (Port of Loading)" required>
-                <AutocompleteInput
-                  value={form.pol}
-                  onChange={set("pol")}
-                  suggestions={allPOL}
-                  placeholder="Search POL..."
-                />
-                {errors.pol && <span className="text-[9px] text-red-500">{errors.pol}</span>}
-              </Field>
-
-              <Field label="Equipment" required>
-                <div className="space-y-1.5">
-                  {containerSelections.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {containerSelections.map((ct) => (
-                        <span key={ct} className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full border border-emerald-200 font-medium">
-                          {ct.replace(" Container", "")}
-                          <button type="button" onClick={() => removeContainerType(ct)} className="ml-0.5 text-emerald-600 hover:text-red-500 transition-colors">
-                            <X size={10} />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
+              {/* Row 1: POR / Shipping Line / POL */}
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-x-3 gap-y-2">
+                <Field label="POR (Place of Receipt)" required>
+                  <AutocompleteInput
+                    value={form.por}
+                    onChange={set("por")}
+                    suggestions={icdLocations}
+                    placeholder="Select POR..."
+                  />
+                  {errors.por && (
+                    <span className="text-[9px] text-red-500">
+                      {errors.por}
+                    </span>
                   )}
+                </Field>
+
+                <Field label="Shipping Line" required>
+                  <AutocompleteInput
+                    value={form.shipping_lines}
+                    onChange={set("shipping_lines")}
+                    suggestions={allShippingLines}
+                    placeholder="Search Shipping Line..."
+                  />
+                  {errors.shipping_lines && (
+                    <span className="text-[9px] text-red-500">
+                      {errors.shipping_lines}
+                    </span>
+                  )}
+                </Field>
+
+                <Field label="POL (Port of Loading)" required>
+                  <AutocompleteInput
+                    value={form.pol}
+                    onChange={set("pol")}
+                    suggestions={allPOL}
+                    placeholder="Search POL..."
+                  />
+                  {errors.pol && (
+                    <span className="text-[9px] text-red-500">
+                      {errors.pol}
+                    </span>
+                  )}
+                </Field>
+              </div>
+
+              {/* Row 2: Equipment / Commodity Type */}
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-2">
+                <Field label="Equipment" required>
                   <div className="flex gap-1">
                     <select
                       value={newContainerType}
@@ -948,89 +1063,136 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                     >
                       <option value="">Select &amp; Add your container</option>
                       {CONTAINER_TYPES.map((ct) => (
-                        <option key={ct} value={ct} disabled={containerSelections.includes(ct)}>
-                          {ct}{containerSelections.includes(ct) ? " ✓" : ""}
+                        <option
+                          key={ct}
+                          value={ct}
+                          disabled={containerSelections.includes(ct)}
+                        >
+                          {ct}
+                          {containerSelections.includes(ct) ? " ✓" : ""}
                         </option>
                       ))}
                     </select>
                     <button
                       type="button"
                       onClick={addContainerType}
-                      disabled={!newContainerType || containerSelections.includes(newContainerType)}
+                      disabled={
+                        !newContainerType ||
+                        containerSelections.includes(newContainerType)
+                      }
                       className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded hover:bg-emerald-700 transition-colors disabled:opacity-40"
                     >
                       <Plus size={12} /> Add
                     </button>
                   </div>
-                </div>
-                {errors.container_type && (
-                  <span className="text-[9px] text-red-500">{errors.container_type}</span>
-                )}
-              </Field>
+                  <div className="space-y-1.5">
+                    {containerSelections.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {containerSelections.map((ct) => (
+                          <span
+                            key={ct}
+                            className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full border border-emerald-200 font-medium"
+                          >
+                            {ct.replace(" Container", "")}
+                            <button
+                              type="button"
+                              onClick={() => removeContainerType(ct)}
+                              className="ml-0.5 text-emerald-600 hover:text-red-500 transition-colors"
+                            >
+                              <X size={10} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {errors.container_type && (
+                    <span className="text-[9px] text-red-500">
+                      {errors.container_type}
+                    </span>
+                  )}
+                </Field>
 
-              <Field label="POD (Port of Discharge)" required>
-                <AutocompleteInput
-                  value={form.pod}
-                  onChange={set("pod")}
-                  suggestions={allPOD}
-                  placeholder="Type or Select POD"
-                  allowNew
-                />
-                {errors.pod && <span className="text-[9px] text-red-500">{errors.pod}</span>}
-              </Field>
-
-              <Field label="Commodity Type" required>
-                <select
-                  value={form.commodity === "FAK" ? "FAK" : commodityMode === "Commodity Specific" ? "Commodity Specific" : ""}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (v === "FAK") {
-                      set("commodity")("FAK");
-                      setCommodityMode("FAK");
-                    } else if (v === "Commodity Specific") {
-                      set("commodity")("");
-                      setCommodityMode("Commodity Specific");
-                    } else {
-                      set("commodity")("");
-                      setCommodityMode("");
+                <Field label="Commodity Type" required>
+                  <select
+                    value={
+                      form.commodity === "FAK"
+                        ? "FAK"
+                        : commodityMode === "Commodity Specific"
+                          ? "Commodity Specific"
+                          : ""
                     }
-                  }}
-                  className={`${inputCls} w-full`}
-                >
-                  <option value="">Select Commodity Type</option>
-                  {COMMODITY_TYPES.map((ct) => (
-                    <option key={ct} value={ct}>{ct}</option>
-                  ))}
-                </select>
-                {commodityMode === "Commodity Specific" && form.commodity !== "FAK" && (
-                  <input
-                    type="text"
-                    value={form.commodity}
-                    onChange={(e) => set("commodity")(e.target.value)}
-                    placeholder="Enter commodity details..."
-                    className={`${inputCls} w-full mt-1`}
-                    autoFocus
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === "FAK") {
+                        set("commodity")("FAK");
+                        setCommodityMode("FAK");
+                      } else if (v === "Commodity Specific") {
+                        set("commodity")("");
+                        setCommodityMode("Commodity Specific");
+                      } else {
+                        set("commodity")("");
+                        setCommodityMode("");
+                      }
+                    }}
+                    className={`${inputCls} w-full`}
+                  >
+                    <option value="">Select Commodity Type</option>
+                    {COMMODITY_TYPES.map((ct) => (
+                      <option key={ct} value={ct}>
+                        {ct}
+                      </option>
+                    ))}
+                  </select>
+                  {commodityMode === "Commodity Specific" &&
+                    form.commodity !== "FAK" && (
+                      <input
+                        type="text"
+                        value={form.commodity}
+                        onChange={(e) => set("commodity")(e.target.value)}
+                        placeholder="Enter commodity details..."
+                        className={`${inputCls} w-full mt-1`}
+                        autoFocus
+                      />
+                    )}
+                </Field>
+              </div>
+
+              {/* Row 3: POD / Final Destination / Rail Ramp */}
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-x-3 gap-y-2">
+                <Field label="POD (Port of Discharge)" required>
+                  <AutocompleteInput
+                    value={form.pod}
+                    onChange={set("pod")}
+                    suggestions={allPOD}
+                    placeholder="Type or Select POD"
+                    allowNew
                   />
-                )}
-              </Field>
+                  {errors.pod && (
+                    <span className="text-[9px] text-red-500">
+                      {errors.pod}
+                    </span>
+                  )}
+                </Field>
 
-              <Field label="Final Destination">
-                <AutocompleteInput
-                  value={form.finalDestination}
-                  onChange={set("finalDestination")}
-                  suggestions={finalDestinationSuggestions}
-                  placeholder="Type or Select Final Destination"
-                />
-              </Field>
+                <Field label="Final Destination">
+                  <AutocompleteInput
+                    value={form.finalDestination}
+                    onChange={set("finalDestination")}
+                    suggestions={finalDestinationSuggestions}
+                    placeholder="Type or Select Final Destination"
+                  />
+                </Field>
 
-              <Field label="Rail Ramp">
-                <AutocompleteInput
-                  value={form.railRamp}
-                  onChange={set("railRamp")}
-                  suggestions={railRampSuggestions}
-                  placeholder="Type or Select Rail Ramp"
-                />
-              </Field>
+                <Field label="Rail Ramp">
+                  <AutocompleteInput
+                    value={form.railRamp}
+                    onChange={set("railRamp")}
+                    suggestions={railRampSuggestions}
+                    placeholder="Type or Select Rail Ramp"
+                  />
+                </Field>
+              </div>
             </div>
           </div>
 
@@ -1038,7 +1200,9 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
           <div className="bg-white border border-gray-200 rounded-lg overflow-visible shadow-sm">
             <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
               <DollarSign size={14} className="text-blue-600" />
-              <h3 className="text-xs font-bold text-blue-800 uppercase tracking-wide">Freight Details & Routing</h3>
+              <h3 className="text-xs font-bold text-blue-800 uppercase tracking-wide">
+                Freight Details & Routing
+              </h3>
             </div>
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
               {/* Per-container Ocean Freight and ACD/ENS/AFR */}
@@ -1046,64 +1210,115 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                 {containerSelections.length === 0 ? (
                   <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md text-[10px] text-amber-700">
                     <Package size={12} />
-                    Select container type(s) in Route Information to enter Ocean Freight and ACD/ENS/AFR charges
+                    Select container type(s) in Route Information to enter Ocean
+                    Freight and ACD/ENS/AFR charges
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {containerSelections.map((ct) => (
-                      <div key={ct} className="bg-blue-50 rounded-md p-3 border border-blue-200">
+                      <div
+                        key={ct}
+                        className="bg-blue-50 rounded-md p-3 border border-blue-200"
+                      >
                         <div className="flex items-center gap-1.5 mb-2">
                           <Package size={11} className="text-blue-600" />
-                          <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wide">{ct}</span>
+                          <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wide">
+                            {ct}
+                          </span>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <Field label="Ocean Freight" required>
                             <div className="flex gap-1">
                               <select
-                                value={containerCharges[ct]?.ocean_freight_currency || "USD"}
-                                onChange={(e) => updateContainerCharge(ct, "ocean_freight_currency", e.target.value)}
+                                value={
+                                  containerCharges[ct]
+                                    ?.ocean_freight_currency || "USD"
+                                }
+                                onChange={(e) =>
+                                  updateContainerCharge(
+                                    ct,
+                                    "ocean_freight_currency",
+                                    e.target.value,
+                                  )
+                                }
                                 className={`${inputCls} w-20`}
                               >
                                 {CURRENCY_OPTIONS.map((c) => (
-                                  <option key={c} value={c}>{c} {CURRENCY_SYMBOLS[c] || ""}</option>
+                                  <option key={c} value={c}>
+                                    {c} {CURRENCY_SYMBOLS[c] || ""}
+                                  </option>
                                 ))}
                               </select>
                               <input
                                 type="number"
-                                value={containerCharges[ct]?.ocean_freight || ""}
-                                onChange={(e) => updateContainerCharge(ct, "ocean_freight", e.target.value)}
+                                value={
+                                  containerCharges[ct]?.ocean_freight || ""
+                                }
+                                onChange={(e) =>
+                                  updateContainerCharge(
+                                    ct,
+                                    "ocean_freight",
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder="Enter Amount"
                                 className={`${inputCls} flex-1 font-mono`}
                               />
                             </div>
                             {errors[`ocean_freight_${ct}`] && (
-                              <span className="text-[9px] text-red-500">{errors[`ocean_freight_${ct}`]}</span>
+                              <span className="text-[9px] text-red-500">
+                                {errors[`ocean_freight_${ct}`]}
+                              </span>
                             )}
                           </Field>
                           <Field label="ACD / ENS / AFR Charges">
                             <div className="flex gap-1">
                               <select
                                 value={containerCharges[ct]?.acd_type || "ACD"}
-                                onChange={(e) => updateContainerCharge(ct, "acd_type", e.target.value)}
+                                onChange={(e) =>
+                                  updateContainerCharge(
+                                    ct,
+                                    "acd_type",
+                                    e.target.value,
+                                  )
+                                }
                                 className={`${inputCls} w-16`}
                               >
                                 {ACD_TYPES.map((t) => (
-                                  <option key={t} value={t}>{t}</option>
+                                  <option key={t} value={t}>
+                                    {t}
+                                  </option>
                                 ))}
                               </select>
                               <select
-                                value={containerCharges[ct]?.acd_currency || "USD"}
-                                onChange={(e) => updateContainerCharge(ct, "acd_currency", e.target.value)}
+                                value={
+                                  containerCharges[ct]?.acd_currency || "USD"
+                                }
+                                onChange={(e) =>
+                                  updateContainerCharge(
+                                    ct,
+                                    "acd_currency",
+                                    e.target.value,
+                                  )
+                                }
                                 className={`${inputCls} w-20`}
                               >
                                 {CURRENCY_OPTIONS.map((c) => (
-                                  <option key={c} value={c}>{c} {CURRENCY_SYMBOLS[c] || ""}</option>
+                                  <option key={c} value={c}>
+                                    {c} {CURRENCY_SYMBOLS[c] || ""}
+                                  </option>
                                 ))}
                               </select>
                               <input
                                 type="number"
                                 value={containerCharges[ct]?.acd_value || ""}
-                                onChange={(e) => updateContainerCharge(ct, "acd_value", e.target.value)}
+                                onChange={(e) =>
+                                  updateContainerCharge(
+                                    ct,
+                                    "acd_value",
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder="Enter Charges"
                                 className={`${inputCls} flex-1 font-mono`}
                               />
@@ -1116,67 +1331,88 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                 )}
               </div>
 
-              <Field label="Transit Time (Days)">
-                <select
-                  value={form.transit}
-                  onChange={(e) => set("transit")(e.target.value)}
-                  className={`${inputCls} w-full`}
-                >
-                  <option value="">Select Transit Time</option>
-                  {TRANSIT_DAYS.map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-              </Field>
+              {/* Compact single-row block: Transit / Routing / Validity / Validity Type */}
+              <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-2">
+                <Field label="Transit Time (Days)">
+                  <select
+                    value={form.transit}
+                    onChange={(e) => set("transit")(e.target.value)}
+                    className={`${inputCls} w-full`}
+                  >
+                    <option value="">Select Transit Time</option>
+                    {TRANSIT_DAYS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
 
-              <Field label="Routing">
-                <select
-                  value={form.route === "Direct" || form.route === "" ? form.route : "Via"}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    set("route")(v === "Via" ? "Via " : v);
-                  }}
-                  className={`${inputCls} w-full`}
-                >
-                  <option value="">Select Route</option>
-                  {ROUTING_OPTIONS.map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
-                {form.route && form.route !== "Direct" && (
+                <Field label="Routing">
+                  <select
+                    value={
+                      form.route === "Direct" || form.route === ""
+                        ? form.route
+                        : "Via"
+                    }
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      set("route")(v === "Via" ? "Via " : v);
+                    }}
+                    className={`${inputCls} w-full`}
+                  >
+                    <option value="">Select Route</option>
+                    {ROUTING_OPTIONS.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                  {form.route && form.route !== "Direct" && (
+                    <input
+                      type="text"
+                      value={form.route.replace(/^Via\s*/i, "")}
+                      onChange={(e) => set("route")(`Via ${e.target.value}`)}
+                      placeholder="Enter route details (e.g. Colombo, Singapore)"
+                      className={`${inputCls} w-full mt-1`}
+                    />
+                  )}
+                </Field>
+
+                <Field label="Validity (End Date)" required>
                   <input
-                    type="text"
-                    value={form.route.replace(/^Via\s*/i, "")}
-                    onChange={(e) => set("route")(`Via ${e.target.value}`)}
-                    placeholder="Enter route details (e.g. Colombo, Singapore)"
-                    className={`${inputCls} w-full mt-1`}
+                    type="date"
+                    value={form.validity}
+                    onChange={(e) => set("validity")(e.target.value)}
+                    onClick={(e) => {
+                      try {
+                        e.target.showPicker();
+                      } catch {}
+                    }}
+                    className={`${inputCls} w-full cursor-pointer`}
                   />
-                )}
-              </Field>
+                  {errors.validity && (
+                    <span className="text-[9px] text-red-500">
+                      {errors.validity}
+                    </span>
+                  )}
+                </Field>
 
-              <Field label="Validity (End Date)" required>
-                <input
-                  type="date"
-                  value={form.validity}
-                  onChange={(e) => set("validity")(e.target.value)}
-                  onClick={(e) => { try { e.target.showPicker(); } catch {} }}
-                  className={`${inputCls} w-full cursor-pointer`}
-                />
-                {errors.validity && <span className="text-[9px] text-red-500">{errors.validity}</span>}
-              </Field>
-
-              <Field label="Validity Type">
-                <select
-                  value={form.validity_for}
-                  onChange={(e) => set("validity_for")(e.target.value)}
-                  className={`${inputCls} w-full`}
-                >
-                  <option value="">Select Validity Type</option>
-                  {VALIDITY_TYPES.map((v) => (
-                    <option key={v} value={v}>{v}</option>
-                  ))}
-                </select>
-              </Field>
+                <Field label="Validity Type">
+                  <select
+                    value={form.validity_for}
+                    onChange={(e) => set("validity_for")(e.target.value)}
+                    className={`${inputCls} w-full`}
+                  >
+                    <option value="">Select Validity Type</option>
+                    {VALIDITY_TYPES.map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
             </div>
           </div>
 
@@ -1184,7 +1420,9 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
           <div className="bg-white border border-gray-200 rounded-lg overflow-visible shadow-sm">
             <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-gray-200">
               <User size={14} className="text-violet-600" />
-              <h3 className="text-xs font-bold text-violet-800 uppercase tracking-wide">Shipping Line Contact Person Details</h3>
+              <h3 className="text-xs font-bold text-violet-800 uppercase tracking-wide">
+                Shipping Line Contact Person Details
+              </h3>
             </div>
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
               <Field label="Name" required>
@@ -1229,7 +1467,9 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
             <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-gray-50 to-slate-50 border-b border-gray-200">
               <MessageSquare size={14} className="text-gray-500" />
-              <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wide">Remarks (Optional)</h3>
+              <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                Remarks (Optional)
+              </h3>
             </div>
             <div className="p-4">
               <textarea
@@ -1256,14 +1496,24 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
               disabled={saving}
               className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-semibold px-5 py-2 rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
             >
-              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-              {saving ? "Saving..." : editingRate ? (editingRate._id ? "Update Rate" : "Save as New Rate") : "Save Rate"}
+              {saving ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Save size={14} />
+              )}
+              {saving
+                ? "Saving..."
+                : editingRate
+                  ? editingRate._id
+                    ? "Update Rate"
+                    : "Save as New Rate"
+                  : "Save Rate"}
             </button>
           </div>
         </div>
 
         {/* ======== RIGHT PANEL — 30% Origin Rate Calculator ======== */}
-        <div className="w-full lg:w-[30%]">
+        <div className="w-full md:w-[30%]">
           <div className="lg:sticky lg:top-20">
             <div className="bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm">
               {/* Header */}
@@ -1272,7 +1522,8 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                 <div>
                   <h3 className="text-xs font-bold">Origin Rate Calculator</h3>
                   <p className="text-[9px] text-orange-100 mt-0.5 leading-snug">
-                    Select POR, POL, Container Size and Shipping Lines to view applicable rates
+                    Select POR, POL, Container Size and Shipping Lines to view
+                    applicable rates
                   </p>
                 </div>
               </div>
@@ -1280,16 +1531,24 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
               {/* Selected pills */}
               <div className="px-3 py-2 border-b border-orange-100 bg-orange-50/40">
                 <div className="flex items-center gap-1 flex-wrap">
-                  <span className="text-[9px] font-semibold text-gray-500 uppercase mr-0.5">Selected:</span>
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${form.por ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-400"}`}>
+                  <span className="text-[9px] font-semibold text-gray-500 uppercase mr-0.5">
+                    Selected:
+                  </span>
+                  <span
+                    className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${form.por ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-400"}`}
+                  >
                     {form.por || "No POR"}
                   </span>
                   <span className="text-gray-300 text-[9px]">+</span>
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${form.pol ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-400"}`}>
+                  <span
+                    className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${form.pol ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-400"}`}
+                  >
                     {form.pol || "No POL"}
                   </span>
                   <span className="text-gray-300 text-[9px]">+</span>
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${form.shipping_lines ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-400"}`}>
+                  <span
+                    className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${form.shipping_lines ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-400"}`}
+                  >
                     {form.shipping_lines || "No Shipping Lines"}
                   </span>
                   {containerSelections.length > 0 ? (
@@ -1320,28 +1579,47 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                     <span>Loading origin rates...</span>
                   </div>
                 )}
-                {!loadingOrigin && form.por && form.pol && containerSelections.length === 0 && (
-                  <div className="flex items-center gap-1.5 text-[10px] mb-2 px-2 py-1 rounded bg-amber-50 text-amber-600">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                    Add container type to check origin rates
-                  </div>
-                )}
+                {!loadingOrigin &&
+                  form.por &&
+                  form.pol &&
+                  containerSelections.length === 0 && (
+                    <div className="flex items-center gap-1.5 text-[10px] mb-2 px-2 py-1 rounded bg-amber-50 text-amber-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                      Add container type to check origin rates
+                    </div>
+                  )}
 
                 {containerSelections.length > 1 ? (
                   /* ---- MULTI-CONTAINER: one charge section per container type ---- */
                   <div className="space-y-3">
                     {containerSelections.map((ct) => {
                       const m = originMatchMap[ct];
-                      const charges = originChargeMap[ct] || { bl_fees: "", thc: "", muc: "", toll: "" };
+                      const charges = originChargeMap[ct] || {
+                        bl_fees: "",
+                        thc: "",
+                        muc: "",
+                        toll: "",
+                      };
                       return (
-                        <div key={ct} className="rounded-md border border-orange-200 overflow-hidden">
+                        <div
+                          key={ct}
+                          className="rounded-md border border-orange-200 overflow-hidden"
+                        >
                           {/* Sub-header */}
-                          <div className={`flex items-center justify-between px-2 py-1 ${m ? "bg-emerald-50" : "bg-red-50"}`}>
+                          <div
+                            className={`flex items-center justify-between px-2 py-1 ${m ? "bg-emerald-50" : "bg-red-50"}`}
+                          >
                             <div className="flex items-center gap-1.5">
-                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${m ? "bg-emerald-500" : "bg-red-400"}`} />
-                              <span className="text-[10px] font-bold text-gray-700">{ct.replace(" Container", "")}</span>
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${m ? "bg-emerald-500" : "bg-red-400"}`}
+                              />
+                              <span className="text-[10px] font-bold text-gray-700">
+                                {ct.replace(" Container", "")}
+                              </span>
                             </div>
-                            <span className={`text-[9px] truncate max-w-[120px] ${m ? "text-emerald-600" : "text-red-500"}`}>
+                            <span
+                              className={`text-[9px] truncate max-w-[120px] ${m ? "text-emerald-600" : "text-red-500"}`}
+                            >
                               {m ? `${m.por} → ${m.pol}` : "No match"}
                             </span>
                           </div>
@@ -1356,23 +1634,40 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                             </thead>
                             <tbody>
                               {[
-                                { field: "bl_fees", label: "BL Fees", unit: "/BL" },
+                                {
+                                  field: "bl_fees",
+                                  label: "BL Fees",
+                                  unit: "/BL",
+                                },
                                 { field: "thc", label: "THC", unit: "/Cntr" },
                                 { field: "muc", label: "MUC", unit: "/BL" },
                                 { field: "toll", label: "TOLL", unit: "/Cntr" },
                               ].map(({ field, label, unit }, i, arr) => (
-                                <tr key={field} className={`${i < arr.length - 1 ? "border-b border-gray-50" : ""} hover:bg-orange-50/30 transition-colors`}>
-                                  <td className="py-1.5 px-2 font-medium text-gray-700">{label}</td>
+                                <tr
+                                  key={field}
+                                  className={`${i < arr.length - 1 ? "border-b border-gray-50" : ""} hover:bg-orange-50/30 transition-colors`}
+                                >
+                                  <td className="py-1.5 px-2 font-medium text-gray-700">
+                                    {label}
+                                  </td>
                                   <td className="py-1.5 px-1">
                                     <input
                                       type="text"
                                       value={charges[field]}
-                                      onChange={(e) => updateOriginCharge(ct, field, e.target.value)}
+                                      onChange={(e) =>
+                                        updateOriginCharge(
+                                          ct,
+                                          field,
+                                          e.target.value,
+                                        )
+                                      }
                                       placeholder="0"
                                       className="w-full text-right font-mono text-xs bg-transparent border-0 border-b border-dashed border-gray-200 focus:border-orange-400 focus:outline-none py-0.5 px-1"
                                     />
                                   </td>
-                                  <td className="py-1.5 px-1 text-gray-400 text-[10px]">{unit}</td>
+                                  <td className="py-1.5 px-1 text-gray-400 text-[10px]">
+                                    {unit}
+                                  </td>
                                 </tr>
                               ))}
                             </tbody>
@@ -1384,14 +1679,21 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                 ) : (
                   /* ---- SINGLE CONTAINER: original shared table ---- */
                   <>
-                    {!loadingOrigin && form.por && form.pol && containerSelections.length === 1 && (
-                      <div className={`flex items-center gap-1.5 text-[10px] mb-2 px-2 py-1 rounded ${originMatch ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${originMatch ? "bg-emerald-500" : "bg-red-400"}`} />
-                        {originMatch
-                          ? `${originMatch.por} → ${originMatch.pol} | ${originMatch.shipping_lines || "Any"} | ${originMatch.container_type || "Any"}`
-                          : "No origin rates found for this combination"}
-                      </div>
-                    )}
+                    {!loadingOrigin &&
+                      form.por &&
+                      form.pol &&
+                      containerSelections.length === 1 && (
+                        <div
+                          className={`flex items-center gap-1.5 text-[10px] mb-2 px-2 py-1 rounded ${originMatch ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${originMatch ? "bg-emerald-500" : "bg-red-400"}`}
+                          />
+                          {originMatch
+                            ? `${originMatch.por} → ${originMatch.pol} | ${originMatch.shipping_lines || "Any"} | ${originMatch.container_type || "Any"}`
+                            : "No origin rates found for this combination"}
+                        </div>
+                      )}
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="text-[9px] font-semibold text-gray-400 uppercase border-b border-gray-200">
@@ -1402,68 +1704,124 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                       </thead>
                       <tbody>
                         <tr className="border-b border-gray-50 hover:bg-orange-50/30 transition-colors">
-                          <td className="py-2 pr-2 font-medium text-gray-700">BL Fees</td>
+                          <td className="py-2 pr-2 font-medium text-gray-700">
+                            BL Fees
+                          </td>
                           <td className="py-2 px-1">
                             <input
                               type="text"
-                              value={containerSelections.length === 1 ? (originChargeMap[containerSelections[0]]?.bl_fees ?? form.bl_fees) : form.bl_fees}
+                              value={
+                                containerSelections.length === 1
+                                  ? (originChargeMap[containerSelections[0]]
+                                      ?.bl_fees ?? form.bl_fees)
+                                  : form.bl_fees
+                              }
                               onChange={(e) => {
-                                if (containerSelections.length === 1) updateOriginCharge(containerSelections[0], "bl_fees", e.target.value);
+                                if (containerSelections.length === 1)
+                                  updateOriginCharge(
+                                    containerSelections[0],
+                                    "bl_fees",
+                                    e.target.value,
+                                  );
                                 set("bl_fees")(e.target.value);
                               }}
                               placeholder="0"
                               className="w-full text-right font-mono text-xs bg-transparent border-0 border-b border-dashed border-gray-200 focus:border-orange-400 focus:outline-none py-0.5 px-1"
                             />
                           </td>
-                          <td className="py-2 pl-2 text-gray-400 text-[10px]">/BL</td>
+                          <td className="py-2 pl-2 text-gray-400 text-[10px]">
+                            /BL
+                          </td>
                         </tr>
                         <tr className="border-b border-gray-50 hover:bg-orange-50/30 transition-colors">
-                          <td className="py-2 pr-2 font-medium text-gray-700">THC</td>
+                          <td className="py-2 pr-2 font-medium text-gray-700">
+                            THC
+                          </td>
                           <td className="py-2 px-1">
                             <input
                               type="text"
-                              value={containerSelections.length === 1 ? (originChargeMap[containerSelections[0]]?.thc ?? form.thc) : form.thc}
+                              value={
+                                containerSelections.length === 1
+                                  ? (originChargeMap[containerSelections[0]]
+                                      ?.thc ?? form.thc)
+                                  : form.thc
+                              }
                               onChange={(e) => {
-                                if (containerSelections.length === 1) updateOriginCharge(containerSelections[0], "thc", e.target.value);
+                                if (containerSelections.length === 1)
+                                  updateOriginCharge(
+                                    containerSelections[0],
+                                    "thc",
+                                    e.target.value,
+                                  );
                                 set("thc")(e.target.value);
                               }}
                               placeholder="0"
                               className="w-full text-right font-mono text-xs bg-transparent border-0 border-b border-dashed border-gray-200 focus:border-orange-400 focus:outline-none py-0.5 px-1"
                             />
                           </td>
-                          <td className="py-2 pl-2 text-gray-400 text-[10px]">/Container</td>
+                          <td className="py-2 pl-2 text-gray-400 text-[10px]">
+                            /Container
+                          </td>
                         </tr>
                         <tr className="border-b border-gray-50 hover:bg-orange-50/30 transition-colors">
-                          <td className="py-2 pr-2 font-medium text-gray-700">MUC</td>
+                          <td className="py-2 pr-2 font-medium text-gray-700">
+                            MUC
+                          </td>
                           <td className="py-2 px-1">
                             <input
                               type="text"
-                              value={containerSelections.length === 1 ? (originChargeMap[containerSelections[0]]?.muc ?? form.muc) : form.muc}
+                              value={
+                                containerSelections.length === 1
+                                  ? (originChargeMap[containerSelections[0]]
+                                      ?.muc ?? form.muc)
+                                  : form.muc
+                              }
                               onChange={(e) => {
-                                if (containerSelections.length === 1) updateOriginCharge(containerSelections[0], "muc", e.target.value);
+                                if (containerSelections.length === 1)
+                                  updateOriginCharge(
+                                    containerSelections[0],
+                                    "muc",
+                                    e.target.value,
+                                  );
                                 set("muc")(e.target.value);
                               }}
                               placeholder="0"
                               className="w-full text-right font-mono text-xs bg-transparent border-0 border-b border-dashed border-gray-200 focus:border-orange-400 focus:outline-none py-0.5 px-1"
                             />
                           </td>
-                          <td className="py-2 pl-2 text-gray-400 text-[10px]">/BL</td>
+                          <td className="py-2 pl-2 text-gray-400 text-[10px]">
+                            /BL
+                          </td>
                         </tr>
                         <tr className="hover:bg-orange-50/30 transition-colors">
-                          <td className="py-2 pr-2 font-medium text-gray-700">TOLL</td>
+                          <td className="py-2 pr-2 font-medium text-gray-700">
+                            TOLL
+                          </td>
                           <td className="py-2 px-1">
                             <input
                               type="text"
-                              value={containerSelections.length === 1 ? (originChargeMap[containerSelections[0]]?.toll ?? form.toll) : form.toll}
+                              value={
+                                containerSelections.length === 1
+                                  ? (originChargeMap[containerSelections[0]]
+                                      ?.toll ?? form.toll)
+                                  : form.toll
+                              }
                               onChange={(e) => {
-                                if (containerSelections.length === 1) updateOriginCharge(containerSelections[0], "toll", e.target.value);
+                                if (containerSelections.length === 1)
+                                  updateOriginCharge(
+                                    containerSelections[0],
+                                    "toll",
+                                    e.target.value,
+                                  );
                                 set("toll")(e.target.value);
                               }}
                               placeholder="0"
                               className="w-full text-right font-mono text-xs bg-transparent border-0 border-b border-dashed border-gray-200 focus:border-orange-400 focus:outline-none py-0.5 px-1"
                             />
                           </td>
-                          <td className="py-2 pl-2 text-gray-400 text-[10px]">/Container</td>
+                          <td className="py-2 pl-2 text-gray-400 text-[10px]">
+                            /Container
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -1472,19 +1830,24 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
               </div>
 
               {/* Rail Freight - per container */}
-              {!loadingRail && form.por && form.pol && containerSelections.length > 0 &&
+              {!loadingRail &&
+                form.por &&
+                form.pol &&
+                containerSelections.length > 0 &&
                 containerSelections.every((ct) => !railMatchMap[ct]) && (
-                <div className="px-3 py-2 border-t border-gray-100">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Ship size={12} className="text-purple-500" />
-                    <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wide">Rail Freight</span>
+                  <div className="px-3 py-2 border-t border-gray-100">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Ship size={12} className="text-purple-500" />
+                      <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wide">
+                        Rail Freight
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] px-2 py-1 rounded bg-red-50 text-red-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                      No rail freight rates found for this combination
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[10px] px-2 py-1 rounded bg-red-50 text-red-600">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                    No rail freight rates found for this combination
-                  </div>
-                </div>
-              )}
+                )}
               {containerSelections.map((ct) => {
                 const rf = railMatchMap[ct];
                 if (!rf) return null;
@@ -1510,22 +1873,36 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                       <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wide">
                         Rail — {ct.replace(" Container", "")}
                       </span>
-                      <span className="text-[9px] text-gray-400 ml-auto">(Cargo + Tare Wt)</span>
+                      <span className="text-[9px] text-gray-400 ml-auto">
+                        (Cargo + Tare Wt)
+                      </span>
                     </div>
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="text-[9px] font-semibold text-gray-400 uppercase border-b border-gray-200">
-                          <th className="text-left py-1.5 pr-2">Weight Range</th>
+                          <th className="text-left py-1.5 pr-2">
+                            Weight Range
+                          </th>
                           <th className="text-right py-1.5 px-2">Amount</th>
                           <th className="text-left py-1.5 pl-2">Unit</th>
                         </tr>
                       </thead>
                       <tbody>
                         {rows.map((row, i) => (
-                          <tr key={i} className={`${i < rows.length - 1 ? "border-b border-gray-50" : ""} hover:bg-purple-50/30 transition-colors`}>
-                            <td className="py-1.5 pr-2 font-medium text-gray-700 text-[11px]">{row.range}</td>
-                            <td className="py-1.5 px-2 text-right font-mono text-[11px] text-gray-800">{cur}{row.value || 0}</td>
-                            <td className="py-1.5 pl-2 text-gray-400 text-[10px]">/Container</td>
+                          <tr
+                            key={i}
+                            className={`${i < rows.length - 1 ? "border-b border-gray-50" : ""} hover:bg-purple-50/30 transition-colors`}
+                          >
+                            <td className="py-1.5 pr-2 font-medium text-gray-700 text-[11px]">
+                              {row.range}
+                            </td>
+                            <td className="py-1.5 px-2 text-right font-mono text-[11px] text-gray-800">
+                              {cur}
+                              {row.value || 0}
+                            </td>
+                            <td className="py-1.5 pl-2 text-gray-400 text-[10px]">
+                              /Container
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1537,12 +1914,17 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
               {/* Custom / Other Charges */}
               <div className="px-3 pb-3 pt-1 border-t border-gray-100">
                 {customCharges.map((cc, idx) => (
-                  <div key={idx} className="mb-2 bg-gray-50 rounded-md p-2 border border-gray-200">
+                  <div
+                    key={idx}
+                    className="mb-2 bg-gray-50 rounded-md p-2 border border-gray-200"
+                  >
                     <div className="flex items-center justify-between mb-1.5">
                       <input
                         type="text"
                         value={cc.label}
-                        onChange={(e) => updateCustomCharge(idx, "label", e.target.value)}
+                        onChange={(e) =>
+                          updateCustomCharge(idx, "label", e.target.value)
+                        }
                         placeholder="Mention Other Charges"
                         className="flex-1 text-[10px] font-medium bg-transparent border-0 border-b border-dashed border-gray-300 focus:border-orange-400 focus:outline-none py-0.5 pr-1"
                       />
@@ -1558,12 +1940,20 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                       <div className="mb-1.5">
                         <select
                           value={cc.containerType || ""}
-                          onChange={(e) => updateCustomCharge(idx, "containerType", e.target.value)}
+                          onChange={(e) =>
+                            updateCustomCharge(
+                              idx,
+                              "containerType",
+                              e.target.value,
+                            )
+                          }
                           className={`${inputCls} w-full text-[10px]`}
                         >
                           <option value="">All Containers</option>
                           {containerSelections.map((ct) => (
-                            <option key={ct} value={ct}>{ct.replace(" Container", "")}</option>
+                            <option key={ct} value={ct}>
+                              {ct.replace(" Container", "")}
+                            </option>
                           ))}
                         </select>
                       </div>
@@ -1571,27 +1961,37 @@ const AddRates = ({ currentUser, editingRate, onSaved }) => {
                     <div className="flex items-center gap-1">
                       <select
                         value={cc.currency}
-                        onChange={(e) => updateCustomCharge(idx, "currency", e.target.value)}
+                        onChange={(e) =>
+                          updateCustomCharge(idx, "currency", e.target.value)
+                        }
                         className={`${inputCls} w-16 text-[10px]`}
                       >
                         {CURRENCY_OPTIONS.map((c) => (
-                          <option key={c} value={c}>{c} {CURRENCY_SYMBOLS[c] || ""}</option>
+                          <option key={c} value={c}>
+                            {c} {CURRENCY_SYMBOLS[c] || ""}
+                          </option>
                         ))}
                       </select>
                       <input
                         type="number"
                         value={cc.value}
-                        onChange={(e) => updateCustomCharge(idx, "value", e.target.value)}
+                        onChange={(e) =>
+                          updateCustomCharge(idx, "value", e.target.value)
+                        }
                         placeholder="Amount"
                         className={`${inputCls} flex-1 w-20 font-mono text-right text-[10px]`}
                       />
                       <select
                         value={cc.unit}
-                        onChange={(e) => updateCustomCharge(idx, "unit", e.target.value)}
+                        onChange={(e) =>
+                          updateCustomCharge(idx, "unit", e.target.value)
+                        }
                         className={`${inputCls} w-26 text-[10px]`}
                       >
                         {UNIT_OPTIONS.map((u) => (
-                          <option key={u} value={u}>{u}</option>
+                          <option key={u} value={u}>
+                            {u}
+                          </option>
                         ))}
                       </select>
                     </div>

@@ -28,6 +28,42 @@ const API_BASE_URL = "https://papayawhip-antelope-424743.hostingersite.com/api";
 /* ------------------------------------------------------------------ */
 const normalize = (str) => (str || "").trim().toLowerCase();
 
+// Short codes for container types — applied ONLY in the Mail Subject line,
+// nowhere else on the platform.
+const EQUIPMENT_SHORT_CODES = {
+  "standard": "ST",
+  "high cube": "HQ",
+  "reefer": "Re",
+  "open top": "OT",
+  "flat rack": "FR",
+};
+
+// Convert "20ft Standard Container" → "20ft ST", "40ft High Cube ×2" →
+// "40ft HQ ×2", etc. Handles comma-separated multi-container strings, the
+// "× N" / "x N" quantity suffix, and the trailing " Container" word. Values
+// that don't match the "<NN>ft <type>" pattern pass through unchanged.
+const shortenEquipmentForSubject = (raw) => {
+  if (!raw) return "";
+  return String(raw)
+    .split(/[,;]/)
+    .map((part) => {
+      const s = part.trim().replace(/\s*Container\b/i, "").trim();
+      // Capture: size ("20ft"), type ("Standard", "High Cube", ...) and an
+      // optional trailing "× N" / "x N" qty.
+      const m = s.match(/^(\d+\s*ft)\s+(.+?)(\s*[×x]\s*\d+)?\s*$/i);
+      if (m) {
+        const size = m[1].toLowerCase().replace(/\s+/g, "");
+        const type = m[2].trim().toLowerCase().replace(/\s+/g, " ");
+        const qty = (m[3] || "").trim();
+        const short = EQUIPMENT_SHORT_CODES[type];
+        if (short) return qty ? `${size} ${short} ${qty}` : `${size} ${short}`;
+      }
+      return s;
+    })
+    .filter(Boolean)
+    .join(", ");
+};
+
 const fmtDate = (d) => {
   if (!d) return "—";
   const dt = new Date(d);
@@ -284,7 +320,7 @@ const ViewAllPreAdvice = ({ onEditPreAdvice }) => {
     // dropped so the line stays clean and readable.
     const subject = [
       "Pre Advise",
-      pa.equipmentSize,
+      shortenEquipmentForSubject(pa.equipmentSize),
       pa.finalDestination || pa.pod,
       pa.por,
       pa.shippingLine,
