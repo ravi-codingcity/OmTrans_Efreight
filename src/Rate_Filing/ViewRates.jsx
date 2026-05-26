@@ -3,6 +3,7 @@ import {
   Search,
   Eye,
   Copy,
+  Pencil,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -69,7 +70,10 @@ const parseCurrency = (val) => {
 /* ------------------------------------------------------------------ */
 /*  ViewRates component                                                 */
 /* ------------------------------------------------------------------ */
-const ViewRates = ({ onCopy, onCreateQuotation }) => {
+// Edit access window after a rate is created (30 minutes).
+const EDIT_WINDOW_MS = 30 * 60 * 1000;
+
+const ViewRates = ({ onEdit, onCopy, onCreateQuotation }) => {
   const [rates, setRates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -78,6 +82,54 @@ const ViewRates = ({ onCopy, onCreateQuotation }) => {
   const [page, setPage] = useState(1);
   const [expandedId, setExpandedId] = useState(null);
   const perPage = 15;
+
+  // "now" ticks every 30s so the 30-minute edit window updates live —
+  // the Edit button disappears (and the countdown counts down) automatically.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30 * 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Logged-in user (parsed from localStorage, mirrors the rest of the app).
+  const loggedInUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("currentUser") || "{}");
+    } catch {
+      return {};
+    }
+  }, []);
+  // Only Super Admin bypasses the 30-minute edit window (per spec).
+  const isSuperAdmin = useMemo(() => {
+    const role = (loggedInUser.role || "").toLowerCase().trim();
+    return role === "super admin";
+  }, [loggedInUser]);
+
+  // Compute edit access for a given rate row.
+  // - Super Admin can always edit (no timer).
+  // - Owner can edit only within 30 minutes of the rate's createdAt.
+  // - Anyone else cannot edit.
+  const getEditState = (r) => {
+    const ownerName = (r.name || "").toLowerCase().trim();
+    const fullNameLower = (loggedInUser.fullName || "").toLowerCase().trim();
+    const usernameLower = (loggedInUser.username || "").toLowerCase().trim();
+    const isOwner =
+      !!ownerName &&
+      ((!!fullNameLower && ownerName === fullNameLower) ||
+        (!!usernameLower && ownerName === usernameLower));
+    if (isSuperAdmin) {
+      return { canEdit: true, remainingMs: Infinity, isOwner };
+    }
+    if (!isOwner) {
+      return { canEdit: false, remainingMs: 0, isOwner };
+    }
+    const createdMs = r.createdAt ? new Date(r.createdAt).getTime() : 0;
+    if (!createdMs || isNaN(createdMs)) {
+      return { canEdit: false, remainingMs: 0, isOwner };
+    }
+    const remainingMs = EDIT_WINDOW_MS - (now - createdMs);
+    return { canEdit: remainingMs > 0, remainingMs, isOwner };
+  };
 
   const fetchRates = async () => {
     setLoading(true);
@@ -291,6 +343,8 @@ const ViewRates = ({ onCopy, onCreateQuotation }) => {
                   if (!r.originChargeMap) return null;
                   try { return typeof r.originChargeMap === "string" ? JSON.parse(r.originChargeMap) : r.originChargeMap; } catch { return null; }
                 })();
+                const editState = getEditState(r);
+                const remainingMin = Math.max(0, Math.ceil(editState.remainingMs / 60000));
                 return (
                 <React.Fragment key={r._id || i}>
                   <tr
@@ -409,8 +463,34 @@ const ViewRates = ({ onCopy, onCreateQuotation }) => {
                           </button>
                         )}
 
-                        {/* Row 3: Copy icon */}
+                        {/* Row 3: Edit + 30-min countdown + Copy — all on a
+                            single horizontal line. Edit and the timer chip
+                            disappear once the window expires; Copy stays. */}
                         <div className="flex items-center justify-center gap-1.5">
+                          {editState.canEdit && onEdit && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit(r);
+                              }}
+                              className="text-[11px] flex items-center gap-1 px-2 py-0.5 rounded font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
+                              title={
+                                isSuperAdmin && !editState.isOwner
+                                  ? "Edit (Super Admin)"
+                                  : `Edit (${remainingMin} min left)`
+                              }
+                            >
+                              <Pencil size={11} /> Edit
+                            </button>
+                          )}
+                          {editState.canEdit && editState.remainingMs !== Infinity && (
+                            <span
+                              className="text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded"
+                              title="Remaining edit time"
+                            >
+                              {remainingMin}m
+                            </span>
+                          )}
                           {onCopy && (
                             <button
                               onClick={(e) => {
