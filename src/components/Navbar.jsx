@@ -11,6 +11,7 @@ import {
   Users,
   Activity,
   MapPin,
+  Plane,
 } from "lucide-react";
 import OmTransLogo from "../assets/OmTrans.png";
 import OmTransDP from "../assets/omtrans_dp.jpg";
@@ -30,6 +31,15 @@ const getUserImage = (username) => {
 const Navbar = ({ currentUser, onLogout, onNavigate, currentView }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
+
+  // Role-based menu visibility.
+  // - Import-role users see ONLY the Import module.
+  // - Super Admin sees everything including Import.
+  const role = (currentUser?.role || "").toLowerCase().trim();
+  const isSuperAdmin = role === "super admin";
+  const isImportUser = role === "import";
+  const showStandardMenus = !isImportUser; // hide all standard menus for import-only users
+  const showImportMenu = isSuperAdmin || isImportUser;
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -62,96 +72,116 @@ const Navbar = ({ currentUser, onLogout, onNavigate, currentView }) => {
 
           {/* Center Section - Navigation Menu */}
           <div className="flex items-center gap-1 text-sm">
-            {/* Dashboard Menu */}
-            <button
-              onClick={() => onNavigate("dashboard")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                currentView === "dashboard"
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <LayoutDashboard size={15} />
-              <span>Dashboard</span>
-            </button>
+            {/* Standard menus — hidden for Import-only users */}
+            {showStandardMenus && (
+              <>
+                {/* Dashboard Menu */}
+                <button
+                  onClick={() => onNavigate("dashboard")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                    currentView === "dashboard"
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <LayoutDashboard size={15} />
+                  <span>Dashboard</span>
+                </button>
 
-            {/* Rate Filing Menu */}
-            <button
-              onClick={() => onNavigate("ratefiling")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                currentView === "ratefiling"
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <DollarSign size={15} />
-              <span>Rate Filing</span>
-            </button>
+                {/* Rate Filing Menu */}
+                <button
+                  onClick={() => onNavigate("ratefiling")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                    currentView === "ratefiling"
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <DollarSign size={15} />
+                  <span>Rate Filing</span>
+                </button>
 
-            {/* Quotation Menu */}
-            <button
-              onClick={() => onNavigate("quotation")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                currentView === "form" || currentView === "quotation"
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <FileText size={15} />
-              <span>Quotation</span>
-            </button>
+                {/* Quotation Menu */}
+                <button
+                  onClick={() => onNavigate("quotation")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                    currentView === "form" || currentView === "quotation"
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <FileText size={15} />
+                  <span>Quotation</span>
+                </button>
 
-            {/* Pre-Advice Menu */}
-            <button
-              onClick={() => onNavigate("preadvice")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                currentView === "preadvice"
-                  ? "bg-indigo-50 text-indigo-700"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <ClipboardList size={15} />
-              <span>Pre-Advice</span>
-            </button>
+                {/* Pre-Advice Menu */}
+                <button
+                  onClick={() => onNavigate("preadvice")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                    currentView === "preadvice"
+                      ? "bg-indigo-50 text-indigo-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <ClipboardList size={15} />
+                  <span>Pre-Advice</span>
+                </button>
 
-            {/* Agent Database Menu */}
-            <button
-              onClick={() => onNavigate("agentdb")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                currentView === "agentdb"
-                  ? "bg-teal-50 text-teal-700"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <Users size={15} />
-              <span>Agent</span>
-            </button>
+                {/* Agent Database Menu */}
+                <button
+                  onClick={() => onNavigate("agentdb")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                    currentView === "agentdb"
+                      ? "bg-teal-50 text-teal-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <Users size={15} />
+                  <span>Agent</span>
+                </button>
 
-            {/* Destination Menu */}
-            <button
-              onClick={() => onNavigate("destination")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                currentView === "destination"
-                  ? "bg-purple-50 text-purple-700"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <MapPin size={15} />
-              <span>Destination</span>
-            </button>
+                {/* Destination Menu */}
+                <button
+                  onClick={() => onNavigate("destination")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                    currentView === "destination"
+                      ? "bg-purple-50 text-purple-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <MapPin size={15} />
+                  <span>Destination</span>
+                </button>
 
-            {/* Login Info Menu - Super Admin only */}
-            {currentUser?.role?.toLowerCase() === "super admin" && (
+                {/* Login Info Menu - Super Admin only */}
+                {isSuperAdmin && (
+                  <button
+                    onClick={() => onNavigate("logininfo")}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                      currentView === "logininfo"
+                        ? "bg-rose-50 text-rose-700"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Activity size={15} />
+                    <span>Login Info</span>
+                  </button>
+                )}
+              </>
+            )}
+
+            {/* Import Menu — Super Admin and Import-role users */}
+            {showImportMenu && (
               <button
-                onClick={() => onNavigate("logininfo")}
+                onClick={() => onNavigate("import")}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                  currentView === "logininfo"
-                    ? "bg-rose-50 text-rose-700"
+                  currentView === "import"
+                    ? "bg-sky-50 text-sky-700"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
-                <Activity size={15} />
-                <span>Login Info</span>
+                <Plane size={15} />
+                <span>Import</span>
               </button>
             )}
           </div>

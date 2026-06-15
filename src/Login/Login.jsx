@@ -48,9 +48,11 @@ const Login = ({ onLoginSuccess }) => {
           })
         );
 
-        // Store token if provided
-        if (data.token) {
-          localStorage.setItem("authToken", data.token);
+        // Store token if provided. The API returns it at data.data.token;
+        // keep the legacy data.token fallback for safety.
+        const authToken = (data.data && data.data.token) || data.token;
+        if (authToken) {
+          localStorage.setItem("authToken", authToken);
         }
 
         // Track login activity (fire-and-forget)

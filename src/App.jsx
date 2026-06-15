@@ -11,7 +11,12 @@ import QuotationFiling from './Quotation_Filing/QuotationFiling.jsx'
 import AgentDatabase from './Agent_database/AgentDatabase.jsx'
 import LoginInfo from './Login_Info/LoginInfo.jsx'
 import Destination from './Destination/Destination.jsx'
+import ImportModule from './Import/ImportModule.jsx'
 import './App.css'
+
+// Users with the Import role are restricted to the Import module only.
+const isImportRole = (user) =>
+  (user?.role || '').toLowerCase().trim() === 'import'
 
 // Convert any stored Rate Filing transit value (e.g. "5", "5 Days",
 // "5 days (approx)") into the Quotation dropdown's exact option format
@@ -45,6 +50,11 @@ function App() {
       const user = JSON.parse(storedUser)
       setCurrentUser(user)
       setIsAuthenticated(true)
+      // Import-role users are confined to the Import module.
+      if (isImportRole(user)) {
+        setCurrentView('import')
+        sessionStorage.setItem('currentView', 'import')
+      }
     }
   }, [])
 
@@ -57,7 +67,14 @@ function App() {
       location: user.location,
     })
     setIsAuthenticated(true)
-    
+
+    // Import-role users land directly in (and are confined to) the Import module.
+    if (isImportRole(user)) {
+      setCurrentView('import')
+      sessionStorage.setItem('currentView', 'import')
+      return
+    }
+
     // Prefetch suggestion data immediately after login for faster form loading
     prefetchSuggestionData()
   }
@@ -87,6 +104,12 @@ function App() {
 
   // Handle navigation
   const handleNavigate = (view) => {
+    // Route protection: Import-role users may only stay in the Import module.
+    if (isImportRole(currentUser)) {
+      setCurrentView('import')
+      sessionStorage.setItem('currentView', 'import')
+      return
+    }
     // Prefetch suggestion data when navigating to form
     if (view === 'form') {
       prefetchSuggestionData()
@@ -349,6 +372,12 @@ function App() {
 
       {/* Content */}
       <div>
+        {/* Import module — Super Admin and Import-role users */}
+        {currentView === 'import' && <ImportModule currentUser={currentUser} />}
+
+        {/* Standard modules — never rendered for Import-only users (route-protected above) */}
+        {!isImportRole(currentUser) && (
+          <>
         {currentView === 'dashboard' && <Dashboard key={dashboardKey} currentUser={currentUser} />}
         {currentView === 'quotation' && <QuotationFiling currentUser={currentUser} onBack={() => handleNavigate('dashboard')} onCreateQuotation={() => handleNavigate('form')} onEditDraft={handleEditDraft} onCopyQuotation={handleCopyQuotation} onCompareRates={handleCompareRates} />}
         {currentView === 'form' && <ImportExportQuotationForm currentUser={currentUser} onNavigate={handleNavigate} draftQuotation={draftQuotation} onDraftCleared={() => setDraftQuotation(null)} copyQuotation={copyQuotation} onCopyCleared={() => setCopyQuotation(null)} />}
@@ -397,6 +426,8 @@ function App() {
               </div>
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
