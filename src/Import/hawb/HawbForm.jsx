@@ -90,7 +90,7 @@ const HawbForm = ({ currentUser, initialData, onBack, onSaved, onPreview }) => {
     const e = [];
     if (!data.shipper?.trim()) e.push("Shipper is required");
     if (!data.consignee?.trim()) e.push("Consignee is required");
-    if (!data.house_awb_number?.trim()) e.push("House Air Waybill Number is required");
+    // House AWB Number is optional.
     return e;
   };
 
@@ -162,7 +162,7 @@ const HawbForm = ({ currentUser, initialData, onBack, onSaved, onPreview }) => {
           <AutoSuggest label="Airport of Departure" value={data.airport_of_departure} onChange={set("airport_of_departure")} suggestions={suggestions.airport_of_departure} inputCls={inputCls} labelCls={labelCls} />
           <AutoSuggest label="Airport of Destination (Top Section)" value={data.airport_of_destination} onChange={set("airport_of_destination")} suggestions={suggestions.airport_of_destination} inputCls={inputCls} labelCls={labelCls} />
           <Field label="Master AWB Number" value={data.master_awb_number} onChange={set("master_awb_number")} />
-          <Field label="House AWB Number" required value={data.house_awb_number} onChange={set("house_awb_number")} />
+          <Field label="House AWB Number" value={data.house_awb_number} onChange={set("house_awb_number")} />
         </div>
       </Card>
 
@@ -190,6 +190,30 @@ const HawbForm = ({ currentUser, initialData, onBack, onSaved, onPreview }) => {
           <AutoSuggest label="Airport of Departure (Addr. of First Carrier & Requested Routing)" value={data.routing_airport_of_departure} onChange={set("routing_airport_of_departure")} suggestions={suggestions.routing_airport_of_departure} inputCls={inputCls} labelCls={labelCls} />
           <AutoSuggest label="To" value={data.routing_to} onChange={set("routing_to")} suggestions={suggestions.routing_to} inputCls={inputCls} labelCls={labelCls} />
           <AutoSuggest label="Airport of Destination (Routing Section)" value={data.routing_airport_of_destination} onChange={set("routing_airport_of_destination")} suggestions={suggestions.routing_airport_of_destination} inputCls={inputCls} labelCls={labelCls} />
+        </div>
+      </Card>
+
+      {/* Freight — drives PP/CC + AS AGREED in the document (optional) */}
+      <Card title="Freight">
+        <div className="flex items-center gap-6">
+          {["Prepaid", "Collect"].map((opt) => (
+            <label key={opt} className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+              <input
+                type="radio"
+                name="freight"
+                value={opt}
+                checked={data.freight === opt}
+                onChange={() => set("freight")(opt)}
+                className="accent-violet-600"
+              />
+              {opt}
+            </label>
+          ))}
+          {data.freight && (
+            <button type="button" onClick={() => set("freight")("")} className="text-[10px] text-gray-400 hover:text-gray-600 underline">
+              Clear
+            </button>
+          )}
         </div>
       </Card>
 
@@ -225,8 +249,12 @@ const HawbForm = ({ currentUser, initialData, onBack, onSaved, onPreview }) => {
           <Area label="Dimension (CMS)" value={data.dimension} onChange={set("dimension")} rows={2} placeholder={"One per line, e.g.\n60x30x30/14\n60x30x15/8"} />
           <Field label="Volume WT" value={data.volume_wt} onChange={set("volume_wt")} placeholder="e.g. 162.00 KG" />
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-2.5">
+          <Field label="Shipping Bill No." value={data.shipping_bill_no} onChange={set("shipping_bill_no")} placeholder="e.g. 1234567" />
+          <Field label="Shipping Bill Date" type="date" value={data.shipping_bill_date} onChange={set("shipping_bill_date")} />
+        </div>
         <p className="text-[10px] text-gray-400 mt-1.5">
-          Nature of Goods, Invoice No., Invoice Date, HSN Code, Dimension &amp; Volume WT are automatically combined inside the "Nature &amp; Quantity of Goods" box of the HAWB document.
+          Nature of Goods, Invoice No., Invoice Date, HSN Code, Dimension, Volume WT &amp; Shipping Bill details are automatically combined inside the "Nature &amp; Quantity of Goods" box of the HAWB document.
         </p>
       </Card>
 

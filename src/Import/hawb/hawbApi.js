@@ -65,6 +65,7 @@ export const emptyHawb = () => ({
   routing_airport_of_departure: "",
   routing_to: "",
   routing_airport_of_destination: "",
+  freight: "",
   handling_information:
     "BOXES ADDED AND MKD.// ONE ENV CONTG DOCS ( H.AWB, MANIFEST, INVOICE, PACKING LIST ) ATTD WITH THE SHPT.",
   no_of_pieces: "",
@@ -76,6 +77,8 @@ export const emptyHawb = () => ({
   hsn_code: "",
   dimension: "",
   volume_wt: "",
+  shipping_bill_no: "",
+  shipping_bill_date: "",
   dated: "",
   status: "draft",
 });

@@ -82,6 +82,10 @@ export const buildNatureOfGoods = (d = {}) => {
   if (v(d.hsn_code).trim()) groups.push(`HSCODE: ${v(d.hsn_code).trim()}`);
   if (v(d.dimension).trim()) groups.push(`DIMS IN CMS:\n${v(d.dimension).trim()}`);
   if (v(d.volume_wt).trim()) groups.push(`VOLUME WT: ${v(d.volume_wt).trim()}`);
+  const sb = [];
+  if (v(d.shipping_bill_no).trim()) sb.push(`SHIPPING BILL NO: ${v(d.shipping_bill_no).trim()}`);
+  if (v(d.shipping_bill_date).trim()) sb.push(`DATE: ${formatDMY(d.shipping_bill_date)}`);
+  if (sb.length) groups.push(sb.join("\n"));
   return groups.join("\n\n");
 };
 
@@ -211,7 +215,44 @@ export const buildHawbPdfBytes = async (data) => {
       }
     }
   }
+
+  // Freight type → PP/CC indicators + "AS AGREED" placements (optional).
+  drawFreightOverlays(page, font, color, data.freight);
+
   return pdf.save();
+};
+
+// Map Freight selection onto the template's PP/CC fields and charges cells.
+// Coordinates are top-left of each target cell on the 1293.9 x 1830 page.
+const drawFreightOverlays = (page, font, color, freightRaw) => {
+  const freight = v(freightRaw).trim().toLowerCase();
+  if (freight !== "prepaid" && freight !== "collect") return;
+
+  const draw = (text, x, yTop, size) => {
+    try {
+      page.drawText(text, { x, y: PAGE_H - yTop - size, size, font, color });
+    } catch (err) {
+      console.error("[HAWB] freight overlay draw failed:", err && err.message);
+    }
+  };
+
+  if (freight === "prepaid") {
+    // Both PP fields = "PP"; CC fields left blank.
+    draw("PP", 629, 690, 11);
+    draw("PP", 688, 690, 11);
+    // "AS AGREED" on the left (Prepaid) side of Valuation Charges.
+    draw("AS AGREED", 140, 1370, 10);
+    // "AS AGREED" below Currency Conversion Rates.
+    draw("AS AGREED", 135, 1645, 10);
+  } else {
+    // Both CC fields = "CC"; PP fields left blank.
+    draw("CC", 657, 690, 11);
+    draw("CC", 731, 690, 11);
+    // "AS AGREED" on the right (Collect) side of Valuation Charges.
+    draw("AS AGREED", 360, 1370, 10);
+    // "AS AGREED" below CC Charges in Dest Currency.
+    draw("AS AGREED", 340, 1645, 10);
+  }
 };
 
 export const generateHawbPDF = async (data) => {

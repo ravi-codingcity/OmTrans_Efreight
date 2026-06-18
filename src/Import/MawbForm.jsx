@@ -95,7 +95,7 @@ const MawbForm = ({ currentUser, initialData, onBack, onSaved, onPreview }) => {
     const e = [];
     if (!data.shipper?.trim()) e.push("Shipper is required");
     if (!data.consignee?.trim()) e.push("Consignee is required");
-    if (!data.hawb_nos?.trim()) e.push("HAWB Nos is required");
+    // HAWB Nos is optional.
     return e;
   };
 
@@ -192,7 +192,7 @@ const MawbForm = ({ currentUser, initialData, onBack, onSaved, onPreview }) => {
               <option value="CC">CC (Collect)</option>
             </select>
           </div>
-          <Field label="HAWB Nos" required value={data.hawb_nos} onChange={set("hawb_nos")} />
+          <Field label="HAWB Nos" value={data.hawb_nos} onChange={set("hawb_nos")} />
           <Field label="Date" type="date" value={data.date} onChange={set("date")} />
         </div>
       </Card>

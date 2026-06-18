@@ -19,7 +19,7 @@ export const buildNatureOfGoods = (d = {}) => {
   const lines = [];
   if (v(d.nature_of_goods).trim()) lines.push(v(d.nature_of_goods).trim());
   if (v(d.hsn_code).trim()) lines.push(`HSN Code: ${v(d.hsn_code).trim()}`);
-  if (v(d.goods_dimension).trim()) lines.push(`Dimensions: ${v(d.goods_dimension).trim()}`);
+  if (v(d.goods_dimension).trim()) lines.push(`Dimensions (in CM): ${v(d.goods_dimension).trim()}`);
   return lines.join("\n");
 };
 
