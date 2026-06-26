@@ -12,11 +12,16 @@ import AgentDatabase from './Agent_database/AgentDatabase.jsx'
 import LoginInfo from './Login_Info/LoginInfo.jsx'
 import Destination from './Destination/Destination.jsx'
 import ImportModule from './Import/ImportModule.jsx'
+import EmbeddedExportAI from './Export_AI/EmbeddedExportAI.jsx'
 import './App.css'
 
 // Users with the Import role are restricted to the Import module only.
 const isImportRole = (user) =>
   (user?.role || '').toLowerCase().trim() === 'import'
+
+// Users with the Export role are restricted to the Export AI module only.
+const isExportRole = (user) =>
+  (user?.role || '').toLowerCase().trim() === 'export'
 
 // Convert any stored Rate Filing transit value (e.g. "5", "5 Days",
 // "5 days (approx)") into the Quotation dropdown's exact option format
@@ -55,6 +60,11 @@ function App() {
         setCurrentView('import')
         sessionStorage.setItem('currentView', 'import')
       }
+      // Export-role users are confined to the Export AI module.
+      if (isExportRole(user)) {
+        setCurrentView('exportai')
+        sessionStorage.setItem('currentView', 'exportai')
+      }
     }
   }, [])
 
@@ -72,6 +82,13 @@ function App() {
     if (isImportRole(user)) {
       setCurrentView('import')
       sessionStorage.setItem('currentView', 'import')
+      return
+    }
+
+    // Export-role users land directly in (and are confined to) the Export AI module.
+    if (isExportRole(user)) {
+      setCurrentView('exportai')
+      sessionStorage.setItem('currentView', 'exportai')
       return
     }
 
@@ -108,6 +125,12 @@ function App() {
     if (isImportRole(currentUser)) {
       setCurrentView('import')
       sessionStorage.setItem('currentView', 'import')
+      return
+    }
+    // Route protection: Export-role users may only stay in the Export AI module.
+    if (isExportRole(currentUser)) {
+      setCurrentView('exportai')
+      sessionStorage.setItem('currentView', 'exportai')
       return
     }
     // Prefetch suggestion data when navigating to form
@@ -372,6 +395,12 @@ function App() {
 
       {/* Content */}
       <div>
+        {/* Export-role users are fully confined to the Export AI module — no other
+            module is ever rendered for them, even via stale state or direct access. */}
+        {isExportRole(currentUser) ? (
+          <EmbeddedExportAI currentUser={currentUser} />
+        ) : (
+          <>
         {/* Import module — Super Admin and Import-role users */}
         {currentView === 'import' && <ImportModule currentUser={currentUser} />}
 
@@ -386,6 +415,7 @@ function App() {
         {currentView === 'agentdb' && <AgentDatabase currentUser={currentUser} />}
         {currentView === 'destination' && <Destination currentUser={currentUser} onBack={() => handleNavigate('dashboard')} />}
         {currentView === 'logininfo' && <LoginInfo currentUser={currentUser} />}
+        {currentView === 'exportai' && <EmbeddedExportAI currentUser={currentUser} />}
         {currentView === 'booking' && (
           <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -426,6 +456,8 @@ function App() {
               </div>
             </div>
           </div>
+        )}
+          </>
         )}
           </>
         )}

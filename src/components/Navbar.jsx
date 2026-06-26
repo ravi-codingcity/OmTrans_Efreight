@@ -12,6 +12,7 @@ import {
   Activity,
   MapPin,
   Plane,
+  Sparkles,
 } from "lucide-react";
 import OmTransLogo from "../assets/OmTrans.png";
 import OmTransDP from "../assets/omtrans_dp.jpg";
@@ -34,12 +35,17 @@ const Navbar = ({ currentUser, onLogout, onNavigate, currentView }) => {
 
   // Role-based menu visibility.
   // - Import-role users see ONLY the Import module.
+  // - Export-role users see ONLY the Export AI module.
   // - Super Admin sees everything including Import.
   const role = (currentUser?.role || "").toLowerCase().trim();
   const isSuperAdmin = role === "super admin";
   const isImportUser = role === "import";
-  const showStandardMenus = !isImportUser; // hide all standard menus for import-only users
+  const isExportUser = role === "export";
+  // Standard menus are hidden for Import-only and Export-only users.
+  const showStandardMenus = !isImportUser && !isExportUser;
   const showImportMenu = isSuperAdmin || isImportUser;
+  // Export AI is available to everyone except Import-only users.
+  const showExportAiMenu = !isImportUser;
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -182,6 +188,22 @@ const Navbar = ({ currentUser, onLogout, onNavigate, currentView }) => {
               >
                 <Plane size={15} />
                 <span>Import</span>
+              </button>
+            )}
+
+            {/* Export AI Menu — everyone except Import-only users (Super Admin = full,
+                Export/standard users = own data only) */}
+            {showExportAiMenu && (
+              <button
+                onClick={() => onNavigate("exportai")}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                  currentView === "exportai"
+                    ? "bg-indigo-50 text-indigo-700"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <Sparkles size={15} />
+                <span>Export AI</span>
               </button>
             )}
           </div>

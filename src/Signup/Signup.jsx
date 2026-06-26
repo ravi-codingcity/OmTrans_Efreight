@@ -30,7 +30,7 @@ const Signup = ({ onSignupSuccess, onSwitchToLogin }) => {
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const roles = ["Admin", "Manager", "User", "Viewer" , "Super Admin", "Import"];
+  const roles = ["Admin", "Manager", "User", "Viewer" , "Super Admin", "Import", "Export"];
   const locations = ["Delhi", "Mumbai", "Pune", "Kolkata", "Chennai" , "Bengaluru", "Ahmedabad"];
 
   const handleChange = (e) => {
