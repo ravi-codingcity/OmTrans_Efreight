@@ -11,6 +11,7 @@ const SUGGEST_FIELDS = [
   "shipper",
   "consignee",
   "notify",
+  "notify_party_2",
   "routing_airport_of_departure",
   "routing_to",
   "routing_airport_of_destination",
@@ -173,7 +174,7 @@ const HawbForm = ({ currentUser, initialData, onBack, onSaved, onPreview }) => {
           <AutoSuggest label="Consignee's Name & Address" required multiline rows={4} value={data.consignee} onChange={setConsignee} suggestions={suggestions.consignee} placeholder="Name & address..." inputCls={inputCls} labelCls={labelCls} />
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center justify-between">
-              <label className={labelCls}>Notify Party</label>
+              <label className={labelCls}>Notify Party 1</label>
               <label className="flex items-center gap-1 text-[10px] font-medium text-gray-600 cursor-pointer">
                 <input type="checkbox" checked={sameAsConsignee} onChange={(e) => toggleSameAsConsignee(e.target.checked)} className="accent-violet-600" />
                 Same as Consignee
@@ -182,6 +183,19 @@ const HawbForm = ({ currentUser, initialData, onBack, onSaved, onPreview }) => {
             <AutoSuggest label="" multiline rows={4} value={data.notify} onChange={set("notify")} suggestions={suggestions.notify} disabled={sameAsConsignee} placeholder="Name & address..." inputCls={inputCls} labelCls="hidden" />
           </div>
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mt-2.5">
+          <AutoSuggest label="Notify Party 2 (optional)" multiline rows={4} value={data.notify_party_2} onChange={set("notify_party_2")} suggestions={suggestions.notify_party_2} placeholder="Name & address..." inputCls={inputCls} labelCls={labelCls} />
+        </div>
+      </Card>
+
+      {/* Accounting Information */}
+      <Card title="Accounting Information">
+        <Area label="Accounting Information (optional)" value={data.accounting_information} onChange={set("accounting_information")} rows={2} placeholder="Accounting information..." />
+      </Card>
+
+      {/* Destination Agent Detail */}
+      <Card title="Destination Agent Detail">
+        <Area label="Destination Agent Detail (optional)" value={data.destination_agent_detail} onChange={set("destination_agent_detail")} rows={3} placeholder="Destination agent name, address & contact..." />
       </Card>
 
       {/* Routing */}

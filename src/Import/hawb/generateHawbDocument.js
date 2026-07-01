@@ -97,6 +97,9 @@ const toTemplateData = (d = {}) => ({
   shipper: v(d.shipper),
   consignee: v(d.consignee),
   notify: v(d.notify),
+  notify_party_2: v(d.notify_party_2),
+  accounting_information: v(d.accounting_information),
+  destination_agent_detail: v(d.destination_agent_detail),
   routing_airport_of_departure: v(d.routing_airport_of_departure),
   routing_to: v(d.routing_to),
   routing_airport_of_destination: v(d.routing_airport_of_destination),
@@ -125,19 +128,23 @@ const triggerDownload = (blob, filename) => {
 const PAGE_H = 1830;
 const FIELDS = [
   // Shipment information (top row)
-  { key: "airport_of_departure", x: 78, y: 92, size: 13, maxWidth: 240 },
+  { key: "airport_of_departure", x: 78, y: 93, size: 13, maxWidth: 240 },
   { key: "airport_of_destination", x: 338, y: 92, size: 13, maxWidth: 180 },
   { key: "master_awb_number", x: 537, y: 92, size: 18, maxWidth: 200 },
   { key: "house_awb_number", x: 756, y: 92, size: 18, maxWidth: 200 },
-  // Parties
+  // Parties — the template splits Notify into "Notify Party 1" (box y≈447-507)
+  // and "Notify Party 2" (box y≈508-574). Accounting Information sits in the
+  // right column (x≈533-1202, y≈447-630).
   { key: "shipper", x: 78, y: 162, size: 13, maxWidth: 250, lineHeight: 14 },
   { key: "consignee", x: 78, y: 330, size: 13, maxWidth: 250, lineHeight: 14 },
-  { key: "notify", x: 78, y: 500, size: 13, maxWidth: 250, lineHeight: 14 },
+  { key: "notify", x: 78, y: 452, size: 12, maxWidth: 250, lineHeight: 13 },
+  { key: "notify_party_2", x: 78, y: 528, size: 12, maxWidth: 250, lineHeight: 13 },
+  { key: "accounting_information", x: 542, y: 455, size: 12, maxWidth: 650, lineHeight: 14 },
   // Routing — left column stacks: Airport of Departure (addr of first carrier),
   // then "To" directly below it, then the routing-section Airport of Destination
   // (which sits just above the Handling Information row).
-  { key: "routing_airport_of_departure", x: 78, y: 628, size: 13, maxWidth: 125 },
-  { key: "routing_to", x: 78, y: 682, size: 13, maxWidth: 125 },
+  { key: "routing_airport_of_departure", x: 78, y: 608, size: 13, maxWidth: 125 },
+  { key: "routing_to", x: 78, y: 680, size: 13, maxWidth: 125 },
   { key: "routing_airport_of_destination", x: 78, y: 745, size: 13, maxWidth: 125 },
   // Shipment details
   { key: "no_of_pieces", x: 80, y: 960, size: 14, maxWidth: 70 },
@@ -145,11 +152,14 @@ const FIELDS = [
   { key: "chargeable_weight", x: 410, y: 960, size: 14, maxWidth: 80 },
   // Nature & quantity of goods (combined block)
   { key: "nature_combined", x: 815, y: 960, size: 14, maxWidth: 420, lineHeight: 16 },
+  // Destination Agent Detail — narrow left-column cell (x≈73-276) directly below
+  // its heading (heading y≈1138; value band y≈1153-1275).
+  { key: "destination_agent_detail", x: 80, y: 1160, size: 10, maxWidth: 190, lineHeight: 12 },
   // Handling Information — only overlaid when the user customizes it
   // (the template already pre-prints the default boilerplate).
-  { key: "handling_information", x: 78, y: 845, size: 11, maxWidth: 740, lineHeight: 13, skipIfEquals: DEFAULT_HANDLING },
+  { key: "handling_information", x: 78, y: 828, size: 11, maxWidth: 740, lineHeight: 13, skipIfEquals: DEFAULT_HANDLING },
   // Dated (bottom)
-  { key: "dated", x: 805, y: 1619, size: 12, maxWidth: 250 },
+  { key: "dated", x: 805, y: 1595, size: 12, maxWidth: 250 },
 ];
 
 // Word-wrap to maxWidth AND hard-break any over-long token, so nothing ever
@@ -238,20 +248,20 @@ const drawFreightOverlays = (page, font, color, freightRaw) => {
 
   if (freight === "prepaid") {
     // Both PP fields = "PP"; CC fields left blank.
-    draw("PP", 629, 690, 11);
-    draw("PP", 688, 690, 11);
+    draw("PP", 629, 670, 11);
+    draw("PP", 688, 670, 11);
     // "AS AGREED" on the left (Prepaid) side of Valuation Charges.
-    draw("AS AGREED", 140, 1370, 10);
+    draw("AS AGREED", 140, 1350, 10);
     // "AS AGREED" below Currency Conversion Rates.
-    draw("AS AGREED", 135, 1645, 10);
+    draw("AS AGREED", 135, 1625, 10);
   } else {
     // Both CC fields = "CC"; PP fields left blank.
-    draw("CC", 657, 690, 11);
-    draw("CC", 731, 690, 11);
+    draw("CC", 657, 670, 11);
+    draw("CC", 731, 670, 11);
     // "AS AGREED" on the right (Collect) side of Valuation Charges.
-    draw("AS AGREED", 360, 1370, 10);
+    draw("AS AGREED", 360, 1350, 10);
     // "AS AGREED" below CC Charges in Dest Currency.
-    draw("AS AGREED", 340, 1645, 10);
+    draw("AS AGREED", 340, 1625, 10);
   }
 };
 
