@@ -113,6 +113,20 @@ const toTemplateData = (d = {}) => ({
 
 const fileRef = (d) => (v(d.house_awb_number) || "draft").replace(/[^\w-]+/g, "_");
 
+// The template pre-prints the word "ORIGINAL" at the bottom (bbox x≈803-880,
+// top y≈1736, Arial-Bold ~16). Each copy's distinct label is drawn immediately
+// after it — this suffix is the ONLY difference between the four copies; every
+// other pixel/field is identical.
+const ORIGINAL_LABEL = { x: 888, y: 1736.3, size: 16 };
+
+// The four HAWB copies. `suffix` is the text drawn after "ORIGINAL".
+export const HAWB_COPIES = [
+  { id: "consignee", suffix: "1 Consignee Copy", name: "Consignee Copy" },
+  { id: "delivery", suffix: "2 Delivery Receipt", name: "Delivery Receipt" },
+  { id: "extra", suffix: "3 Extra Copy", name: "Extra Copy" },
+  { id: "shipper", suffix: "4 Shipper Copy", name: "Shipper Copy" },
+];
+
 const triggerDownload = (blob, filename) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -188,7 +202,7 @@ const wrapLine = (text, font, size, maxWidth) => {
   return lines.length ? lines : [""];
 };
 
-export const buildHawbPdfBytes = async (data) => {
+export const buildHawbPdfBytes = async (data, copySuffix = "") => {
   const values = toTemplateData(data);
   const buf = await fetch(pdfTemplateUrl).then((r) => r.arrayBuffer());
   const pdf = await PDFDocument.load(buf);
@@ -229,6 +243,24 @@ export const buildHawbPdfBytes = async (data) => {
   // Freight type → PP/CC indicators + "AS AGREED" placements (optional).
   drawFreightOverlays(page, font, color, data.freight);
 
+  // Copy label — the ONLY per-copy difference. Drawn right after the template's
+  // pre-printed "ORIGINAL" word at the bottom. No other content is changed.
+  const suffix = sanitizeForPdf(copySuffix, "copy_label").trim();
+  if (suffix) {
+    try {
+      const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+      page.drawText(suffix, {
+        x: ORIGINAL_LABEL.x,
+        y: PAGE_H - ORIGINAL_LABEL.y - ORIGINAL_LABEL.size,
+        size: ORIGINAL_LABEL.size,
+        font: bold,
+        color,
+      });
+    } catch (err) {
+      console.error("[HAWB] copy label draw failed:", err && err.message);
+    }
+  }
+
   return pdf.save();
 };
 
@@ -265,7 +297,10 @@ const drawFreightOverlays = (page, font, color, freightRaw) => {
   }
 };
 
-export const generateHawbPDF = async (data) => {
-  const bytes = await buildHawbPdfBytes(data);
-  triggerDownload(new Blob([bytes], { type: "application/pdf" }), `HAWB-${fileRef(data)}.pdf`);
+// Download a single HAWB copy. `copy` is one of HAWB_COPIES (or null for the
+// plain document — kept for backward compatibility).
+export const generateHawbPDF = async (data, copy = null) => {
+  const bytes = await buildHawbPdfBytes(data, copy ? copy.suffix : "");
+  const tag = copy ? `-${copy.id}` : "";
+  triggerDownload(new Blob([bytes], { type: "application/pdf" }), `HAWB-${fileRef(data)}${tag}.pdf`);
 };

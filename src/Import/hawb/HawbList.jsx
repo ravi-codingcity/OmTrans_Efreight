@@ -12,7 +12,7 @@ import {
   Plus,
 } from "lucide-react";
 import { listHawb, deleteHawb } from "./hawbApi";
-import { generateHawbPDF } from "./generateHawbDocument";
+import { generateHawbPDF, HAWB_COPIES } from "./generateHawbDocument";
 import HawbPreview from "./HawbPreview";
 
 const fmtDate = (d) => {
@@ -65,9 +65,14 @@ const HawbList = ({ currentUser, onNew, onEdit }) => {
     );
   }, [records, search]);
 
+  // Quick action — download all four copies (Consignee, Delivery Receipt, Extra,
+  // Shipper). For selective per-copy download, use View → the preview modal.
   const handlePdf = async (r) => {
     try {
-      await generateHawbPDF(r);
+      for (const copy of HAWB_COPIES) {
+        await generateHawbPDF(r, copy);
+        await new Promise((res) => setTimeout(res, 250)); // stagger so browsers accept each file
+      }
     } catch (err) {
       alert(err.message || "PDF download failed");
     }
@@ -156,8 +161,8 @@ const HawbList = ({ currentUser, onNew, onEdit }) => {
                         <button onClick={() => setPreview(r)} title="Preview" className="flex items-center gap-1 bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-[10px] font-medium hover:bg-indigo-100">
                           <Eye size={11} /> View
                         </button>
-                        <button onClick={() => handlePdf(r)} title="Download PDF" className="flex items-center gap-1 bg-purple-50 text-purple-700 px-2 py-1 rounded text-[10px] font-medium hover:bg-purple-100">
-                          <FileDown size={11} /> PDF
+                        <button onClick={() => handlePdf(r)} title="Download all 4 copies (Consignee, Delivery Receipt, Extra, Shipper)" className="flex items-center gap-1 bg-purple-50 text-purple-700 px-2 py-1 rounded text-[10px] font-medium hover:bg-purple-100">
+                          <FileDown size={11} /> All Copies
                         </button>
                         <button onClick={() => onEdit(r)} title="Edit" className="flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-1 rounded text-[10px] font-medium hover:bg-amber-100">
                           <Pencil size={11} /> Edit
