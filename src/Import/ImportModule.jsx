@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Plane, List, FilePlus2, FileText } from "lucide-react";
+import { Plane, List, FilePlus2, FileText, ScanSearch } from "lucide-react";
 import MawbList from "./MawbList";
 import MawbForm from "./MawbForm";
 import MawbPreview from "./MawbPreview";
 import HawbModule from "./hawb/HawbModule";
+import VerifyModule from "./verify/VerifyModule";
 
 /* ------------------------------------------------------------------ */
 /*  Import Module — container for the Import documentation workflows.  */
@@ -11,7 +12,7 @@ import HawbModule from "./hawb/HawbModule";
 /*  Rendered by App.jsx only for Super Admin and Import-role users.    */
 /* ------------------------------------------------------------------ */
 const ImportModule = ({ currentUser }) => {
-  // Top-level document type: "mawb" | "hawb"
+  // Top-level document type: "mawb" | "hawb" | "verify"
   const [docType, setDocType] = useState("mawb");
 
   // ---- MAWB workflow state (unchanged) ----
@@ -53,6 +54,9 @@ const ImportModule = ({ currentUser }) => {
             </button>
             <button onClick={() => setDocType("hawb")} className={docTabCls(docType === "hawb", "bg-violet-100 text-violet-700")}>
               <FileText size={14} /> HAWB
+            </button>
+            <button onClick={() => setDocType("verify")} className={docTabCls(docType === "verify", "bg-teal-100 text-teal-700")}>
+              <ScanSearch size={14} /> AI Verification
             </button>
           </div>
         </div>
@@ -102,8 +106,12 @@ const ImportModule = ({ currentUser }) => {
 
           {preview && <MawbPreview data={preview} onClose={() => setPreview(null)} />}
         </>
-      ) : (
+      ) : docType === "hawb" ? (
         <HawbModule currentUser={currentUser} />
+      ) : (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <VerifyModule currentUser={currentUser} />
+        </div>
       )}
     </div>
   );

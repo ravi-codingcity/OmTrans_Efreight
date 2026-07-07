@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/OmTrans_Freight/Backend/**)",
+      "Bash(node --check src/modules/import/verification/services/geminiCompareService.js)",
+      "Bash(node -e ' *)",
+      "Bash(./node_modules/.bin/vite build *)",
+      "Bash(node -e \"require\\('./src/modules/import/verification/routes/verificationRoutes.js'\\); const {compareChecklist,describeAiError}=require\\('./src/modules/import/verification/services/geminiCompareService'\\); console.log\\('exports:', typeof compareChecklist, typeof describeAiError\\); console.log\\('Verification module loads OK'\\)\")",
+      "Bash(cd \"d:/OmTrans_Freight/Backend\" && echo \"=== any redirect/301/302/307 in backend code? ===\" && grep -rniE \"redirect|30[127]|\\\\.htaccess\" src --include=\"*.js\" | grep -vi \"not authorized\\\\|status\\(4\\\\|status\\(5\\\\|statusCode\" | head -20; echo \"\\(none above = no app-level redirect\\)\")",
+      "Bash(node --check src/server.js)",
+      "Bash(node --check src/modules/import/verification/routes/verificationRoutes.js)",
+      "Bash(node --check src/modules/import/verification/controllers/verificationController.js)",
+      "Bash(node --check src/modules/import/verification/validation/verificationValidation.js)",
+      "Bash(node -e \"require\\('./src/modules/import/verification/services/geminiCompareService.js'\\); require\\('./src/modules/import/verification/routes/verificationRoutes.js'\\); console.log\\('Verification module loads OK'\\);\")",
+      "Bash(node --check src/modules/import/verification/config/geminiConfig.js)",
+      "Bash(node -e \"require\\('./src/modules/import/verification/services/geminiCompareService.js'\\); require\\('./src/modules/import/verification/routes/verificationRoutes.js'\\); console.log\\('Backend loads OK'\\)\")",
+      "Bash(node --check src/modules/import/verification/models/VerificationRecord.js)",
+      "Bash(node -e \"require\\('./src/modules/import/verification/routes/verificationRoutes.js'\\); console.log\\('Verification module + records API loads OK'\\);\")",
+      "Bash(node -e \"require\\('./src/modules/import/verification/routes/verificationRoutes.js'\\); console.log\\('Backend OK'\\)\")"
+    ],
+    "additionalDirectories": [
+      "d:\\OmTrans_Freight\\Backend\\src",
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\verification\\services",
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\verification\\controllers",
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\verification\\routes",
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\verification\\config",
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\verification\\models"
+    ]
+  }
+}
