@@ -22,7 +22,8 @@
       "Bash(node -e \"const p=require\\('./Backend/package.json'\\); console.log\\('name:',p.name\\); console.log\\(Object.keys\\(p.dependencies\\).join\\(', '\\)\\)\")",
       "Bash(node -e \"const p=require\\('./my-project/package.json'\\); console.log\\(Object.keys\\(p.dependencies\\).join\\(', '\\)\\)\")",
       "Bash(grep -c '```mermaid' README.md)",
-      "Bash(echo \"--- mermaid diagrams: $\\(grep -c '```mermaid' README.md\\) | tables: $\\(grep -c '^|' README.md\\) rows ---\")"
+      "Bash(echo \"--- mermaid diagrams: $\\(grep -c '```mermaid' README.md\\) | tables: $\\(grep -c '^|' README.md\\) rows ---\")",
+      "Bash(node -e \"require\\('./src/modules/import/verification/services/geminiCompareService.js'\\); console.log\\('Verify service OK'\\)\")"
     ],
     "additionalDirectories": [
       "d:\\OmTrans_Freight\\Backend\\src",

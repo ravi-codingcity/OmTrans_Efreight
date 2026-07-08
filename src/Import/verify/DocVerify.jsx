@@ -321,6 +321,58 @@ const CompareTable = ({ rows }) => (
 );
 
 // Item-by-item comparison table (highest priority).
+// Normalise a description the way the verifier does — ignore case, punctuation,
+// spacing and line breaks — so only meaningful tokens are compared for highlighting.
+const normToken = (t) => t.toUpperCase().replace(/[^A-Z0-9./-]/g, "");
+const tokenSet = (s) => new Set(String(s || "").split(/\s+/).map(normToken).filter(Boolean));
+
+// Render a description with the tokens that are ABSENT from the other side highlighted.
+const HighlightDiff = ({ text, other }) => {
+  const otherSet = tokenSet(other);
+  const parts = String(text || "").split(/(\s+)/);
+  return (
+    <span>
+      {parts.map((p, i) => {
+        if (/^\s+$/.test(p) || !p) return p;
+        const differs = !otherSet.has(normToken(p));
+        return differs
+          ? <mark key={i} className="bg-red-100 text-red-700 rounded px-0.5">{p}</mark>
+          : <span key={i}>{p}</span>;
+      })}
+    </span>
+  );
+};
+
+// Side-by-side CHA vs System description comparison shown beneath an item.
+const DescriptionCompare = ({ row }) => {
+  const matched = row.descriptionStatus !== "mismatch";
+  const chk = row.checklistDescription;
+  const sys = row.systemDescription;
+  const hasBoth = chk && sys;
+  return (
+    <div className="mt-1.5">
+      <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold ${matched ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+        {matched ? <><CheckCircle2 className="h-3 w-3" /> Item Description Matched</> : <><XCircle className="h-3 w-3" /> Item Description Not Matched</>}
+      </span>
+      {!matched && hasBoth && (
+        <div className="mt-1.5 grid gap-1 rounded-md border border-red-100 bg-red-50/40 p-2 text-[10px] font-normal sm:grid-cols-2">
+          <div>
+            <p className="font-semibold uppercase tracking-wide text-gray-400">CHA Checklist</p>
+            <p className="text-gray-700"><HighlightDiff text={chk} other={sys} /></p>
+          </div>
+          <div>
+            <p className="font-semibold uppercase tracking-wide text-gray-400">System Document</p>
+            <p className="text-gray-700"><HighlightDiff text={sys} other={chk} /></p>
+          </div>
+          {row.descriptionDetail && (
+            <p className="sm:col-span-2 text-red-700"><span className="font-semibold">Reason:</span> {row.descriptionDetail}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ItemTable = ({ items }) => (
   <>
     <div className="overflow-x-auto">
@@ -344,7 +396,11 @@ const ItemTable = ({ items }) => (
             const m = STATUS_META[r.status] || STATUS_META.mismatch;
             return (
               <tr key={i} className={m.row}>
-                <td className={`${cell} font-semibold text-gray-700`}>{r.description}{r.detail && <p className="font-normal text-[10px] text-gray-400 mt-0.5">{r.detail}</p>}</td>
+                <td className={`${cell} font-semibold text-gray-700 min-w-[280px]`}>
+                  {r.description}
+                  {r.detail && r.detail !== r.descriptionDetail && <p className="font-normal text-[10px] text-gray-400 mt-0.5">{r.detail}</p>}
+                  <DescriptionCompare row={r} />
+                </td>
                 <td className={`${cell} text-gray-700`}>{val(r.hsnCode)}</td>
                 <td className={`${cell} text-gray-700`}>{val(r.quantity)}</td>
                 <td className={`${cell} text-gray-700`}>{val(r.unit)}</td>
