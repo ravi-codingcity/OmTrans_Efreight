@@ -311,6 +311,11 @@ function JobRow({ job, isAdmin, remove, nested = false }) {
             Shipment {job.shipmentIndex}
           </span>
         )}
+        {job.shipmentType === 'multiple_single' && (
+          <span className="mb-0.5 inline-flex items-center gap-1 rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-700" title="Multiple LEO consolidated into one HBL/MBL/ISF">
+            <Layers className="h-3 w-3" /> Multiple LEO → 1 HBL
+          </span>
+        )}
         <Link to={`/jobs/${job._id}`} className="block font-medium text-slate-800 hover:text-brand-600">{job.jobNumber || '—'}</Link>
         {(job.exporterName || job.shippingBillNumber) && (
           <p className="text-xs text-slate-400">

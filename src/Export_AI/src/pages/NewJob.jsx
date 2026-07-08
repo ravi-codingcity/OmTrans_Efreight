@@ -135,13 +135,16 @@ export default function NewJob() {
           <div className="sm:col-span-2">
             <label className="label">Shipment Type</label>
             <select className="input" value={shipmentType} onChange={(e) => setShipmentType(e.target.value)}>
-              <option value="single">Single LEO (Default)</option>
-              <option value="multiple">Multiple LEO</option>
+              <option value="single">Single LEO with Single HBL</option>
+              <option value="multiple">Multiple LEO with Multiple HBL</option>
+              <option value="multiple_single">Multiple LEO with Single HBL</option>
             </select>
             <p className="mt-1 text-xs text-slate-400">
               {shipmentType === 'multiple'
-                ? 'Each LEO / Shipping Bill becomes its own shipment (HBL, MBL & ISF). Booking, Forwarding Note / E-Gate are shared across all.'
-                : 'Standard single-shipment workflow.'}
+                ? 'Each LEO / Shipping Bill becomes its own shipment (separate HBL, MBL & ISF). Booking, Forwarding Note / E-Gate are shared across all.'
+                : shipmentType === 'multiple_single'
+                ? 'All LEOs are merged into ONE consolidated shipment — a single HBL, MBL & ISF combining every exporter, goods description, container & seal.'
+                : 'Standard single-shipment workflow (1 LEO → 1 HBL, MBL & ISF).'}
             </p>
           </div>
           <div className="sm:col-span-2">

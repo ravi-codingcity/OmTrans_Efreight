@@ -16,7 +16,13 @@
       "Bash(node -e \"require\\('./src/modules/import/verification/services/geminiCompareService.js'\\); require\\('./src/modules/import/verification/routes/verificationRoutes.js'\\); console.log\\('Backend loads OK'\\)\")",
       "Bash(node --check src/modules/import/verification/models/VerificationRecord.js)",
       "Bash(node -e \"require\\('./src/modules/import/verification/routes/verificationRoutes.js'\\); console.log\\('Verification module + records API loads OK'\\);\")",
-      "Bash(node -e \"require\\('./src/modules/import/verification/routes/verificationRoutes.js'\\); console.log\\('Backend OK'\\)\")"
+      "Bash(node -e \"require\\('./src/modules/import/verification/routes/verificationRoutes.js'\\); console.log\\('Backend OK'\\)\")",
+      "Bash(node -e \"require\\('./src/modules/exportAi/index.js'\\); console.log\\('Export-AI backend loads OK'\\);\")",
+      "Read(//d/OmTrans_Freight/**)",
+      "Bash(node -e \"const p=require\\('./Backend/package.json'\\); console.log\\('name:',p.name\\); console.log\\(Object.keys\\(p.dependencies\\).join\\(', '\\)\\)\")",
+      "Bash(node -e \"const p=require\\('./my-project/package.json'\\); console.log\\(Object.keys\\(p.dependencies\\).join\\(', '\\)\\)\")",
+      "Bash(grep -c '```mermaid' README.md)",
+      "Bash(echo \"--- mermaid diagrams: $\\(grep -c '```mermaid' README.md\\) | tables: $\\(grep -c '^|' README.md\\) rows ---\")"
     ],
     "additionalDirectories": [
       "d:\\OmTrans_Freight\\Backend\\src",
@@ -24,7 +30,12 @@
       "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\verification\\controllers",
       "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\verification\\routes",
       "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\verification\\config",
-      "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\verification\\models"
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\verification\\models",
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\exportAi\\queue",
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\exportAi\\services",
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\exportAi\\models",
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\exportAi\\controllers",
+      "d:\\OmTrans_Freight"
     ]
   }
 }
