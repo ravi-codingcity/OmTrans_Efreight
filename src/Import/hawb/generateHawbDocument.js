@@ -158,8 +158,8 @@ const FIELDS = [
   // then "To" directly below it, then the routing-section Airport of Destination
   // (which sits just above the Handling Information row).
   { key: "routing_airport_of_departure", x: 78, y: 608, size: 13, maxWidth: 125 },
-  { key: "routing_to", x: 78, y: 680, size: 13, maxWidth: 125 },
-  { key: "routing_airport_of_destination", x: 78, y: 745, size: 13, maxWidth: 125 },
+  { key: "routing_to", x: 78, y: 667, size: 13, maxWidth: 125 },
+  { key: "routing_airport_of_destination", x: 78, y: 737, size: 13, maxWidth: 125 },
   // Shipment details
   { key: "no_of_pieces", x: 80, y: 960, size: 14, maxWidth: 70 },
   { key: "gross_weight", x: 168, y: 960, size: 14, maxWidth: 90 },
@@ -169,9 +169,9 @@ const FIELDS = [
   // Destination Agent Detail — narrow left-column cell (x≈73-276) directly below
   // its heading (heading y≈1138; value band y≈1153-1275).
   { key: "destination_agent_detail", x: 80, y: 1160, size: 10, maxWidth: 190, lineHeight: 12 },
-  // Handling Information — only overlaid when the user customizes it
-  // (the template already pre-prints the default boilerplate).
-  { key: "handling_information", x: 78, y: 828, size: 11, maxWidth: 740, lineHeight: 13, skipIfEquals: DEFAULT_HANDLING },
+  // Handling Information is NOT overlaid here — the template pre-prints the boilerplate
+  // inside the box, so it is drawn by drawHandlingInformation() below, which replaces
+  // that pre-printed line in place. See HANDLING_BOX.
   // Dated (bottom)
   { key: "dated", x: 805, y: 1595, size: 12, maxWidth: 250 },
 ];
@@ -200,6 +200,60 @@ const wrapLine = (text, font, size, maxWidth) => {
   }
   if (cur) lines.push(cur);
   return lines.length ? lines : [""];
+};
+
+/* ------------------------------------------------------------------ */
+/*  Handling Information                                               */
+/*  The template PRINTS the default boilerplate as real text inside    */
+/*  the Handling Information box (baseline y=1019.6, x=75.9, ~15.9pt,  */
+/*  in an otherwise empty full-width band y 1014.9-1034.2, between the */
+/*  box's left/right borders at x=73.1 and x=1201.8).                  */
+/*                                                                     */
+/*  Because the boilerplate starts at the very left of the box there   */
+/*  is no room to slot the No. of Pieces (RCP) prefix in front of it.  */
+/*  So when the value differs from the default (a piece-count prefix   */
+/*  such as "25 BOXES ADDED …", or a manual edit) we blank that one    */
+/*  pre-printed line and redraw the value in exactly its place. When   */
+/*  the value IS the plain default we draw nothing and the template's  */
+/*  own line shows through — so the default output is byte-for-byte    */
+/*  unchanged. Nothing else on the template is touched.                */
+/* ------------------------------------------------------------------ */
+const HANDLING_BOX = {
+  x: 75.9, // the template's own text start
+  baselineY: 1019.6, // the template's own baseline (PDF bottom-up coords)
+  size: 15.913, // the template's own font size
+  minSize: 10, // shrink-to-fit floor before wrapping to a 2nd line
+  maxWidth: 1118, // box interior width (x 75.9 -> ~1194, inside the right border)
+  lineHeight: 17,
+  // Blanks only the pre-printed line, staying inside the box borders.
+  cover: { x: 74.2, y: 1015, width: 1127, height: 19 },
+};
+
+const drawHandlingInformation = (page, font, value) => {
+  const raw = sanitizeForPdf(value, "handling_information").trim();
+  if (!raw) return;
+  // Unchanged default → the template already prints it; draw nothing.
+  if (raw === sanitizeForPdf(DEFAULT_HANDLING).trim()) return;
+
+  const b = HANDLING_BOX;
+  page.drawRectangle({ ...b.cover, color: rgb(1, 1, 1) });
+
+  // Prefer a single line at the template's own size; shrink a little before wrapping.
+  const layout = (size) => raw.split("\n").flatMap((p) => wrapLine(p, font, size, b.maxWidth));
+  let size = b.size;
+  let lines = layout(size);
+  while (lines.length > 1 && size > b.minSize) {
+    size -= 0.5;
+    lines = layout(size);
+  }
+
+  lines.forEach((line, i) => {
+    try {
+      page.drawText(line, { x: b.x, y: b.baselineY - i * b.lineHeight, size, font, color: rgb(0, 0, 0) });
+    } catch (err) {
+      console.error("[HAWB] handling information draw failed:", err && err.message);
+    }
+  });
 };
 
 export const buildHawbPdfBytes = async (data, copySuffix = "") => {
@@ -239,6 +293,10 @@ export const buildHawbPdfBytes = async (data, copySuffix = "") => {
       }
     }
   }
+
+  // Handling Information — replaces the template's pre-printed line in place when the
+  // value differs from the default (e.g. the No. of Pieces (RCP) prefix).
+  drawHandlingInformation(page, font, values.handling_information);
 
   // Freight type → PP/CC indicators + "AS AGREED" placements (optional).
   drawFreightOverlays(page, font, color, data.freight);

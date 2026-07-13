@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Save, Send, Eye, ArrowLeft, Loader2 } from "lucide-react";
-import { emptyHawb, createHawb, updateHawb, listHawb } from "./hawbApi";
+import { emptyHawb, createHawb, updateHawb, listHawb, buildHandlingInformation, isAutoHandlingInformation } from "./hawbApi";
 import AutoSuggest from "../AutoSuggest";
 import { collectSuggestions } from "../dateUtil";
 
@@ -64,6 +64,18 @@ const HawbForm = ({ currentUser, initialData, onBack, onSaved, onPreview }) => {
   // Consignee change also syncs Notify while "Same as Consignee" is active.
   const setConsignee = (value) =>
     setData((p) => ({ ...p, consignee: value, ...(sameAsConsignee ? { notify: value } : {}) }));
+
+  // No. of Pieces (RCP) drives the Handling Information: the piece count is prefixed to
+  // the standard boilerplate ("25" -> "25 BOXES ADDED AND MKD.// …"). Once the user has
+  // hand-edited the Handling Information, it is left untouched.
+  const setNoOfPieces = (value) =>
+    setData((p) => ({
+      ...p,
+      no_of_pieces: value,
+      handling_information: isAutoHandlingInformation(p.handling_information)
+        ? buildHandlingInformation(value)
+        : p.handling_information,
+    }));
 
   const toggleSameAsConsignee = (checked) => {
     setSameAsConsignee(checked);
@@ -239,7 +251,7 @@ const HawbForm = ({ currentUser, initialData, onBack, onSaved, onPreview }) => {
       {/* Shipment Details */}
       <Card title="Shipment Details">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-          <Field label="No. of Pieces (RCP)" type="number" value={data.no_of_pieces} onChange={set("no_of_pieces")} />
+          <Field label="No. of Pieces (RCP)" type="number" value={data.no_of_pieces} onChange={setNoOfPieces} />
           <Field label="Gross Weight" type="number" value={data.gross_weight} onChange={set("gross_weight")} />
           <Field label="Chargeable Weight" type="number" value={data.chargeable_weight} onChange={set("chargeable_weight")} />
         </div>

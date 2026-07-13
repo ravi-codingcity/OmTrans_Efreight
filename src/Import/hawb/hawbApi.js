@@ -53,6 +53,33 @@ export const deleteHawb = async (id) => {
   return true;
 };
 
+/* ------------------------------------------------------------------ */
+/*  Handling Information                                               */
+/*  The standard boilerplate is pre-printed on the HAWB template. The  */
+/*  No. of Pieces (RCP) value is prefixed to it, e.g. 25 ->            */
+/*  "25 BOXES ADDED AND MKD.// …". It stays auto-derived until the     */
+/*  user edits the text by hand, after which it is left alone.         */
+/* ------------------------------------------------------------------ */
+export const DEFAULT_HANDLING =
+  "BOXES ADDED AND MKD.// ONE ENV CONTG DOCS ( H.AWB, MANIFEST, INVOICE, PACKING LIST ) ATTD WITH THE SHPT.";
+
+/** Handling Information for a given No. of Pieces (RCP) value. */
+export const buildHandlingInformation = (pieces) => {
+  const n = String(pieces ?? "").trim();
+  return n ? `${n} ${DEFAULT_HANDLING}` : DEFAULT_HANDLING;
+};
+
+/**
+ * True while the Handling Information is still the auto-derived text (blank, the bare
+ * boilerplate, or the boilerplate with a piece-count prefix) — i.e. the user has not
+ * hand-edited it, so it is safe to regenerate when No. of Pieces (RCP) changes.
+ */
+export const isAutoHandlingInformation = (text) => {
+  const s = String(text ?? "").trim();
+  if (s === "" || s === DEFAULT_HANDLING) return true;
+  return /^\d+\s+/.test(s) && s.replace(/^\d+\s+/, "") === DEFAULT_HANDLING;
+};
+
 /* Empty HAWB factory — the 19 user-fillable fields */
 export const emptyHawb = () => ({
   airport_of_departure: "",
@@ -69,8 +96,7 @@ export const emptyHawb = () => ({
   routing_to: "",
   routing_airport_of_destination: "",
   freight: "",
-  handling_information:
-    "BOXES ADDED AND MKD.// ONE ENV CONTG DOCS ( H.AWB, MANIFEST, INVOICE, PACKING LIST ) ATTD WITH THE SHPT.",
+  handling_information: DEFAULT_HANDLING,
   no_of_pieces: "",
   gross_weight: "",
   chargeable_weight: "",

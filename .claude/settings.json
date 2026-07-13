@@ -23,7 +23,16 @@
       "Bash(node -e \"const p=require\\('./my-project/package.json'\\); console.log\\(Object.keys\\(p.dependencies\\).join\\(', '\\)\\)\")",
       "Bash(grep -c '```mermaid' README.md)",
       "Bash(echo \"--- mermaid diagrams: $\\(grep -c '```mermaid' README.md\\) | tables: $\\(grep -c '^|' README.md\\) rows ---\")",
-      "Bash(node -e \"require\\('./src/modules/import/verification/services/geminiCompareService.js'\\); console.log\\('Verify service OK'\\)\")"
+      "Bash(node -e \"require\\('./src/modules/import/verification/services/geminiCompareService.js'\\); console.log\\('Verify service OK'\\)\")",
+      "Bash(node _tx.cjs)",
+      "Bash(node _tx2.cjs)",
+      "Bash(node _hawbtest.cjs 25)",
+      "Bash(convert -density 100 \"_hawb_out.pdf[0]\" -crop 1294x120+0+780 +repage _crop_after.png)",
+      "Bash(convert -density 100 \"src/Import/hawb/HAWB_TEMPLATE.pdf[0]\" -crop 1294x120+0+780 +repage _crop_before.png)",
+      "Bash(node _verify.cjs)",
+      "Bash(node _hawbtest.cjs \"\")",
+      "Bash(node _hawbtest.cjs 85)",
+      "Bash(node -e \"require\\('./src/modules/import/hawb/services/hawbDocumentService.js'\\); console.log\\('Backend OK'\\)\")"
     ],
     "additionalDirectories": [
       "d:\\OmTrans_Freight\\Backend\\src",
@@ -36,7 +45,8 @@
       "d:\\OmTrans_Freight\\Backend\\src\\modules\\exportAi\\services",
       "d:\\OmTrans_Freight\\Backend\\src\\modules\\exportAi\\models",
       "d:\\OmTrans_Freight\\Backend\\src\\modules\\exportAi\\controllers",
-      "d:\\OmTrans_Freight"
+      "d:\\OmTrans_Freight",
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\hawb\\services"
     ]
   }
 }
