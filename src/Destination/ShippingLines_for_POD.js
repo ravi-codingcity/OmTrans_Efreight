@@ -66,6 +66,7 @@ const SHIPPING_LINES = [
   "Wan Hai",
   "WINOCEAN Maritime Pvt. Ltd.",
   "WINWIN Lines",
+  "WINASIA MARITIME",
   "Yang Ming",
   "Z LINE",
   "ZIM",
