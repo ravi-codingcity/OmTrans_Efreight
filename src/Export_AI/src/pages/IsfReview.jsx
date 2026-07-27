@@ -14,12 +14,12 @@ import IsfReviewForm from '../components/IsfReviewForm.jsx';
  */
 export default function IsfReview() {
   const { id } = useParams();
-  const [state, setState] = useState({ loading: true, data: null, generated: false, pdfEngine: undefined, jobNumber: '' });
+  const [state, setState] = useState({ loading: true, data: null, generated: false, pdfEngine: undefined, shipmentType: undefined, jobNumber: '' });
 
   const load = useCallback(async () => {
     try {
       const r = await jobApi.isfData(id);
-      setState({ loading: false, data: r.data, generated: Boolean(r.generated), pdfEngine: r.pdfEngine, jobNumber: r.jobNumber });
+      setState({ loading: false, data: r.data, generated: Boolean(r.generated), pdfEngine: r.pdfEngine, shipmentType: r.shipmentType, jobNumber: r.jobNumber });
     } catch (err) {
       toast.error(getErrorMessage(err));
       setState((s) => ({ ...s, loading: false }));
@@ -49,6 +49,7 @@ export default function IsfReview() {
         serverData={state.data}
         generated={state.generated}
         pdfEngine={state.pdfEngine}
+        shipmentType={state.shipmentType}
         onChanged={load}
       />
     </div>

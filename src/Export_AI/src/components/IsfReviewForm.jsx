@@ -54,8 +54,11 @@ const SECTIONS = [
  * (plus fixed values). The user edits any field, then Save & Generate produces the
  * ISF Word + PDF from the ISF Format template using the saved values.
  */
-export default function IsfReviewForm({ jobId, jobNumber, serverData, generated, pdfEngine, onChanged }) {
+export default function IsfReviewForm({ jobId, jobNumber, serverData, generated, pdfEngine, shipmentType, onChanged }) {
   const navigate = useNavigate();
+  // "Multiple LEO with Single HBL" delivers the ISF as Word only — no PDF preview or
+  // PDF download for this workflow.
+  const pdfEnabled = shipmentType !== 'multiple_single';
   const [data, setData] = useState(() => clone(serverData));
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -84,8 +87,10 @@ export default function IsfReviewForm({ jobId, jobNumber, serverData, generated,
     try {
       if (dirty) await jobApi.saveIsfData(jobId, data);
       await jobApi.generateIsf(jobId);
-      // ISF offers both Word and PDF; stay on the page and reveal both downloads.
-      toast.success('Document saved successfully. Your Word and PDF documents are ready for download.');
+      // Reveal the download(s) on this page. PDF is offered only when enabled.
+      toast.success(pdfEnabled
+        ? 'Document saved successfully. Your Word and PDF documents are ready for download.'
+        : 'Document saved successfully. Your Word document is ready for download.');
       await onChanged?.();
     } catch (err) { toast.error(getErrorMessage(err)); }
     finally { setGenerating(false); }
@@ -184,35 +189,41 @@ export default function IsfReviewForm({ jobId, jobNumber, serverData, generated,
         </button>
         <button onClick={reset} disabled={!dirty} className="btn-ghost text-sm"><RotateCcw className="h-4 w-4" /> Reset</button>
         <div className="ml-auto flex items-center gap-2">
-          <button onClick={openPreview} disabled={generating} className="btn-ghost text-sm" title="Generate & preview before downloading">
-            <Eye className="h-4 w-4" /> Preview
-          </button>
+          {pdfEnabled && (
+            <button onClick={openPreview} disabled={generating} className="btn-ghost text-sm" title="Generate & preview before downloading">
+              <Eye className="h-4 w-4" /> Preview
+            </button>
+          )}
           <button onClick={generate} disabled={generating} className="btn-primary text-sm">
             {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCheck2 className="h-4 w-4" />}
             {generated && !dirty ? 'Re-generate' : 'Save & Generate'}
           </button>
           {generated && !dirty && (
             <>
-              <button onClick={() => download('pdf')} disabled={downloading} className="btn-primary text-sm"><Download className="h-4 w-4" /> {downloading === 'pdf' ? '…' : 'Download PDF'}</button>
-              <button onClick={() => download('docx')} disabled={downloading} className="btn-ghost text-sm"><Download className="h-4 w-4" /> {downloading === 'docx' ? '…' : 'Download DOCX'}</button>
+              {pdfEnabled && (
+                <button onClick={() => download('pdf')} disabled={downloading} className="btn-primary text-sm"><Download className="h-4 w-4" /> {downloading === 'pdf' ? '…' : 'Download PDF'}</button>
+              )}
+              <button onClick={() => download('docx')} disabled={downloading} className="btn-ghost text-sm"><Download className="h-4 w-4" /> {downloading === 'docx' ? '…' : 'Download Word (.docx)'}</button>
             </>
           )}
         </div>
       </div>
 
-      <PreviewModal
-        open={preview.open}
-        title={`ISF Preview — ${jobNumber || ''}`}
-        mode={preview.mode}
-        pdfUrl={preview.pdfUrl}
-        docxBlob={preview.docxBlob}
-        loading={preview.loading}
-        downloading={previewDownloading}
-        onDownload={previewDownload}
-        onClose={closePreview}
-      />
+      {pdfEnabled && (
+        <PreviewModal
+          open={preview.open}
+          title={`ISF Preview — ${jobNumber || ''}`}
+          mode={preview.mode}
+          pdfUrl={preview.pdfUrl}
+          docxBlob={preview.docxBlob}
+          loading={preview.loading}
+          downloading={previewDownloading}
+          onDownload={previewDownload}
+          onClose={closePreview}
+        />
+      )}
       {generated && !dirty && (
-        <p className="flex items-center gap-1.5 text-xs text-emerald-600"><CheckCircle2 className="h-3.5 w-3.5" /> ISF Word &amp; PDF are ready and reflect the reviewed data.</p>
+        <p className="flex items-center gap-1.5 text-xs text-emerald-600"><CheckCircle2 className="h-3.5 w-3.5" /> {pdfEnabled ? 'ISF Word & PDF are ready and reflect the reviewed data.' : 'ISF Word document is ready and reflects the reviewed data.'}</p>
       )}
 
       <style>{`.cell{width:100%;border:1px solid rgb(226 232 240);border-radius:6px;padding:5px 8px;font-size:13px;line-height:1.3;background:#fff;outline:none}
