@@ -23,7 +23,7 @@ export const tokenStore = {
 
 // Same backend the rest of the app talks to. Override with VITE_API_URL when
 // pointing the frontend at a local backend during development.
-const PROD_API_URL = 'https://papayawhip-antelope-424743.hostingersite.com';
+const PROD_API_URL = 'https://api.efreightpro.in';
 const OVERRIDE = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
 export const API_BASE = `${OVERRIDE || PROD_API_URL}/api`;
 

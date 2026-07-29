@@ -22,7 +22,7 @@ import {
 import * as XLSX from 'xlsx'
 import { getShippingLinesForPOD, isValidShippingLine } from './ShippingLines_for_POD.js'
 
-const API_BASE_URL = 'https://papayawhip-antelope-424743.hostingersite.com/api'
+const API_BASE_URL = 'https://api.efreightpro.in/api'
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('authToken')

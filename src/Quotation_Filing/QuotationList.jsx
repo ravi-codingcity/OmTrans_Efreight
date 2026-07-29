@@ -30,7 +30,7 @@ import VikramImg from "../assets/vikram.jpg";
 import TarunImg from "../assets/tarun.jpeg";
 import HarmeetImg from "../assets/harmeet.jpg";
 
-const API_BASE_URL = "https://papayawhip-antelope-424743.hostingersite.com/api";
+const API_BASE_URL = "https://api.efreightpro.in/api";
 
 // Cache for quotations data
 export const quotationsCache = {

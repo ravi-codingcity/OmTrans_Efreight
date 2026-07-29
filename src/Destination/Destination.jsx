@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import POD_lines from './POD_lines.jsx'
 import POD_Management from './POD_Management.jsx'
 
-const API_BASE_URL = 'https://papayawhip-antelope-424743.hostingersite.com/api'
+const API_BASE_URL = 'https://api.efreightpro.in/api'
 
 const isAdminUser = (currentUser) => {
   if (!currentUser) return false

@@ -12,7 +12,7 @@
 /*  hosting proxy, not the Node app.                                    */
 /* ------------------------------------------------------------------ */
 const DEV_API_URL = "http://localhost:5000";
-const PROD_API_URL = "https://papayawhip-antelope-424743.hostingersite.com";
+const PROD_API_URL = "https://api.efreightpro.in";
 const OVERRIDE = (import.meta.env.VITE_API_URL || "").trim().replace(/\/+$/, "");
 const DEFAULT_BASE = import.meta.env.DEV ? DEV_API_URL : PROD_API_URL;
 const API_ROOT = OVERRIDE || DEFAULT_BASE;

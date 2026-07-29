@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 const API_BASE_URL =
-  "https://papayawhip-antelope-424743.hostingersite.com/api";
+  "https://api.efreightpro.in/api";
 
 const ROWS_PER_PAGE = 25;
 

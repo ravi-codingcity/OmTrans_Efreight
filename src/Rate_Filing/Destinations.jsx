@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 
-const RATE_FILING_API = "https://papayawhip-antelope-424743.hostingersite.com/api/rate-filings";
+const RATE_FILING_API = "https://api.efreightpro.in/api/rate-filings";
 
 /* ------------------------------------------------------------------ */
 /*  Destinations — POD search & Shipping Line lookup                     */

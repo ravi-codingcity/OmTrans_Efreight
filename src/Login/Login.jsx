@@ -9,8 +9,8 @@ import {
   Package,
 } from "lucide-react";
 
-const API_BASE_URL = "https://papayawhip-antelope-424743.hostingersite.com/api/auth";
-const API_ROOT = "https://papayawhip-antelope-424743.hostingersite.com/api";
+const API_BASE_URL = "https://api.efreightpro.in/api/auth";
+const API_ROOT = "https://api.efreightpro.in/api";
 
 const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState("");

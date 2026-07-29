@@ -33,9 +33,9 @@ import {
   Anchor,
 } from "lucide-react";
 
-const API_BASE_URL = "https://papayawhip-antelope-424743.hostingersite.com/api";
+const API_BASE_URL = "https://api.efreightpro.in/api";
 const BUYING_RATE_API =
-  "https://papayawhip-antelope-424743.hostingersite.com/api/rate-filings";
+  "https://api.efreightpro.in/api/rate-filings";
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */

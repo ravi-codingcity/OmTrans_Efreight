@@ -43,7 +43,7 @@ import { airportsOfDestination } from "../components/AirportOfDestination";
 import { allAvailableTerms, getTermsForSegment } from "./Terms_and_Conditions";
 import { invalidateQuotationsCache } from "./QuotationList";
 
-const API_BASE_URL = "https://papayawhip-antelope-424743.hostingersite.com/api";
+const API_BASE_URL = "https://api.efreightpro.in/api";
 
 // Normalize a label for duplicate-comparison: trim, lowercase, collapse spaces.
 const normalizeLabel = (s) => (s || "").trim().toLowerCase().replace(/\s+/g, " ");

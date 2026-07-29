@@ -18,7 +18,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const API_BASE = "https://papayawhip-antelope-424743.hostingersite.com/api/agents";
+const API_BASE = "https://api.efreightpro.in/api/agents";
 
 const AgentDatabase = ({ currentUser }) => {
   const [agents, setAgents] = useState([]);

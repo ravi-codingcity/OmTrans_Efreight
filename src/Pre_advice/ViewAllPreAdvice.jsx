@@ -21,7 +21,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-const API_BASE_URL = "https://papayawhip-antelope-424743.hostingersite.com/api";
+const API_BASE_URL = "https://api.efreightpro.in/api";
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */

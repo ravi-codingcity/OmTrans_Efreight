@@ -102,7 +102,7 @@ function App() {
     const recordId = localStorage.getItem('loginRecordId')
     if (recordId) {
       try {
-        await fetch(`https://papayawhip-antelope-424743.hostingersite.com/api/login-info/${recordId}/logout`, {
+        await fetch(`https://api.efreightpro.in/api/login-info/${recordId}/logout`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
         })

@@ -40,7 +40,7 @@ const ORIGIN_API =
 const RAIL_FREIGHT_API =
   "https://mediumspringgreen-stork-730427.hostingersite.com/api/railfreight/forms/all";
 const RATE_FILING_API =
-  "https://papayawhip-antelope-424743.hostingersite.com/api/rate-filings";
+  "https://api.efreightpro.in/api/rate-filings";
 
 const CONTAINER_TYPES = [
   "20ft Standard Container",

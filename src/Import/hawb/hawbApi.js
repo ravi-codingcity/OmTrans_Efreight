@@ -2,7 +2,7 @@
 /*  Import module — HAWB API client (independent from MAWB)            */
 /* ------------------------------------------------------------------ */
 
-const API_BASE = "https://papayawhip-antelope-424743.hostingersite.com/api";
+const API_BASE = "https://api.efreightpro.in/api";
 const HAWB_API = `${API_BASE}/import/hawb`;
 
 const authHeaders = () => ({
