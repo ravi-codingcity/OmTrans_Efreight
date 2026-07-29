@@ -36,9 +36,9 @@ import { shippingLines as staticShippingLines } from "../components/ShippingLine
 /*  Constants / APIs                                                    */
 /* ------------------------------------------------------------------ */
 const ORIGIN_API =
-  "https://mediumspringgreen-stork-730427.hostingersite.com/api/origin/forms/all";
+  "https://api.omtrans.in/api/origin/forms/all";
 const RAIL_FREIGHT_API =
-  "https://mediumspringgreen-stork-730427.hostingersite.com/api/railfreight/forms/all";
+  "https://api.omtrans.in/api/railfreight/forms/all";
 const RATE_FILING_API =
   "https://api.efreightpro.in/api/rate-filings";
 
