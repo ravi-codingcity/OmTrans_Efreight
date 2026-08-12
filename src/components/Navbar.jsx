@@ -13,6 +13,7 @@ import {
   MapPin,
   Plane,
   Sparkles,
+  UserCog,
 } from "lucide-react";
 import OmTransLogo from "../assets/OmTrans.png";
 import OmTransDP from "../assets/omtrans_dp.jpg";
@@ -171,6 +172,21 @@ const Navbar = ({ currentUser, onLogout, onNavigate, currentView }) => {
                   >
                     <Activity size={15} />
                     <span>Login Info</span>
+                  </button>
+                )}
+
+                {/* User Management Menu - Super Admin only */}
+                {isSuperAdmin && (
+                  <button
+                    onClick={() => onNavigate("usermanagement")}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+                      currentView === "usermanagement"
+                        ? "bg-purple-50 text-purple-700"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <UserCog size={15} />
+                    <span>User Management</span>
                   </button>
                 )}
               </>

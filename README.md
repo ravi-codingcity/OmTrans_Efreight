@@ -2,34 +2,69 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Application Routes & URLs
+## Application Routes & Authentication
 
-The application uses hash-based routing for authentication pages:
+The app is a single authenticated shell. **Login is the only entry point** — there is
+**no public sign-up page and no public password-reset page** (both were removed). After
+login, all sections are reached through in-app navigation (the Navbar), not via direct
+URLs.
 
-| Page | URL | Description |
-|------|-----|-------------|
-| **Login** | `/` | Default landing page for unauthenticated users |
-| **Signup** | `/#/admin-signup` | Admin user registration (secret page) |
-| **Reset Password** | `/#/admin-reset-password` | Password reset for admin users (secret page) |
-| **Dashboard** | `/` | Main dashboard (after login) |
-| **Quotation Form** | `/` | Create quotations (internal navigation) |
-| **Booking** | `/` | Booking module - Coming Soon (internal navigation) |
+| Page | How it's reached | Access |
+|------|------------------|--------|
+| **Login** | `/` (only screen shown when logged out) | Public |
+| **Dashboard / Quotation / Rate Filing / Pre-Advice / Agent / Destination** | Navbar after login | Standard roles + Super Admin |
+| **Import module** | Navbar → Import | Super Admin, Import role |
+| **Export AI** | Navbar → Export AI | Everyone except Import-only |
+| **Login Info** | Navbar → Login Info | Super Admin only |
+| **User Management** | Navbar → **User Management** | **Super Admin only** |
 
-### Example URLs (Development)
-```
-Login:          http://localhost:5173/
-Signup:         http://localhost:5173/#/admin-signup
-Reset Password: http://localhost:5173/#/admin-reset-password
-```
+> There are **no** `#/admin-signup` or `#/admin-reset-password` routes anymore. New users
+> are created, and passwords are reset, only by a Super Admin from **User Management**.
 
-### Example URLs (Production)
-```
-Login:          https://your-domain.com/
-Signup:         https://your-domain.com/#/admin-signup
-Reset Password: https://your-domain.com/#/admin-reset-password
-```
+---
 
-> **Note:** Dashboard, Quotation Form, and Booking views are accessed through internal navigation after authentication, not via direct URLs.
+## User Management (Super Admin only)
+
+The **User Management** dashboard is the single place where user accounts are created and
+maintained. It is visible and usable **only by users with the `Super Admin` role**.
+
+### Components & wiring
+
+| File | Responsibility |
+|------|----------------|
+| `src/UserManagement/UserManagement.jsx` | The dashboard: user table, search/filters, and Create / Edit / Reset Password / Delete / Activate-Deactivate modals |
+| `src/components/Navbar.jsx` | Renders the **User Management** menu item only when `role === 'Super Admin'` |
+| `src/App.jsx` | Routes the `usermanagement` view and re-checks `isSuperAdminRole(currentUser)` before rendering (so a stale view state can't expose it) |
+
+All requests go to the backend `/api/users` API with the Super Admin's JWT
+(`Authorization: Bearer <token>` from `localStorage.authToken`). The backend re-enforces
+the role and returns **403** to anyone else, so the UI restriction is backed by real
+server-side security.
+
+### What a Super Admin can do
+
+- **Create a user** — set **Full Name, Username, Initial Password, Role, Location**, and
+  whether the account starts **Active or Inactive** (checkbox). Roles: `Super Admin,
+  Admin, Manager, User, Viewer, Import, Export, Agent`.
+- **Edit a user** — change full name, role, location, and active status (username is
+  immutable — it is the login identity).
+- **Reset password** — set a new password for any user (no public reset exists).
+- **Activate / deactivate** — toggle access without deleting; a deactivated user cannot
+  log in.
+- **Delete** — permanently remove an account (a Super Admin can't delete themselves, and
+  the last Super Admin is protected).
+- **View, search & filter** — the table shows **Name, Username, Role, Status, Created**,
+  and **Last Login**; search by name/username and filter by **role** and **status**.
+
+### Authentication flow (frontend)
+
+1. User logs in on the **Login** screen → `POST /api/auth/login`.
+2. On success, `authToken`, `currentUser` (incl. `role`) are stored in `localStorage`.
+3. `App.jsx` renders the shell; the Navbar shows menu items based on `currentUser.role`.
+   Super Admin additionally sees **Login Info** and **User Management**.
+4. All User Management actions send the JWT to `/api/users`; the backend validates the
+   token (`protect`) and the role (`superAdmin`).
+5. Deactivating a user (or deleting them) immediately blocks their next login.
 
 ---
 

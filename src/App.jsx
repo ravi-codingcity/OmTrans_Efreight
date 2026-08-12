@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react'
 import ImportExportQuotationForm, { prefetchSuggestionData } from './Quotation_Filing/ImportExportQuotationForm.jsx'
 import Dashboard from './Dashboard/Dashboard.jsx'
 import Login from './Login/Login.jsx'
-import Signup from './Signup/Signup.jsx'
-import ResetPassword from './ResetPassword/ResetPassword.jsx'
 import Navbar from './components/Navbar.jsx'
+import UserManagement from './UserManagement/UserManagement.jsx'
 import PreAdvice from './Pre_advice/PreAdvice.jsx'
 import RateFiling from './Rate_Filing/RateFiling.jsx'
 import QuotationFiling from './Quotation_Filing/QuotationFiling.jsx'
@@ -22,6 +21,10 @@ const isImportRole = (user) =>
 // Users with the Export role are restricted to the Export AI module only.
 const isExportRole = (user) =>
   (user?.role || '').toLowerCase().trim() === 'export'
+
+// Only Super Admin users may access the User Management section.
+const isSuperAdminRole = (user) =>
+  (user?.role || '').toLowerCase().trim() === 'super admin'
 
 // Convert any stored Rate Filing transit value (e.g. "5", "5 Days",
 // "5 days (approx)") into the Quotation dropdown's exact option format
@@ -43,10 +46,6 @@ function App() {
   const [copyQuotation, setCopyQuotation] = useState(null) // For copying quotations
   const [compareQuotation, setCompareQuotation] = useState(null) // For Compare Rates → Pre-Advice
   const [dashboardKey, setDashboardKey] = useState(0) // Key to force Dashboard remount after form submission
-
-  // Check if accessing secret signup page via URL hash
-  const isSignupPage = window.location.hash === '#/admin-signup'
-  const isResetPasswordPage = window.location.hash === '#/admin-reset-password'
 
   // Check if user is already logged in on component mount
   useEffect(() => {
@@ -355,29 +354,6 @@ function App() {
     sessionStorage.setItem('currentView', 'form')
   }
 
-  const handleSignupSuccess = () => {
-    window.location.hash = ''
-  }
-
-  // If accessing secret reset password page, show reset password form
-  if (isResetPasswordPage) {
-    return (
-      <ResetPassword
-        onSwitchToLogin={() => { window.location.hash = '' }}
-      />
-    )
-  }
-
-  // If accessing secret signup page, show signup form
-  if (isSignupPage) {
-    return (
-      <Signup
-        onSignupSuccess={handleSignupSuccess}
-        onSwitchToLogin={() => { window.location.hash = '' }}
-      />
-    )
-  }
-
   // If not authenticated, show login page
   if (!isAuthenticated) {
     return <Login onLoginSuccess={handleLoginSuccess} />
@@ -415,6 +391,9 @@ function App() {
         {currentView === 'agentdb' && <AgentDatabase currentUser={currentUser} />}
         {currentView === 'destination' && <Destination currentUser={currentUser} onBack={() => handleNavigate('dashboard')} />}
         {currentView === 'logininfo' && <LoginInfo currentUser={currentUser} />}
+        {/* User Management — Super Admin only (guarded again here so a stale view
+            state can never render it for another role). */}
+        {currentView === 'usermanagement' && isSuperAdminRole(currentUser) && <UserManagement currentUser={currentUser} />}
         {currentView === 'exportai' && <EmbeddedExportAI currentUser={currentUser} />}
         {currentView === 'booking' && (
           <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">

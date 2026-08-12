@@ -32,7 +32,19 @@
       "Bash(node _verify.cjs)",
       "Bash(node _hawbtest.cjs \"\")",
       "Bash(node _hawbtest.cjs 85)",
-      "Bash(node -e \"require\\('./src/modules/import/hawb/services/hawbDocumentService.js'\\); console.log\\('Backend OK'\\)\")"
+      "Bash(node -e \"require\\('./src/modules/import/hawb/services/hawbDocumentService.js'\\); console.log\\('Backend OK'\\)\")",
+      "Bash(cd \"d:/OmTrans_Freight\" && echo \"=== refs to Signup/ResetPassword ===\" && grep -rn \"Signup\\\\|ResetPassword\" my-project/src --include=*.jsx --include=*.js -l; echo \"=== refs to register / admin-reset-password endpoints ===\" && grep -rn \"auth/register\\\\|admin-reset-password\\\\|/register\" my-project/src Backend/src --include=*.jsx --include=*.js | grep -v node_modules | head)",
+      "Bash(node --check src/controllers/userController.js)",
+      "Bash(node --check src/routes/userRoutes.js)",
+      "Bash(node --check src/controllers/authController.js)",
+      "Bash(node --check src/routes/authRoutes.js)",
+      "Bash(node --check src/middleware/auth.js)",
+      "Bash(rm -f Signup/Signup.jsx ResetPassword/ResetPassword.jsx)",
+      "Bash(rmdir Signup ResetPassword)",
+      "Bash(grep -nE \"^#{1,3} |register|sign.?up|password|auth|role|User Management|Admin Guide\" README.md)",
+      "Bash(node -e \"require\\('./src/controllers/userController'\\); require\\('./src/controllers/authController'\\); require\\('./src/routes/userRoutes'\\); require\\('./src/routes/authRoutes'\\); require\\('./src/config/seedUsers.js'\\) \")",
+      "Bash(cd \"d:/OmTrans_Freight\" && echo \"=== README files ===\" && ls README.md my-project/README.md Backend/README.md 2>&1; echo \"=== seed refs ===\" && grep -rn \"seedUsers\\\\|seed\" Backend/package.json Backend/src 2>/dev/null | grep -iv \"seedname\" | head; echo \"=== package scripts ===\" && grep -n \"seed\\\\|scripts\" Backend/package.json | head)",
+      "Bash(cd \"d:/OmTrans_Freight\" && grep -n \"seedUsers\\\\|seeding the database\\\\|seed the Super Admin\\\\|superadmin.*Admin@108\" README.md)"
     ],
     "additionalDirectories": [
       "d:\\OmTrans_Freight\\Backend\\src",
@@ -46,7 +58,12 @@
       "d:\\OmTrans_Freight\\Backend\\src\\modules\\exportAi\\models",
       "d:\\OmTrans_Freight\\Backend\\src\\modules\\exportAi\\controllers",
       "d:\\OmTrans_Freight",
-      "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\hawb\\services"
+      "d:\\OmTrans_Freight\\Backend\\src\\modules\\import\\hawb\\services",
+      "d:\\OmTrans_Freight\\Backend\\src\\middleware",
+      "d:\\OmTrans_Freight\\Backend\\src\\controllers",
+      "d:\\OmTrans_Freight\\Backend\\src\\routes",
+      "d:\\OmTrans_Freight\\Backend\\src\\config",
+      "d:\\OmTrans_Freight\\Backend"
     ]
   }
 }

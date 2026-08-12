@@ -457,6 +457,74 @@ const DutyTaxTable = ({ rows }) => (
   </div>
 );
 
+// Container-level comparison. Every container found in the CHA Checklist and the system
+// documents gets its own row (matched by container number), plus a totals summary.
+const CONTAINER_STATUS_LABEL = {
+  match: { label: "✓ Matched", cls: "text-emerald-700" },
+  mismatch: { label: "✗ Mismatch", cls: "text-red-700" },
+  missing_in_system: { label: "Missing in System", cls: "text-amber-700" },
+  extra_in_system: { label: "Extra in System", cls: "text-sky-700" },
+};
+
+const ContainerTable = ({ data }) => {
+  const records = data.records || [];
+  const cmp = (a, b) => (a && b && String(a).trim() && String(b).trim() && String(a).trim().toUpperCase() !== String(b).trim().toUpperCase());
+  return (
+    <>
+      {/* Totals summary */}
+      <div className="px-4 py-2.5 border-b border-gray-100 bg-gray-50/60 flex flex-wrap gap-x-5 gap-y-1 text-[11px]">
+        <span className="text-gray-600">CHA Checklist Containers: <b className="text-gray-900">{data.checklistCount}</b></span>
+        <span className="text-gray-600">System Document Containers: <b className="text-gray-900">{data.systemCount}</b></span>
+        <span className="text-emerald-700">Matched: <b>{data.matchedCount}</b></span>
+        <span className="text-red-700">Unmatched: <b>{data.unmatchedCount}</b></span>
+        {data.missingCount > 0 && <span className="text-amber-700">Missing: <b>{data.missingCount}</b></span>}
+        {data.extraCount > 0 && <span className="text-sky-700">Extra: <b>{data.extraCount}</b></span>}
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[720px] text-xs">
+          <thead>
+            <tr className="bg-gray-50 text-gray-500 border-b border-gray-100 text-left">
+              <th className={cell}>#</th>
+              <th className={cell}>Container Number</th>
+              <th className={cell}>Type</th>
+              <th className={cell}>Size</th>
+              <th className={cell}>Seal Number</th>
+              <th className={`${cell} text-right`}>Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {records.length === 0 ? (
+              <tr><td className={`${cell} text-gray-400`} colSpan={6}>No container data was extracted.</td></tr>
+            ) : records.map((r, i) => {
+              const m = STATUS_META[r.status] || STATUS_META.mismatch;
+              const s = CONTAINER_STATUS_LABEL[r.status] || CONTAINER_STATUS_LABEL.mismatch;
+              // Show both sides whenever a specific field differs.
+              const pair = (chk, sys, fallback) =>
+                cmp(chk, sys)
+                  ? <span><span className="text-red-700 font-semibold">{chk}</span> <span className="text-gray-400">vs</span> <span className="text-red-700 font-semibold">{sys}</span></span>
+                  : val(chk || sys || fallback);
+              return (
+                <tr key={i} className={m.row}>
+                  <td className={`${cell} text-gray-400`}>{i + 1}</td>
+                  <td className={`${cell} font-semibold text-gray-800`}>
+                    {r.containerNumber}
+                    {r.detail && <p className="font-normal text-[10px] text-gray-500 mt-0.5">{r.detail}</p>}
+                  </td>
+                  <td className={`${cell} text-gray-700`}>{pair(r.checklistType, r.systemType, r.containerType)}</td>
+                  <td className={`${cell} text-gray-700`}>{pair(r.checklistSize, r.systemSize, r.containerSize)}</td>
+                  <td className={`${cell} text-gray-700`}>{pair(r.checklistSeal, r.systemSeal, r.sealNumber)}</td>
+                  <td className={`${cell} text-right font-semibold ${s.cls}`}>{s.label}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+};
+
 // "ISSUED RETROACTIVELY" status card (from the CEPA certificate).
 const IR_META = {
   present_marked: { icon: CheckCircle2, cls: "border-emerald-200 bg-emerald-50", txt: "text-emerald-800", label: "Present and Marked", emoji: "✅" },
@@ -528,6 +596,11 @@ export const ResultsPanel = ({ result }) => {
     matchedFields = [], unmatchedFields = [], missingInfo = [], missingDocuments = [],
   } = result;
   const simsRecords = (sims && sims.records) || [];
+  // Containers are multi-record ({records, counts}). Older saved reports stored a plain
+  // array of field rows — those still render through the legacy CompareTable.
+  const legacyContainerRows = Array.isArray(containers) ? containers : (containers.rows || []);
+  const containerData = Array.isArray(containers) ? null : containers;
+  const containerRecords = (containerData && containerData.records) || [];
   const [showMatched, setShowMatched] = useState(false);
 
   return (
@@ -597,10 +670,16 @@ export const ResultsPanel = ({ result }) => {
         </Section>
       )}
 
-      {/* Container Details */}
-      {containers.length > 0 && (
-        <Section title="Container Details" icon={Container} count={containers.length}>
-          <CompareTable rows={containers} />
+      {/* Container Details — one row per container (all containers, not just the first) */}
+      {containerRecords.length > 0 && (
+        <Section title="Container Details" icon={Container} count={containerRecords.length}>
+          <ContainerTable data={containerData} />
+        </Section>
+      )}
+      {/* Legacy saved reports (and any stray field rows) keep their original layout */}
+      {legacyContainerRows.length > 0 && (
+        <Section title="Container Details" icon={Container} count={legacyContainerRows.length}>
+          <CompareTable rows={legacyContainerRows} />
         </Section>
       )}
 
